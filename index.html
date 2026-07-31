@@ -119,6 +119,7 @@
   .projlabel { display: block; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--color-accent); margin-bottom: 4px; }
   .projform { max-width: 560px; margin-bottom: var(--sp-sm); }
   .projform .q { display: block; font-size: 13px; font-weight: 500; margin: var(--sp-sm) 0 3px; }
+  .projform .qres { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); margin-top: var(--sp-md); }
   .stagewrap { display: flex; align-items: center; gap: var(--sp-md); margin-bottom: var(--sp-sm); }
   .stageslider { flex: 1; accent-color: var(--color-accent); }
   .stagelabel { font-family: var(--font-mono); font-size: 12px; min-width: 11ch; color: var(--color-accent); white-space: nowrap; }
@@ -217,15 +218,10 @@
           <input type="range" class="stageslider" id="proj-stage" min="0" max="5" step="1" value="2">
           <div class="stagelabel" id="stage-label"></div>
         </div>
-        <label class="q" for="proj-sources" data-i18n="qSources"></label>
-        <select class="projfield" id="proj-sources">
-          <option value=""></option>
-          <option value="context" data-i18n="qSrcA"></option>
-          <option value="attached" data-i18n="qSrcB"></option>
-          <option value="answers" data-i18n="qSrcC"></option>
-        </select>
         <label class="q" for="proj-focus" data-i18n="qWhy"></label>
         <input type="text" class="projfield" id="proj-focus" data-i18n-ph="qWhyPh">
+        <label class="q qres" for="proj-resources" data-i18n="qRes"></label>
+        <textarea class="projfield projdesc" id="proj-resources" rows="2" data-i18n-ph="qResPh"></textarea>
       </div>
       <p class="projhint" data-i18n="projHint"></p>
       <div class="loadrow" style="margin:0 0 var(--sp-md)">
@@ -338,9 +334,9 @@ const I18N = {
     qStage: "Wo steht es gerade?",
     st0: "Idee", st1: "Im Bau", st2: "Prototyp", st3: "Beta", st4: "Voll live", st5: "Etabliert",
     stUnset: "— nicht gesetzt",
-    qSources: "Wo kann die LLM nachschauen?",
-    qSrcA: "Sie sitzt im Projekt (z. B. Claude Code im Repo)", qSrcB: "Ich hänge Dateien an (README, Notizen …)", qSrcC: "Nur meine Antworten im Chat",
     qWhy: "Warum das Audit? (optional)", qWhyPh: "z. B. \"strategische Verortung\" oder \"entscheiden, ob ich Geld verlangen soll\"",
+    qRes: "Ressourcen",
+    qResPh: "GitHub-Link, Website, Dateipfade, Doku … — leer lassen, wenn die LLM schon im Projekt sitzt oder du Dateien anhängst",
     projHint: "Alles ist optional: leer lassen ist ok, wenn die LLM-Session dein Projekt schon kennt (z. B. Claude Code direkt im Repo) — der Prompt sagt ihr dann, den Kontext zu nutzen. Der Prompt unten aktualisiert sich live mit deinen Antworten.",
     btnCopy: "Prompt kopieren", copied: "✓ kopiert",
     footer1: "witty · Markdown bleibt Source of Truth · Methoden sind Optionen, nie Pflicht.",
@@ -367,9 +363,9 @@ const I18N = {
     qStage: "Where does it stand?",
     st0: "Idea", st1: "Building", st2: "Prototype", st3: "Beta", st4: "Fully live", st5: "Established",
     stUnset: "— not set",
-    qSources: "Where can the LLM look?",
-    qSrcA: "It sits inside the project (e.g. Claude Code in the repo)", qSrcB: "I'll attach files (README, notes …)", qSrcC: "Only my answers in this chat",
     qWhy: "Why this audit? (optional)", qWhyPh: "e.g. \"strategic positioning\" or \"decide whether to charge money\"",
+    qRes: "Resources",
+    qResPh: "GitHub link, website, file paths, docs … — leave empty if the LLM already sits inside the project or you attach files",
     projHint: "Everything is optional: leaving it empty is fine if the LLM session already knows your project (e.g. Claude Code inside the repo) — the prompt tells it to use that context. The prompt below updates live with your answers.",
     btnCopy: "Copy prompt", copied: "✓ copied",
     footer1: "witty · markdown stays the source of truth · methods are options, never mandatory.",
@@ -484,40 +480,28 @@ Nicht explizit angegeben — nimm das Projekt, in dessen Kontext du arbeitest (a
   en: `PROJECT:
 Not explicitly stated — use the project in whose context you are working (current repository, attached files, prior conversation). If no such context exists, ask first: What is the project called, what is it, and where does it stand?`
 };
-const SOURCE_LINES = {
-  de: {
-    context:  "Du arbeitest bereits im Projekt-Kontext (Repo/Dateien/Verlauf) — nutze ihn als Evidenzquelle.",
-    attached: "Es werden Dateien angehängt (README, Notizen) — lies sie als Evidenzquelle.",
-    answers:  "Es gibt NUR die Antworten im Chat — stütze dich darauf, stelle gezielte Nachfragen und vergib 🔍 nur, wenn ein Beleg genannt wurde."
-  },
-  en: {
-    context:  "You are already inside the project context (repo/files/history) — use it as your evidence source.",
-    attached: "Files will be attached (README, notes) — read them as your evidence source.",
-    answers:  "There are ONLY the answers in this chat — rely on them, ask targeted follow-ups, and only assign 🔍 when evidence was named."
-  }
-};
 let stageSet = false; // Slider hat immer einen Wert — nur zählen, wenn bewusst bewegt/geladen
 function projectBlock() {
   const name = $("proj-name").value.trim();
   const desc = $("proj-desc").value.trim();
   const goal = $("proj-goal").value.trim();
-  const sources = $("proj-sources").value;
   const focus = $("proj-focus").value.trim();
-  if (!name && !desc && !goal && !stageSet && !sources && !focus) return PROJECT_FALLBACK[lang];
+  const res = $("proj-resources").value.trim();
+  if (!name && !desc && !goal && !stageSet && !focus && !res) return PROJECT_FALLBACK[lang];
   const de = lang === "de";
   const lines = [(de ? "PROJEKT" : "PROJECT") + ": " + (name || "—")];
   if (desc)     lines.push((de ? "Was es ist: " : "What it is: ") + desc);
   if (goal)     lines.push((de ? "Ziel: " : "Goal: ") + goal);
   if (stageSet) lines.push((de ? "Stand: " : "Stage: ") + t("st" + $("proj-stage").value));
-  if (sources)  lines.push((de ? "Evidenz: " : "Evidence: ") + SOURCE_LINES[lang][sources]);
   if (focus)    lines.push((de ? "Anlass für das Audit: " : "Reason for this audit: ") + focus);
+  if (res)      lines.push((de ? "Ressourcen (nutze sie als Evidenzquellen): " : "Resources (use them as evidence sources): ") + res);
   return lines.join("\n");
 }
 function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
 
 /* ============ State ============ */
-const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", psources: "witty.proj.sources", pfocus: "witty.proj.focus" };
-const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-sources","psources"],["proj-focus","pfocus"]];
+const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pfocus: "witty.proj.focus", pres: "witty.proj.res" };
+const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-focus","pfocus"],["proj-resources","pres"]];
 let lang = localStorage.getItem(LS.lang) || "de";
 
 const $ = (id) => document.getElementById(id);
