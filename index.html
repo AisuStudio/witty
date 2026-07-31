@@ -147,9 +147,45 @@
     padding: var(--sp-sm) var(--sp-md); margin: var(--sp-xs) 0;
   }
   .step.st-mirror .stepbody blockquote { border-left-color: var(--color-lemon); }
-  .stepbody ul { padding-left: 1.2em; margin: var(--sp-xs) 0; }
+  .stepbody ul, .stepbody ol { padding-left: 1.3em; margin: var(--sp-xs) 0; }
+  .stepbody li { margin: 2px 0; }
   .stepbody code { font-family: "iA Writer Mono S", monospace; font-size: .9em; background: var(--color-surface-2); padding: 1px 5px; border-radius: 3px; }
   .stepbody em { color: var(--color-muted); }
+  .stepbody p { margin: var(--sp-xs) 0; }
+  .stepbody h4 {
+    font-family: var(--font-primary); font-weight: 700; font-size: 14px;
+    margin: var(--sp-md) 0 var(--sp-xs); letter-spacing: .01em;
+  }
+  .stepbody hr { border: 0; border-top: 1px solid var(--color-border); margin: var(--sp-md) 0; }
+  /* Tabellen im Fließtext (v0.2-Format: BMC, RICE, P&L, Now/Next/Later, Glossar) */
+  .tablewrap { overflow-x: auto; margin: var(--sp-sm) 0; -webkit-overflow-scrolling: touch; }
+  table.md { border-collapse: collapse; font-size: 13.5px; min-width: 100%; }
+  table.md th {
+    text-align: left; font-family: var(--font-primary); font-weight: 700; font-size: 12px;
+    text-transform: uppercase; letter-spacing: .04em; color: var(--color-muted);
+    padding: 6px 10px; border-bottom: 1px solid var(--color-border); white-space: nowrap;
+  }
+  table.md td { padding: 6px 10px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  table.md tr:last-child td { border-bottom: 0; }
+  table.md td:first-child { white-space: nowrap; }
+  table.md td b { font-weight: 700; }
+  /* Datenblöcke (```witty:pnl etc.) — Platzhalter, bis die Breakouts sie rendern */
+  .databox {
+    border: 1px dashed var(--color-border); border-radius: var(--radius-sm);
+    padding: var(--sp-sm) var(--sp-md); margin: var(--sp-sm) 0; background: var(--color-surface-2);
+  }
+  .databox .dblabel {
+    display: inline-block; font-family: "iA Writer Mono S", monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted); margin-bottom: 4px;
+  }
+  .databox pre, pre.code {
+    font-family: "iA Writer Mono S", monospace; font-size: 12.5px;
+    white-space: pre-wrap; word-break: break-word; margin: 0;
+  }
+  pre.code {
+    background: var(--color-surface-2); border-radius: var(--radius-sm);
+    padding: var(--sp-sm) var(--sp-md); margin: var(--sp-sm) 0; overflow-x: auto;
+  }
 
   /* Prompt view */
   .promptcard h2 { font-family: var(--font-primary); font-weight: 700; font-size: 18px; margin-bottom: var(--sp-sm); }
@@ -279,6 +315,7 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
           </tr></thead>
           <tbody id="dash-body"></tbody>
         </table>
+        <div class="stepbody" id="cover-extra"></div>
         <div class="legend" data-i18n="legend"></div>
       </div>
       <div class="card" id="sections"></div>
@@ -329,76 +366,342 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
 </div>
 
 <script type="text/markdown" id="demo-md">
-# PM-STATUS — witty
+# PM-STATUS — Fontane
 
-> Stand: Juli 2026 · v0.1 · witty ist sein eigener erster Use Case
+> Stand: Juli 2026 · Snapshot v2 · witty-Audit v0.2
+
+Beispiel-Audit eines echten Projekts. Jeder Schritt hat einen Kurzbefund, den Befund in Klartext, Belege, einen Lern-Anker mit dem klassischen PM-Begriff und einen nächsten Handgriff.
 
 ## Abdeckung auf einen Blick
 
 | # | Schritt | Status | Stand in einem Satz |
 |---|---|---|---|
-| 1 | Spark | ✅ | 2 Monate bauen ohne PM-Bewusstsein — es fehlte der Spiegel |
-| 2 | Vision & Ambition | ✅ | Trägt sich, Weg zu mehr offen |
-| 3 | Zielgruppe | ✅ | PM-Anfänger + AI-Builders ohne PM-Vokabular |
-| 4 | Nein-Liste | 🔍 | 5 Neins aus Session-Entscheidungen, materialisiert |
-| 5 | Unterschied | 🔍 | Methoden-Basis + LLM-Facilitation + Hindsight-Spiegel kombiniert |
-| 6 | Strategie | ✅ | Stufenplan: Template+Skill → MCP → Webtool |
-| 7 | User Flows | ✅ | Der SPIEGEL führt Phase 1 |
-| 8 | Priorisierung | 🔍 | Klein, 1 Projekt reicht, MD-first; Schnitt: Viewer + Prompt |
-| 9 | Go-to-Market | 🔍 | Beachhead: DL-School-Batch + build in public |
-| 10 | Ökonomie | 🕊️ | ~0 € Kosten; vertagt bis Fremdnutzung |
-| 11 | Nordstern | ⭕ | Kandidat: # Projekte mit lebendem PM-STATUS |
-| 12 | PMF-Stufe | ⭕ | Stufe 0→1; Beweis: eine fremde Person füllt ein Projekt aus |
-| 13 | Validierungs-Loop | ✅ | Dogfooding an eigenen Projekten (Fontane-Lauf = Test 1) |
-| 14 | Snapshot-Regel | ✅ | Nach jedem Phase-Ship aktualisieren |
+| 1 | Spark | ⭕ | Der Gründungsmoment ist nirgends festgehalten — dokumentiert ist nur der Auslöser eines späteren Spikes. |
+| 2 | Vision & Ambition | ✅ | Indie-Produkt mit Erlös, bedingt entschieden — mit Launch-Termin und Abbruchkriterium. |
+| 3 | Zielgruppe | ✅ | Comic-Schaffende und Tätowierer:innen mit Lettering-Talent, mit ausformuliertem JTBD-Satz. |
+| 4 | Nein-Liste | 🔍 | Zwölf begründete Neins existieren — verstreut über drei Dokumente, hier erstmals zusammengeführt. |
+| 5 | Unterschied | ✅ | Browser- und geräteunabhängig gegen macOS-only, Adobe-only und Scan-only — nachprüfbar formuliert. |
+| 6 | Strategie | 🔍 | Drei parallele Wetten-Sequenzen, jede begründet — sie widersprechen sich an genau einer Stelle. |
+| 7 | User Flows | ✅ | Der Wow-Moment ist benannt und der Weg dahin gebaut — aber nicht als Trichter gemessen. |
+| 8 | Priorisierung | 🔍 | Vorbildlich phasiert für das freie Produkt; für die bezahlte Version fehlt der Schnitt komplett. |
+| 9 | Go-to-Market | ✅ | Preis, Zahlweg, Zeitplan und Abbruchkriterium sind entschieden — auf einem ungemergten Branch. |
+| 10 | Ökonomie | ⭕ | Erlösseite durchdacht, Kostenseite nie beziffert — die Zielzahl ist Nachfrage-Beweis, kein Einkommen. |
+| 11 | Nordstern | 🔍 | Hilfszahlen gebaut und sauber, die EINE Zahl ist Kandidat statt Entscheidung. |
+| 12 | PMF-Stufe | ✅ | Stufe 1 mit definiertem nächsten Beweis — Begeisterung ist aber kein Beleg für Zahlungsbereitschaft. |
+| 13 | Validierungs-Loop | 🔍 | Echter Lern-Loop inklusive Pivot-Trigger — offen bleibt, was bei Nicht-Erreichen passiert. |
+| 14 | Snapshot-Regel | ⭕ | Auslöse-Ereignis vorgeschlagen, nicht entschieden. |
 
-## 1 · Spark — ✅
-> "Ich habe in 2 Monaten einige Produkte gebaut, immer nur von der Produktvision her — ohne das ganze PM-Hokuspokus. Das hat gut geklappt, aber ich habe wenig Bewusstsein dafür, welche Methoden ich anwende und welche Fragen offen sind."
+**Bilanz:** 6× ✅ · 5× 🔍 · 3× ⭕
+
+### Wo die Lücken liegen — nach Double-Diamond-Phase
+
+Der Double Diamond ist das Standardmodell für Produktarbeit: zwei Rauten hintereinander. In der ersten öffnest du den Problemraum (Discover) und grenzt ihn ein (Define), in der zweiten öffnest du den Lösungsraum (Develop) und lieferst aus (Deliver).
+
+| Phase | Modus | Schritte | Bilanz |
+|---|---|---|---|
+| **Discover** | Problemraum öffnen | 1–3 | 2× ✅, 1× ⭕ — solide, nur die Ursprungsgeschichte fehlt |
+| **Define** | Problem eingrenzen | 4–6 | 1× ✅, 2× 🔍 — alles entschieden, nichts zusammengeschrieben |
+| **Develop** | Lösungsraum öffnen | 7 | 1× ✅ — die stärkste Disziplin |
+| **Deliver** | ausliefern & tragen | 8–14 | 3× ✅, 2× 🔍, 2× ⭕ — hier sitzt die kommerzielle Lücke |
+
+Das ist ein Builder-Profil im Lehrbuch-Sinn: Der Lösungsraum ist exzellent bearbeitet, die konvergente Deliver-Seite ist da, wo es fehlt.
+
+## 1 · Spark — ⭕
+
+> Kurzbefund: Der Gründungsmoment ist nirgends festgehalten — dokumentiert ist nur der Auslöser eines späteren Spikes, und der gehört jemand anderem.
+
+**Befund.** Kein Satz hält den Moment fest, in dem die Entscheidung zum Bauen fiel. Das ist kein Nostalgie-Kram, sondern ein Arbeitsmittel: Der Spark ist die Geschichte für jede Landingpage, und der Prüfstein, an dem sich jede Feature-Idee messen lässt.
+
+**Belege.**
+- Ein Forschungs-Spike hält einen fremden Moment fest: Ein befreundeter Illustrator ließ ein KI-Modell Comic-Panels weiterentwickeln, das Modell erweiterte den Font überzeugend — aber das Ergebnis blieb Pixel im Chat. Keine Datei, keine Vektoren, keine Lizenz.
+- Eine mustergültige Schmerz-Notiz: konkrete Person, konkrete Situation, konkretes Scheitern. Sie beschreibt nur nicht den Gründer.
+
+**Lern-Anker: Problem Statement & 5 Whys.** Ein Problem Statement ist der Ein-Satz-Kern eines Produkts, formuliert als erlebtes Problem statt als Lösung. Die 5 Whys sind die Technik dahinter: fünfmal „warum" hintereinander, bis man von der Beobachtung bei der Ursache landet. Faustregel: ein konkretes Erlebnis, keine Abstraktion wie „ein Problem im Markt".
+
+**Nächster Handgriff.** Drei Sätze in Ich-Perspektive. Und beide Sparks getrennt festhalten — der fremde ist für Marketing ohnehin die stärkere Geschichte.
 
 ## 2 · Vision & Ambition — ✅
-> Mehr über die eigene Arbeit erfahren · sich strategisch verorten · neue Wege evaluieren · mittelfristig anderen zur Verfügung stellen. Ambition: trägt sich, Weg zu mehr offen.
+
+> Kurzbefund: Indie-Produkt mit Erlös, bedingt entschieden — mit Datum, Zahl und Ausstieg.
+
+**Befund.** Die Ambitionsstufe ist nicht Hobby (sonst gäbe es keine Preisstruktur) und nicht Firma (sonst keine Kleinunternehmerregelung), sondern die Stufe dazwischen — mit einem überprüfbaren Abbruchkriterium statt einer Stimmung.
+
+**Belege.**
+- Preisdokument mit Soft Launch im September, Hard Launch im Weihnachtsquartal und einem Go/No-Go von rund 100 zahlenden Käufen bis Jahresende.
+- Der ursprüngliche Vorbehalt („nur wenn ein Business-Plan es sinnvoll macht") ist damit eingelöst.
+
+**Lern-Anker: Vision Statement nach Geoffrey Moore.** Das Template lautet: *Für [Zielgruppe], die [Bedürfnis] hat, ist [Produkt] ein [Kategorie], das [Nutzen]. Anders als [Alternative] bietet es [Differenzierung].* Aus den vorhandenen Bausteinen zusammengesetzt:
+
+> Für Comic-Zeichner:innen und Tätowierer:innen mit eigener Lettering-Handschrift, die keine Font-Software besitzen, ist Fontane ein Browser-Werkzeug, das aus dieser Handschrift eine echte, installierbare Font-Datei macht. Anders als die Platzhirsche läuft es auf jedem Gerät mit Stift, Maus oder Trackpad — und man zeichnet direkt hinein, statt Papier zu scannen.
+
+**Nächster Handgriff.** Der Satz existierte nirgends am Stück. Er ist der Rohstoff für Landingpage, Anschreiben und jedes „Was machst du da eigentlich?".
 
 ## 3 · Zielgruppe — ✅
-> PM-Anfänger:innen und AI-Builders ohne PM-Bewusstsein. Wenn ich als Builder ohne PM-Vokabular ein Produkt baue, will ich sehen, welche PM-Fragen offen sind und welche Methoden ich längst anwende, damit ich bewusst entscheide statt aus Halbwissen.
+
+> Kurzbefund: Archetyp und JTBD sind ausformuliert, und zu beiden Kerngruppen besteht direkter, warmer Zugang.
+
+**Befund.** Die Zielgruppe ist über eine Situation beschrieben, nicht über Demografie — genau so funktioniert es. Benannt sind Comic-Schaffende aus einer Community, Tätowierer:innen aus dem realen Freundeskreis und Bastelnde. Eine Erst-Nutzerin wird laufend beobachtet und hat sogar eine eigene Analytics-Seite.
+
+**Belege.**
+- JTBD-Satz: *„Wenn ich als Comic-Zeichner:in eine eigene Lettering-Handschrift habe, will ich sie ohne Font-Software als echte Font nutzen, damit meine Werke in meiner eigenen Schrift gesetzt sind."*
+
+**Lern-Anker: Jobs-to-be-Done, ICP, Continuous Discovery.** JTBD betrachtet ein Produkt als etwas, das man „einstellt", um eine Aufgabe zu erledigen — Format: „Wenn [Situation], will ich [Motivation], damit [Ergebnis]". Der Vorteil gegenüber Personas: Du beschreibst einen Auslöser, und Auslöser kann man beobachten. ICP ist die eine typische Person, auf die optimiert wird — bewusst eine, nicht fünf. Continuous Discovery ist die Haltung dahinter: Zielgruppenkontakt als Dauergewohnheit, nicht als Projektphase.
+
+**Der ehrliche Haken.** Continuous Discovery findet nicht statt. Eine Person wird beobachtet, und sie zahlt nicht. Das ist die Ursache für die Lücken in Schritt 10 und 13.
 
 ## 4 · Nein-Liste — 🔍
-> - Kein Normzwang: Methoden sind Optionen, nie Pflicht
-> - Keine Zwangs-Reihenfolge, keine Freischalt-Gates
-> - Fachbegriffe sind nie Eintrittshürde — Klartext zuerst
-> - Markdown bleibt Source of Truth, auf jeder Ausbaustufe
 
-## 5 · Unterschied — 🔍
-> witty kombiniert eine feste Methoden-Basis (14 Schritte, Klartext + Fachbegriff, DE/EN), LLM-Facilitation und einen Hindsight-Audit über echte Projektdaten. Notion-Templates sind tote Formulare, ChatGPT hat keine Methoden-Basis, PM-Kurse spiegeln nicht die eigene Arbeit.
+> Kurzbefund: Zwölf begründete Neins existieren, verstreut über drei Dokumente — hier erstmals an einem Ort.
 
-## 6 · Strategie — ✅
-> Wette 1: Template + Skill zuerst. Wette 2: MCP-Server als Mittelstufe. Wette 3: Webtool als Renderer über dieselben MDs. Wette 4: der Hindsight-Spiegel als Differenzierer.
+**Befund.** Nein-Entscheidungen fallen konsequent und begründet, inklusive des seltenen Falls, bereits Gebautes wieder abzuräumen. Was fehlte, war die konsultierbare Liste.
+
+**Produkt & Substanz**
+- Keine KI-generierten Glyphen, die nicht selbst gezeichnet wurden — der Wert ist die eigene Hand.
+- Kein OCR, kein Machine Learning in der Schrifterkennung; die Segmentierung läuft geometrisch.
+- Kein Ingest von außen (kein Font-Upload, kein Bild→Vektor) — vom eigenen Beirat als „Monatsfresser und Identitätswiderspruch" abgelehnt.
+- Das Herkunfts-Nachweissystem stirbt als Mechanismus (beweisbar umgehbar), lebt aber als Botschaft weiter.
+- Marktplatz eingefroren, bis ein Nachfrage-Signal existiert.
+- Große Wetten erst nach bestandenem Machbarkeits-Spike.
+
+**Preis & Geschäftsmodell**
+- Kein Abo — Einmalzahlung ist 2026 ein Kaufargument, kein Nachteil.
+- Kein Alles-inklusive-Preis, der die Zahlungsbereitschaft der Profi-Zielgruppe verschenkt.
+- Kein Light-Tier, das den Hauptpreis kannibalisiert.
+- Keine Mikrotransaktionen — sie bestrafen erwünschtes Verhalten und gehen in Gebühren unter.
+- Datenportabilität wird nie zur Paywall.
+
+**Lern-Anker: Product Principles und MoSCoW-„Won't have".** Product Principles sind Entscheidungsregeln, die einmal getroffen werden, damit sie nicht bei jeder Feature-Frage neu verhandelt werden — ihr Wert liegt darin, dass sie wehtun. MoSCoW sortiert Anforderungen in Must / Should / Could / Won't have this time; die vierte Kategorie überspringen alle, und sie ist die einzige, die Zeit spart.
+
+**Nächster Handgriff.** Diese Liste als eigene Datei ins Repo — und beim nächsten „ich könnte noch schnell…" zuerst dort nachsehen.
+
+## 5 · Unterschied — ✅
+
+> Kurzbefund: Zwei Achsen, beide nachprüfbar — Plattform-Unabhängigkeit und komplette Pipeline.
+
+**Befund.** Die Differenzierung ist falsifizierbar formuliert: Man kann hingehen und prüfen, ob sie stimmt. Das ist das eigentliche Qualitätsmerkmal.
+
+| | Fontane | Profi-Editor | Plugin-Lösung | Scan-Dienst |
+|---|---|---|---|---|
+| Plattform | jeder Browser, jedes Gerät | nur macOS | nur in einer Fremd-Suite | Browser |
+| Eingabe | direkt zeichnen (Stift/Maus) | Vektor-Editor | Vektor-Editor | Blatt scannen |
+| Preis | einmalig, zweistellig | dreistellig | Abo-Zwang darüber | Monatsabo |
+
+**Lern-Anker: Positioning nach April Dunford, Value Proposition Canvas.** Positionierung ist kein Slogan, sondern die Entscheidung, in welchem Wettbewerbsumfeld man bewertet werden will. Hier gibt es eine offene Wahl: „der günstigere Profi-Editor" (dann wird an Funktionstiefe gemessen und verloren) oder „das Werkzeug, das aus deiner Handschrift eine Font macht" (dann wird an Zeichnen, Preis und Ergebnis gemessen und gewonnen).
+
+**Nächster Handgriff.** Der stärkste Satz für die KI-Ära existiert bereits aus einer Beirats-Runde — steht aber in keinem Produkttext: *„KI kann eine Schrift vollenden; anfangen kann sie nur ein Mensch."*
+
+## 6 · Strategie — 🔍
+
+> Kurzbefund: Drei parallele Wetten-Sequenzen, jede für sich begründet — sie widersprechen sich an genau einer Stelle.
+
+**Befund.** Strategie ist die Ebene zwischen Vision und Roadmap: wie gewinnen wir, und worauf verzichten wir dafür. Diese Ebene existiert dreifach — eine Ausdrucks-Roadmap (Animation, variable Schriften), eine Herkunfts-Sequenz aus dem Spike, und ein Launch-Plan. Jede ist sauber gedacht, inklusive Verzicht. Das Problem ist nicht Qualität, sondern Vielzahl.
+
+**Der Widerspruch, ausgeschrieben.** Zwei Sequenzen folgen dem Motto „Spaß und Kunst, kein Business-Ziel", die dritte einem Umsatzziel mit Stichtag. Sie konkurrieren um dieselben Abende, und bis zum Soft Launch sind es sechs Wochen. Bisher gewinnt faktisch die erste — siehe Schritt 8.
+
+**Lern-Anker: Strategy Blocks.** Eine brauchbare Solo-Strategie besteht aus 3–5 Blöcken mit je drei Angaben: **was** (die Wette), **warum** (die Annahme, die wahr sein muss) und **wofür nicht** (was dafür liegen bleibt). Der Test ist immer der dritte Teil — fällt nichts weg, ist es keine Strategie, sondern eine Wunschliste.
+
+**Nächster Handgriff.** Eine halbe Seite, drei Blöcke, in jedem eine Zeile, die wehtut. Muster: *Wette — bis Jahresende verkauft Fontane den fertigen Font. Warum — Authentizität ist in der KI-Ära das Einzige, was nicht generierbar ist. Wofür nicht — Animation und variable Schriften liegen bis Januar still.*
 
 ## 7 · User Flows — ✅
-> Der SPIEGEL führt: Projekt zeigen → witty sagt "das machst du längst — so heißt es" → Aha = Selbsterkenntnis.
+
+> Kurzbefund: Der Wow-Moment ist benannt und der Weg dahin gebaut — aber der Weg wird nicht als Trichter gemessen.
+
+**Befund.** Das Onboarding-Problem wurde selbst beobachtet und behoben, und der Aha-Moment ist ausdrücklich formuliert: zeichnen → den eigenen Namen in der eigenen Handschrift sehen → freischalten.
+
+**Belege.**
+- 30.07. — Erstnutzer:innen landeten vorher direkt im vollen Editor, ohne Einstieg, mit Fachjargon-Panel. Seither: kein vorgeschaltetes Gate, ein definierter Startpunkt, eine geführte Tour.
+- Am selben Tag: Die Tour taucht in der eigenen Analytics-Seite auf — der Einstieg wird also gemessen, nicht nur gebaut.
+- Die Ansicht, in der man seine Schrift tippen sieht, wurde von einer abseitigen Route zur gleichberechtigten vierten Ansicht.
+
+**Lern-Anker: User Story, Akzeptanzkriterien, Definition of Done.** Eine User Story ist eine Anforderung aus Nutzersicht: „**Als** [Rolle] möchte ich [Handlung], **damit** [Nutzen]" — sie beschreibt das Ziel, nicht die Umsetzung. Akzeptanzkriterien machen sie prüfbar, meist als Gegeben/Wenn/Dann. Die Definition of Done ist die Checkliste, die für alle Stories gilt, damit „fertig" immer dasselbe heißt. Für Fontane:
+
+> **Als** Comic-Zeichnerin ohne Font-Software **möchte ich** meine gezeichneten Buchstaben sofort als Text sehen, **damit** ich glaube, dass daraus eine echte Font wird.
+> **Akzeptanz:** kein Konto und kein Gate vor dem ersten Strich · nach höchstens fünf Buchstaben ist ein tippbares Feld erreichbar · der Text erscheint in der eigenen Handschrift · der Weg dorthin ist als Trichter messbar.
+
+**Nächster Handgriff.** Nur das letzte Kriterium fehlt: Erstbesuch → erster Strich → erster getippter Name → Export. Ohne diese Kette tappt man nach dem Launch im Dunkeln, warum niemand kauft.
 
 ## 8 · Priorisierung — 🔍
-> Phase 1 = dieser Viewer + der Copy-Paste-Audit-Prompt. Klein, MD-first, ein Projekt reicht.
 
-## 9 · Go-to-Market — 🔍
-> Zuerst: DL-School-Batch (warm) + build in public. Rest vertagt.
+> Kurzbefund: Vorbildlich phasiert für das freie Produkt; für die bezahlte Version existiert kein Schnitt, keine Schätzung, keine Reihenfolge.
 
-## 10 · Ökonomie — 🕊️
-> Statisch gehostet ≈ 0 €/Monat. Ernsthaft rechnen erst bei Fremdnutzung.
+**Befund.** Die Bau-Priorisierung stellt sogar Risiko vor Aufwand: Große Wetten bekommen erst einen Spike, dann Code. Das ist risikogetriebene Priorisierung, ohne dass sie je so hieß.
 
-## 11 · Nordstern — ⭕
-> Kandidat: Anzahl Projekte mit lebendem PM-STATUS. Zu entscheiden.
+**Die Lücke, in Zahlen.** Das Preisdokument entstand am 23.07. In den acht Tagen danach landeten 74 Commits — Pinsel, Werkzeug-Umschalter, Analytics-Feinschliff. Kein einziger betrifft den Zahlpfad. Im Code fehlen vollständig: Konten, Zahlungsanbindung, Kaufzustand, Export-Gate und das Rechtliche. Grob 11–16 Arbeitstage bis zum ersten annehmbaren Euro — bei Abendarbeit vier bis sechs Wochen, und der Soft Launch ist in sechs.
 
-## 12 · PMF-Stufe — ⭕
-> Stufe 0→1. Nächster Beweis: eine fremde Person füllt ein eigenes Projekt aus.
+**Lern-Anker: RICE, MoSCoW, Kano.** RICE bewertet Kandidaten mit vier Zahlen: **R**each (wie viele Menschen), **I**mpact (wie stark), **C**onfidence (wie sicher), **E**ffort (Personentage). Score = R × I × C ÷ E. Der Sinn ist nicht die exakte Zahl, sondern dass Aufwand im Nenner steht — billige Dinge mit mittlerem Nutzen schlagen teure mit hohem. Das Kano-Modell unterscheidet Basis-, Leistungs- und Begeisterungs-Funktionen; der klassische Fehler ist, an Begeisterung zu arbeiten, während eine Basis-Funktion fehlt.
 
-## 13 · Validierungs-Loop — ✅
-> Dogfooding an eigenen Projekten. Richtungswechsel, wenn sich das Ausfüllen als Pflichtübung anfühlt statt als Erkenntnis.
+| Kandidat | R | I | C | E | Score | Lesart |
+|---|---|---|---|---|---|---|
+| Preis-Intent-Button (misst Klicks, kassiert nichts) | 200 | 2 | 80 % | 0,5 | **640** | höchster Hebel im Feld |
+| Trichter-Messung | 200 | 2 | 90 % | 1 | **360** | macht alles Spätere lesbar |
+| 5 Gespräche zur Zahlungsbereitschaft | 100 | 3 | 90 % | 1 | **270** | ein Tag, entscheidet alles |
+| Zahlpfad komplett | 100 | 3 | 70 % | 13 | **16** | teuer, aber ohne ihn kein Erlös |
+| Animation ausbauen | 50 | 2 | 60 % | 8 | **7,5** | Begeisterung, kein Fundament |
 
-## 14 · Snapshot-Regel — ✅
-> Nach jedem Phase-Ship wird dieses Dokument erneuert.
+Die drei billigsten Dinge stehen ganz oben, und keins davon ist Arbeit an Features.
+
+| Now (2 Wochen) | Next (bis Launch) | Later (nach Go/No-Go) |
+|---|---|---|
+| 5 Kundengespräche | Konten (Magic Link) | Animation |
+| Preis-Intent-Button | Zahlung + Kaufzustand | Variable Schriften |
+| Trichter messen | Export-Gate | Wiederverkaufs-Marktplatz |
+| 3 Kostenzahlen | Recht & Steuer | Geschenk-Edition |
+
+## 9 · Go-to-Market — ✅
+
+> Kurzbefund: Preis, Zahlweg, Zeitplan, Beachhead und Abbruchkriterium sind entschieden — die Liste „was muss vorher stehen" fehlt.
+
+**Befund.** Das ist der gründlichste Schritt des Projekts, und die Entscheidungen sind begründet statt aus dem Bauch: gestaffelte Preise mit kostenloser Werkbank und bezahltem Ergebnis, ein Zahlungsdienstleister als Merchant of Record, Kleinunternehmerregelung, Launch im September, Abbruch bei zu wenigen Käufen bis Jahresende.
+
+**Lern-Anker: Beachhead-Strategie und Value Metric.** Beachhead (Geoffrey Moore) ist der bewusst winzige Erstmarkt, den man vollständig gewinnen kann, bevor man sich verbreitert — die Landungszone, nicht das ganze Land. Der hiesige ist ungewöhnlich gut: zwei Gruppen mit persönlichem Zugang statt kalter Kanäle. Die Value Metric ist die Einheit, an der der Preis hängt — hier „pro Fontfamilie", und das ist richtig gewählt, weil sie mit dem wahrgenommenen Wert wächst statt mit Nutzung oder Zeit.
+
+**Zwei ehrliche Einschränkungen.** Der Plan beantwortet wer, wie, wieviel und wann — aber nicht, was vorher stehen muss (siehe Schritt 8). Und er lebt auf einem ungemergten Branch mit einem einzigen Commit: Ein Plan auf einem Branch ist so verbindlich wie ein Vorsatz.
+
+## 10 · Ökonomie — ⭕
+
+> Kurzbefund: Erlösseite durchdacht, Kostenseite nie gerechnet — die Zielzahl ist ein Nachfrage-Beweis, kein Einkommen.
+
+**Befund.** Es gibt keine Zahl für laufende Kosten, keine für Kosten pro Nutzer:in, keine Netto-Marge nach Gebühren und keinen eigenen Break-even. Der im Preisdokument genannte Break-even ist die Rechnung der Kundin, nicht die des Projekts. Auch die Zielstückzahl ist gesetzt, nicht hergeleitet.
+
+**Lern-Anker: Business Model Canvas, Unit Economics, Break-even.** Das Business Model Canvas ist ein Ein-Seiten-Raster mit neun Feldern; relevant sind hier vor allem zwei, weil die anderen aus Schritt 3, 5 und 9 schon gefüllt sind: Kostenstruktur und Einnahmequellen. Unit Economics zoomt auf die einzelne Einheit — was kostet eine aktive Nutzerin, was bringt sie. Der Break-even ist der Punkt, an dem beide Seiten sich treffen.
+
+| BMC-Feld | kommt aus | Stand |
+|---|---|---|
+| Kundensegmente | Schritt 3 | ✅ |
+| Wertversprechen | Schritt 5 | ✅ |
+| Kanäle | Schritt 9 | ✅ |
+| Einnahmequellen | Schritt 9 | ✅ |
+| Kostenstruktur | Schritt 10 | ⭕ |
+| Schlüsselressourcen | — | **im Schema nicht vorgesehen** |
+| Schlüsselpartner | — | **im Schema nicht vorgesehen** |
+
+**Mini-P&L.** Alle Zahlen sind Annahmen und durch echte Rechnungen zu ersetzen — der Sinn ist die Struktur, nicht die Präzision.
+
+| Position | Betrag | Anmerkung |
+|---|---|---|
+| Bruttopreis | 100 % | was die Kundin zahlt |
+| − Umsatzsteuer | ~16 % | führt der Zahlungsdienstleister ab |
+| − Gebühren | ~9 % | Prozentsatz plus Fixbetrag pro Transaktion |
+| **= Netto** | **~75 %** | Größenordnung, keine Zusage |
+
+Daraus folgt die Kernaussage: Die gesetzte Zielstückzahl deckt den Betrieb und ergibt, gemessen an der investierten Bauzeit, einen einstelligen Stundenlohn. Das ist keine schlechte Nachricht, sondern eine präzise: **Das Ziel ist ein Nachfrage-Beweis, kein Einkommenstest.** Als Nachfrage-Beweis ist es hervorragend gewählt — man muss nur wissen, welches von beidem man im Januar erwartet.
+
+```witty:pnl
+kosten_monat: 3
+brutto: 9.99
+ust_prozent: 19
+gebuehr_prozent: 5
+gebuehr_fix: 0.45
+ziel_stueck: 100
+```
+
+**Nächster Handgriff.** Drei Zahlen mit Quelle: tatsächliche Kosten pro Monat aus echten Rechnungen, tatsächlicher Netto-Erlös pro Verkauf, und das Deckungsziel als Entscheidung — Betrieb, Werkzeuge oder Stundensatz.
+
+## 11 · Nordstern — 🔍
+
+> Kurzbefund: Hilfszahlen gebaut und methodisch sauber, die eine Zahl ist Kandidat statt Entscheidung.
+
+**Befund.** Die Messtechnik ist ernsthafter als bei den meisten Indie-Projekten — und die Kernzahl ist bereits erhebbar, ohne eine Zeile neuen Code.
+
+**Belege.**
+- 24.07. — fünf irreführende Zahlen korrigiert: Median statt Durchschnitt, Messung nur bei sichtbarem Tab, ein Label, das die eigene Datenlücke offenlegt.
+- 31.07. — Such- und KI-Antwortmaschinen zu einer Quelle gruppiert; Erkenntnis, dass Chat-Verweise dieselbe Rolle spielen wie Suchmaschinen.
+- Die Ereignistabelle kennt bereits einen Export-Typ samt Format.
+
+**Lern-Anker: North Star Metric, Input-Metriken, HEART, AARRR.** Die North Star Metric ist die eine Zahl, die den gelieferten Wert misst — nicht Umsatz, nicht Besucher. Sie muss den Kundennutzen abbilden, beeinflussbar sein und vorlaufen. Darunter hängen 2–4 Input-Metriken als Treiber. HEART ist ein Auswahlraster dafür, AARRR die Trichter-Variante — der Onboarding-Fix aus Schritt 7 war eine reine Activation-Maßnahme, ohne dass er so hieß.
+
+**Vorschlag.** Nordstern: *Zahl der Menschen, die einen fertigen Font in der Hand halten*, pro Monat. Nicht Besucher (misst Marketing), nicht gezeichnete Glyphen (misst Mühe), nicht Umsatz (nachlaufend). Treiber: Erstbesuch → erster Strich · erster Strich → erster getippter Name · Name → Export.
+
+## 12 · PMF-Stufe — ✅
+
+> Kurzbefund: Stufe 1 mit definiertem nächsten Beweis — aber Begeisterung ist kein Beleg für Zahlungsbereitschaft.
+
+**Befund.** Aktuell Stufe 1: Eine Person liebt es und nutzt es dauerhaft. Der nächste Beweis ist definiert und mit vorhandener Messtechnik prüfbar: mehrere Fonts von Dritten veröffentlicht und heruntergeladen.
+
+**Lern-Anker: PMF als Gradient, nicht als Meilenstein.** Product-Market-Fit ist kein Datum, sondern eine Leiter: **1** eine Person liebt es · **2** eine zahlt substanziell oder kehrt wöchentlich zurück · **3** mehrere lieben und zahlen · **4** es zieht von allein · **5** konstantes Wachstum. Der Wert des Modells liegt darin, dass jede Stufe einen beobachtbaren nächsten Beweis hat statt eines Gefühls.
+
+**Die unbequeme Präzisierung.** Stufe 1 in der kostenlosen Variante ist kein Beweis für Stufe 2. Zahlungsbereitschaft ist bisher bei null Personen erhoben — und der Sprung von 1 auf 2 ist der teuerste der ganzen Leiter.
+
+## 13 · Validierungs-Loop — 🔍
+
+> Kurzbefund: Echter Lern-Loop inklusive Pivot-Trigger — offen bleibt, was bei Nicht-Erreichen passiert.
+
+**Befund.** Der Loop ist ungewöhnlich selbstkritisch: tägliches Dogfooding, Spikes vor großen Wetten, ein Beirat mit anonymisierter Peer-Review, und die Bereitschaft, ein fertiges System abzuräumen, als es der Prüfung nicht standhielt.
+
+**Lern-Anker: Build–Measure–Learn, Pivot vs. Iterate, Mom Test.** Die Leitplanke lautet: Vision konstant, Taktik variabel. Ein Iterate ändert das Wie (Preis, Onboarding, Reihenfolge), ein Pivot das Was oder Für-wen. Der Mom Test ist die Gesprächstechnik dazu: nie „Würdest du das kaufen?" fragen (darauf lügen selbst Mütter freundlich), sondern nach der Vergangenheit — wie hast du das zuletzt gelöst, was hat es gekostet, was hat genervt. Vergangenes Verhalten ist Evidenz, zukünftige Absicht ist Höflichkeit.
+
+**Was fehlt.** Die andere Hälfte des Triggers: Was passiert bei einem Drittel der Zielzahl? Ohne Antwort ist die Zahl ein Stimmungsbarometer. Vorschlag: **Iterate**, solange Menschen Fonts fertigstellen, aber nicht kaufen — dann stimmt Preis oder Ansprache. **Pivot**, wenn Menschen aufhören, Fonts fertigzustellen — dann stimmt das Produkt nicht.
+
+## 14 · Snapshot-Regel — ⭕
+
+> Kurzbefund: Nicht entschieden — hier zuerst, was die Frage überhaupt bedeutet.
+
+**Befund.** Ein PM-STATUS veraltet. Die Snapshot-Regel legt fest, bei welchem **Ereignis** er neu geschrieben wird — bewusst ereignisbasiert statt kalenderbasiert, weil Kalendertermine bei Solo-Projekten verrutschen und Ereignisse unübersehbar sind. „Alle drei Monate" ist eine schlechte Regel. „Sobald der erste Mensch bezahlt hat" ist eine gute: Das kriegt man mit, und genau dann haben sich mehrere Antworten geändert.
+
+**Lern-Anker: Review-Kadenz und versionierte Roadmap.** Aus Scrum entlehnt: Das Sprint-Review ist der feste Moment, an dem gezeigt und neu bewertet wird. Für Solo-Arbeit ersetzt man den Rhythmus durch Auslöser. Dazu gehört ein Changelog — so wird das Dokument zur Zeitreihe statt zur Momentaufnahme, und man sieht Fortschritt *oder Rückschritt*.
+
+**Nächster Handgriff.** Drei Auslöser: wenn der Preis-Branch gemergt wird · am Tag des ersten bezahlten Exports · am Stichtag des Go/No-Go.
+
+## Fazit — die nächsten fünf Fragen, in dieser Reihenfolge
+
+| # | Die Frage | Aufwand | Was sie freischaltet |
+|---|---|---|---|
+| 1 | Was kostet der Betrieb wirklich, und was bleibt netto pro Verkauf? | 1–2 Std. | Schritt 10 schließt sich; die Zielzahl bekommt eine Bedeutung |
+| 2 | Würde jemand außer mir zahlen — und wieviel? | 1 Tag | schließt die Lücke, die der eigene Beirat als Hauptbefund nennt |
+| 3 | Wo brechen Menschen ab? Trichter + Preis-Intent-Button | 1,5 Tage | macht jede spätere Conversion-Frage beantwortbar |
+| 4 | Was gewinnt im Konflikt — Launch oder Ausdruck? | 1 Std. | ohne Entscheidung entscheidet es sich von allein zugunsten der Features |
+| 5 | Was war der eigene Spark? | 20 Min. | die Geschichte für Landingpage, Anschreiben, Portfolio |
+
+**Faustregel:** Die Fragen 1–3 kosten zusammen drei Tage und entscheiden, ob die 13 Tage Zahlpfad überhaupt sinnvoll investiert sind.
 
 ## Spiegel-Lesart
-> witty wendet sein eigenes Schema an: die Kopf-Entscheidungen (Spark, Vision, Zielgruppe, Wow-Moment) sind explizit gefallen, bevor Code entstand; Nein-Liste und Strategie sind aus Session-Entscheidungen materialisiert (implizit → benannt). Offen sind Nordstern und PMF — beides braucht erst echte Nutzung. Nächster wertvollster Schritt: den Prompt an eine fremde Person geben.
+
+**Was das Projekt bereits kann — mit Lehrbuch-Namen.** Risikogetriebene Priorisierung (Spike vor großer Wette), Product Principles inklusive des seltenen Abräumens eines fertigen Systems, Metrik-Hygiene auf einem Niveau, das Teams mit eigener Analytics-Abteilung nicht besser hinbekommen, ein beobachtungsgetriebener Activation-Eingriff, und ein Discovery-Apparat mit adversarialer Prüfung. Auch die Preisarbeit ist stärker als ihr Ruf: Value Metric korrekt gewählt, Paywall am emotionalen Peak statt am Funktionsumfang, Ankereffekt über das obere Tier.
+
+**Wo die echten Lücken sind.** Nicht dort, wo man sie vermutet — der Preis ist gut hergeleitet. Es sind drei Dinge um den Preis herum: die nie gerechnete Kostenseite, null erhobene Nachfrage-Signale, und ein Zahlpfad, der im Code schlicht nicht existiert, während der Launch in sechs Wochen steht. Das Preisdokument ist acht Tage alt, und seither sind 74 Commits gelandet, von denen keiner die Monetarisierung betrifft.
+
+**Die Antwort auf den Anlass.** Verkaufe das Ergebnis, nicht das Werkzeug — das passiert bereits richtig. Die Positionierung, die in der KI-Ära trägt, hat zwei Achsen, die beide vorhanden sind: Authentizität und Plattform-Unabhängigkeit. Der wirtschaftlich interessanteste Hebel steht bisher nirgends im Plan: Ein Verkauf des oberen Tiers entspricht etwa fünf Einzel-Fonts — womit die Profi-Brücke das wertvollste ungetestete Stück Code im Projekt ist.
+
+**Der nächste wertvollste Schritt kostet null Zeilen Produktcode.** Fünf Gespräche im Mom-Test-Stil, ein Preis-Button, der noch nichts abrechnet und nur die Klickrate misst, und drei Kostenzahlen. Zusammen drei Tage — und ungleich billiger als jede Woche, die sonst in Konten und Zahlungsanbindung fließt, bevor ein einziger Mensch ja gesagt hat.
+
+## Persönliche Empfehlungen
+
+1. **Das Risiko ist nicht Faulheit, sondern Produktivität.** Solange gebaut wird, fühlt sich Fortschritt echt an — auch wenn die entscheidende Frage unbeantwortet daneben liegt. Gegenregel: ein Abend pro Woche gehört der unbequemsten offenen Frage.
+2. **Trenne die zwei Produkte ausdrücklich.** Es gibt das Kunst-Produkt und das Verkaufs-Produkt. Beide sind legitim. Solange sie im selben Backlog liegen, gewinnt immer das Kunst-Produkt, weil es mehr Freude macht.
+3. **Nutze die seltenste Ressource: den warmen Zugang.** Die meisten Indie-Produkte scheitern daran, ihre ersten zehn Nutzer:innen zu finden. Zwei Communities per Du sind mehr wert als jedes Feature — und es ist der einzige Vorteil, der verfällt, wenn man ihn nicht nutzt.
+4. **Das PM-Vokabular ist längst da, nur unbenannt.** Dieses Audit hat kein Verfahren gefunden, das nicht bereits praktiziert wird. Der Nutzen der Begriffe ist nicht neues Wissen, sondern Abrufbarkeit — und die Fähigkeit, im Gespräch zu benennen, was man getan hat.
+
+## Glossar — die Begriffe aus diesem Audit
+
+| Begriff | In einem Satz | Wo |
+|---|---|---|
+| **Problem Statement** | Der Ein-Satz-Kern als erlebtes Problem, nicht als Lösung. | 1 |
+| **Vision Statement** | Für [wen], der [was braucht], ist [Produkt] ein [Kategorie] — anders als [Alternative]. | 2 |
+| **Jobs-to-be-Done** | „Wenn [Situation], will ich [Motivation], damit [Ergebnis]" — der Auslöser, nicht der Menschentyp. | 3 |
+| **ICP / Archetyp** | Die eine typische Person, auf die optimiert wird. | 3 |
+| **Continuous Discovery** | Zielgruppenkontakt als Dauergewohnheit statt als Projektphase. | 3 |
+| **Product Principles** | Vorab getroffene Entscheidungsregeln, damit Scope-Fragen nicht neu verhandelt werden. | 4 |
+| **MoSCoW** | Must / Should / Could / Won't have — die vierte Kategorie spart die Zeit. | 4, 8 |
+| **Positioning** | Die Wahl, in welchem Wettbewerbsumfeld man bewertet werden will. | 5 |
+| **Strategy Blocks** | 3–5 Wetten mit was / warum / wofür-nicht. Ohne den dritten Teil keine Strategie. | 6 |
+| **User Story** | „Als [Rolle] möchte ich [Handlung], damit [Nutzen]." | 7 |
+| **Akzeptanzkriterien** | Prüfbare Bedingungen pro Story, meist Gegeben/Wenn/Dann. | 7 |
+| **Definition of Done** | Die Checkliste, die für alle Stories gilt. | 7 |
+| **RICE** | Reach × Impact × Confidence ÷ Effort — Aufwand steht im Nenner. | 8 |
+| **Kano-Modell** | Basis- / Leistungs- / Begeisterungs-Funktionen; Basis geht vor Begeisterung. | 8 |
+| **Now / Next / Later** | Roadmap in drei Körben statt in Quartalen — nur „Now" ist verbindlich. | 8 |
+| **Beachhead** | Der bewusst winzige Erstmarkt, den man vollständig gewinnen kann. | 9 |
+| **Value Metric** | Die Einheit, an der der Preis hängt. | 9 |
+| **Business Model Canvas** | Neun-Felder-Raster; hier vor allem Kostenstruktur und Einnahmequellen. | 10 |
+| **Unit Economics** | Was kostet eine Nutzerin, was bringt sie. | 10 |
+| **North Star Metric** | Die eine vorlaufende Zahl, die gelieferten Wert misst. | 11 |
+| **HEART / AARRR** | Auswahlraster für Hilfsmetriken bzw. der Trichter bis Referral. | 11 |
+| **PMF-Gradient** | Product-Market-Fit als 5-stufige Leiter mit beobachtbarem nächstem Beweis. | 12 |
+| **Build–Measure–Learn** | Der Lernzyklus; die Kunst ist, ihn klein zu halten. | 13 |
+| **Pivot vs. Iterate** | Iterate ändert das Wie, Pivot das Was oder Für-wen. | 13 |
+| **Mom Test** | Nie nach Absicht fragen, immer nach vergangenem Verhalten. | 13 |
+| **Review-Kadenz** | Der Auslöser, an dem neu bewertet wird — ereignis- statt kalenderbasiert. | 14 |
+| **Double Diamond** | Discover → Define → Develop → Deliver; zweimal öffnen, zweimal entscheiden. | Überblick |
 </script>
 
 <script>
@@ -475,6 +778,9 @@ const I18N = {
 };
 
 /* ============ Audit-Prompts ============ */
+// Backtick-Zäune für Code-Blöcke im Prompt: in String.raw bliebe ein escapter
+// Backtick als "\`" stehen, deshalb als Substitution einsetzen.
+const FENCE = String.fromCharCode(96, 96, 96);
 const PROMPTS = {
 de: String.raw`Du bist ein PM-Audit-Assistent ("witty"-Audit). Das zu auditierende Projekt steht am ENDE dieses Prompts unter PROJEKT. Analysiere dazu alles Verfügbare — Code-Repository, Git-Historie, README, Dokumente, angehängte Dateien, bisherige Gespräche. Wenn dir Kontext fehlt, stelle ZUERST gezielte Fragen, statt zu raten.
 
@@ -500,11 +806,18 @@ Die 14 Schritte (Klartext-Frage · [Fachbegriff als Lern-Anker]):
 13. Validierungs-Loop — Wie wird laufend geprüft, und was würde einen RICHTUNGSwechsel auslösen (nicht nur Detail-Anpassung)? [Build-Measure-Learn, Pivot vs. Iterate]
 14. Snapshot-Regel — Bei welchem EREIGNIS wird dieses Dokument erneuert (kein Kalenderdatum)? [Review-Kadenz]
 
-AUSGABEFORMAT — exakt diese Markdown-Struktur (der witty-Viewer parst sie):
+ARBEITSWEISE — bevor du schreibst:
+- Belege sammeln: Repository, Commit-Historie inkl. Datum, README, Dokumente, Spikes, offene UND nicht gemergte Branches, frühere Gespräche. Nicht gemergte Branches sind oft der Ort, an dem die wichtigsten Entscheidungen liegen.
+- Verstreute Entscheidungen ZUSAMMENFÜHREN statt auf Quellen zu verweisen. Wenn die Nein-Liste über drei Dokumente verteilt ist, schreibe die Liste — der Verweis "steht verstreut in X, Y, Z" ist keine Antwort.
+- Selbst rechnen, wo Zahlen möglich sind: Break-even, Marge nach Gebühren, Aufwandsschätzung in Tagen, Anteile. Jede Annahme als Annahme kennzeichnen.
+
+AUSGABEFORMAT — diese Markdown-Struktur (der witty-Viewer parst sie):
 
 # PM-STATUS — [Projektname]
 
-> Stand: [Monat Jahr] · v0.1 · erstellt mit witty-Audit-Prompt
+> Stand: [Monat Jahr] · Snapshot v[N] · witty-Audit v0.2
+
+[Ein kurzer Absatz: wie dieses Dokument zu lesen ist.]
 
 ## Abdeckung auf einen Blick
 
@@ -514,15 +827,61 @@ AUSGABEFORMAT — exakt diese Markdown-Struktur (der witty-Viewer parst sie):
 | 2 | Vision & Ambition | [Emoji] | [ein Satz] |
 (… alle 14 Zeilen; Schrittnamen exakt: Spark, Vision & Ambition, Zielgruppe, Nein-Liste, Unterschied, Strategie, User Flows, Priorisierung, Go-to-Market, Ökonomie, Nordstern, PMF-Stufe, Validierungs-Loop, Snapshot-Regel)
 
-Danach pro Schritt eine Sektion:
+**Bilanz:** [n]× ✅ · [n]× 🔍 · [n]× ⭕ · [n]× 🕊️
+
+### Wo die Lücken liegen — nach Double-Diamond-Phase
+[2-3 Sätze, was der Double Diamond ist: Discover (Problemraum öffnen) → Define (eingrenzen) → Develop (Lösungsraum öffnen) → Deliver (ausliefern). Dann eine Tabelle Phase | Modus | Schritte | Bilanz dieses Projekts (Discover 1-3, Define 4-6, Develop 7, Deliver 8-14), und ein Satz, welches Muster daraus spricht.]
+
+Danach pro Schritt eine Sektion in genau dieser Gliederung:
+
 ## [N] · [Schrittname] — [Emoji]
-> [Befund. Bei 🔍: Beleg nennen (Commit/Datei/Zitat). Bei ⭕: die offene Klartext-Frage + ggf. ein Vorschlag. Bei 🕊️: wann die Frage wieder dran ist.]
 
-Zum Schluss:
+> Kurzbefund: [ein Satz]
+
+**Befund.** [1-3 Absätze Klartext. Bei ⭕ die offene Frage ausschreiben, bei 🕊️ wann sie wieder dran ist.]
+
+**Belege.** [Aufzählung, jeder Beleg in Klartext: was passiert ist, wann, und warum es zählt — Beispiel: "30.07. — Erstnutzer:innen landeten vorher im leeren Editor; seither kein Gate, ein Startpunkt und eine geführte Tour (Commit 1e0d4a7)." NIEMALS ein nackter Hash oder Dateipfad ohne Klartext daneben.]
+
+**Lern-Anker: [Fachbegriff(e)].** [2-5 Sätze: was der Begriff bedeutet, in Alltagssprache erklärt, und wie er auf dieses Projekt zutrifft. Wo möglich ein ausgefülltes Beispiel aus den echten Projektdaten — ein Vision-Statement, eine User Story mit Akzeptanzkriterien, ein RICE-Score.]
+
+**Nächster Handgriff.** [1-3 Sätze, konkret und heute machbar.]
+
+Tabellen nutzen, wo es etwas zu vergleichen gibt. Insbesondere:
+- Schritt 5: Vergleichstabelle gegen die genannten Alternativen (Achsen als Zeilen).
+- Schritt 8: RICE-Durchlauf über die offenen Kandidaten (Reach · Impact · Confidence · Effort · Score) plus eine Now/Next/Later-Tabelle.
+- Schritt 9/10: BMC-Zuordnung — welches der neun Business-Model-Canvas-Felder kommt aus welchem Schritt, und welche Felder bleiben leer.
+- Schritt 10: Mini-P&L in drei Tabellen (Erlös pro verkaufter Einheit nach Steuern/Gebühren · laufende Kosten pro Monat mit Leerspalte für echte Werte · Break-even in 2-3 Szenarien) und ein Satz, was die Zielzahl aus Schritt 2 wirklich bedeutet. Zusätzlich ein Datenblock, damit spätere Rechner damit arbeiten können:
+${FENCE}witty:pnl
+kosten_monat: [Zahl]
+brutto: [Zahl]
+ust_prozent: [Zahl]
+gebuehr_prozent: [Zahl]
+gebuehr_fix: [Zahl]
+ziel_stueck: [Zahl]
+${FENCE}
+
+Zum Schluss drei Sektionen:
+
+## Fazit — die nächsten fünf Fragen, in dieser Reihenfolge
+[Tabelle: # | Die Frage | Aufwand | Was sie freischaltet. Sortiert nach Hebel pro Aufwand, billig und entscheidend zuerst. Darunter ein Satz Faustregel, der Aufwand gegen Nutzen stellt.]
+
 ## Spiegel-Lesart
-> [3-5 Sätze: welche Methoden werden implizit bereits praktiziert (mit Lehrbuch-Namen — das ist der Spiegel), wo liegen die echten Lücken, und was ist der nächste wertvollste Schritt.]
+[Vier Absätze, jeder mit einem fetten Vorspann-Satz: (1) Was das Projekt bereits kann — mit den Lehrbuch-Namen, das ist der Spiegel. (2) Wo die echten Lücken sind, und warum es nicht die sind, die man vermutet. (3) Die direkte Antwort auf den unter PROJEKT genannten Anlass. (4) Der nächste wertvollste Schritt, mit Aufwand.]
 
-Regeln: Methoden sind Optionen, nie Pflicht — nichts erzwingen. Klartext vor Fachbegriff. Ehrlich statt gefällig: ein sauberes ⭕ ist wertvoller als ein geschöntes ✅. Falls unter PROJEKT ein Anlass für das Audit genannt ist, beantworte ihn in der Spiegel-Lesart direkt.`,
+## Persönliche Empfehlungen
+[3-5 nummerierte Empfehlungen, hergeleitet aus dem beobachteten Arbeitsmuster, nicht aus dem Lehrbuch. Konkret und ansprechbar, ohne Schmeichelei.]
+
+## Glossar — die Begriffe aus diesem Audit
+[Tabelle: Begriff | In einem Satz | Wo im Dokument. Alle Fachbegriffe, die im Dokument vorkommen.]
+
+REGELN:
+- Klartext vor Fachbegriff. Jeder Fachbegriff wird bei seiner ersten Nennung erklärt — das Dokument soll lesbar sein für jemanden, der noch nie PM gemacht hat.
+- Absätze statt Textwände. Fette Vorspann-Wörter, Aufzählungen, Tabellen. Kein Abschnitt länger als fünf Zeilen ohne Gliederung.
+- Methoden sind Optionen, nie Pflicht — nichts erzwingen.
+- Ehrlich statt gefällig: ein sauberes ⭕ ist wertvoller als ein geschöntes ✅. Im Zweifel ⭕ statt eines großzügigen 🔍.
+- Widersprüche benennen statt glätten: wenn zwei Pläne im Projekt gegeneinander laufen, ist genau das der Befund.
+- Falls unter PROJEKT ein Anlass genannt ist, beantworte ihn direkt in der Spiegel-Lesart.
+- Antworte in der Sprache dieses Prompts.`,
 
 en: String.raw`You are a PM audit assistant (the "witty" audit). The project to audit is stated at the END of this prompt under PROJECT. Analyze everything available about it — code repository, git history, README, documents, attached files, prior conversations. If you lack context, ask targeted questions FIRST instead of guessing.
 
@@ -548,11 +907,18 @@ The 14 steps (plain question · [textbook term as learning anchor]):
 13. Validation Loop — How is it continuously checked, and what would trigger a change of DIRECTION (not just detail)? [Build-Measure-Learn, Pivot vs. Iterate]
 14. Snapshot Rule — On which EVENT does this document get renewed (not a calendar date)? [Review cadence]
 
-OUTPUT FORMAT — exactly this markdown structure (the witty viewer parses it):
+HOW TO WORK — before you write:
+- Gather evidence: repository, commit history including dates, README, documents, spikes, open AND unmerged branches, prior conversations. Unmerged branches are often where the most important decisions live.
+- CONSOLIDATE scattered decisions instead of pointing at sources. If the no-list is spread across three documents, write the list — "it is scattered across X, Y, Z" is not an answer.
+- Do the math yourself wherever numbers are possible: break-even, margin after fees, effort estimates in days, ratios. Mark every assumption as an assumption.
+
+OUTPUT FORMAT — this markdown structure (the witty viewer parses it):
 
 # PM-STATUS — [project name]
 
-> As of: [month year] · v0.1 · created with the witty audit prompt
+> As of: [month year] · Snapshot v[N] · witty audit v0.2
+
+[One short paragraph: how to read this document.]
 
 ## Coverage at a glance
 
@@ -562,15 +928,61 @@ OUTPUT FORMAT — exactly this markdown structure (the witty viewer parses it):
 | 2 | Vision & Ambition | [emoji] | [one sentence] |
 (… all 14 rows; step names exactly: Spark, Vision & Ambition, Audience, No-list, Difference, Strategy, User Flows, Prioritization, Go-to-Market, Economics, North Star, PMF Stage, Validation Loop, Snapshot Rule)
 
-Then one section per step:
+**Tally:** [n]× ✅ · [n]× 🔍 · [n]× ⭕ · [n]× 🕊️
+
+### Where the gaps sit — by Double Diamond phase
+[2-3 sentences on what the Double Diamond is: Discover (open the problem space) → Define (narrow it) → Develop (open the solution space) → Deliver (ship and sustain). Then a table Phase | Mode | Steps | This project's tally (Discover 1-3, Define 4-6, Develop 7, Deliver 8-14), and one sentence on the pattern it reveals.]
+
+Then one section per step, in exactly this structure:
+
 ## [N] · [Step name] — [emoji]
-> [Finding. For 🔍: name the evidence (commit/file/quote). For ⭕: the open plain question + optionally one suggestion. For 🕊️: when the question becomes due.]
 
-Finally:
+> Short verdict: [one sentence]
+
+**Finding.** [1-3 plain-language paragraphs. For ⭕ spell out the open question, for 🕊️ when it becomes due.]
+
+**Evidence.** [A list, each item in plain language: what happened, when, and why it counts — example: "30 Jul — first-time users used to land in an empty editor; since then there is no gate, a starting point and a guided tour (commit 1e0d4a7)." NEVER a bare hash or file path without plain language next to it.]
+
+**Learning anchor: [textbook term(s)].** [2-5 sentences: what the term means in everyday language, and how it applies to this project. Where possible include a filled-in example built from the real project data — a vision statement, a user story with acceptance criteria, a RICE score.]
+
+**Next move.** [1-3 sentences, concrete and doable today.]
+
+Use tables wherever something is being compared. In particular:
+- Step 5: comparison table against the named alternatives (axes as rows).
+- Step 8: a RICE pass over the open candidates (Reach · Impact · Confidence · Effort · Score) plus a Now/Next/Later table.
+- Step 9/10: Business Model Canvas mapping — which of the nine BMC fields comes from which step, and which fields stay empty.
+- Step 10: a mini P&L in three tables (revenue per unit sold after tax and fees · monthly running cost with an empty column for real figures · break-even in 2-3 scenarios) and one sentence on what the target number from step 2 actually means. Plus a data block so later calculators can use it:
+${FENCE}witty:pnl
+cost_month: [number]
+gross: [number]
+vat_percent: [number]
+fee_percent: [number]
+fee_fixed: [number]
+target_units: [number]
+${FENCE}
+
+Finally three sections:
+
+## Verdict — the next five questions, in this order
+[Table: # | The question | Effort | What it unlocks. Sorted by leverage per effort, cheap and decisive first. Below it one rule-of-thumb sentence weighing effort against payoff.]
+
 ## Mirror Reading
-> [3-5 sentences: which methods are already practiced implicitly (with their textbook names — that is the mirror), where the real gaps are, and what the next most valuable step is.]
+[Four paragraphs, each opening with a bold lead sentence: (1) What the project already does well — with the textbook names, that is the mirror. (2) Where the real gaps are, and why they are not the ones you would guess. (3) A direct answer to the reason stated under PROJECT. (4) The next most valuable step, with its effort.]
 
-Rules: methods are options, never mandatory — force nothing. Plain language before jargon. Honest beats flattering: a clean ⭕ is worth more than a polished ✅. If a reason for this audit is stated under PROJECT, address it directly in the Mirror Reading.`
+## Personal recommendations
+[3-5 numbered recommendations derived from the observed working pattern, not from the textbook. Concrete and addressable, without flattery.]
+
+## Glossary — the terms used in this audit
+[Table: Term | In one sentence | Where in the document. Every textbook term that appears in the document.]
+
+RULES:
+- Plain language before jargon. Every term is explained at first use — the document must be readable by someone who has never done PM.
+- Paragraphs, not walls of text. Bold lead-ins, lists, tables. No passage longer than five lines without structure.
+- Methods are options, never mandatory — force nothing.
+- Honest beats flattering: a clean ⭕ is worth more than a polished ✅. When in doubt, ⭕ rather than a generous 🔍.
+- Name contradictions instead of smoothing them over: if two plans inside the project pull against each other, that is precisely the finding.
+- If a reason for this audit is stated under PROJECT, address it directly in the Mirror Reading.
+- Answer in the language of this prompt.`
 };
 
 /* ============ Projekt-Injektion in den Prompt ============ */
@@ -636,15 +1048,24 @@ function findStatus(s) {
 
 function parseStatusMd(md) {
   const lines = md.split(/\r?\n/);
-  const doc = { title: "PM-STATUS", meta: "", rows: [], sections: [] };
+  const doc = { title: "PM-STATUS", meta: "", coverExtra: "", rows: [], sections: [] };
 
   const h1 = lines.find(l => l.startsWith("# "));
   if (h1) doc.title = h1.replace(/^#\s*/, "").trim();
   const meta = lines.find(l => /^>\s*(Stand|As of)/i.test(l));
   if (meta) doc.meta = meta.replace(/^>\s*/, "").trim();
 
-  // dashboard table rows: | n | name | status | note |
-  for (const l of lines) {
+  // dashboard table rows: | n | name | status | note | — nur innerhalb der
+  // Abdeckungs-Sektion suchen. v0.2-Dokumente enthalten viele weitere Tabellen
+  // (BMC, RICE, P&L, Glossar); ohne diese Eingrenzung landen deren Zeilen im Dashboard.
+  let scan = lines;
+  const covAt = lines.findIndex(l => /^##\s+(Abdeckung|Coverage)/i.test(l.trim()));
+  if (covAt >= 0) {
+    const rest = lines.slice(covAt + 1);
+    const nextH = rest.findIndex(l => /^##\s+/.test(l.trim()));
+    scan = nextH < 0 ? rest : rest.slice(0, nextH);
+  }
+  for (const l of scan) {
     const m = l.match(/^\|\s*(\d{1,2})\s*\|([^|]+)\|([^|]+)\|([^|]*)\|?\s*$/);
     if (m) {
       const st = findStatus(m[3]);
@@ -657,8 +1078,21 @@ function parseStatusMd(md) {
   for (const p of parts) {
     const nl = p.indexOf("\n");
     const head = (nl < 0 ? p : p.slice(0, nl)).trim();
-    if (/^(Abdeckung|Coverage)/i.test(head)) continue;
     const body = nl < 0 ? "" : p.slice(nl + 1).trim();
+    if (/^(Abdeckung|Coverage)/i.test(head)) {
+      // Die Dashboard-Tabelle wird oben gerendert; alles andere aus dieser Sektion
+      // (Bilanz-Zeile, Double-Diamond-Raster) darf nicht verlorengehen. Deshalb nur
+      // den ERSTEN zusammenhängenden Tabellenblock entfernen, nicht alle.
+      const bl = body.split(/\r?\n/);
+      const from = bl.findIndex(l => /^\s*\|/.test(l));
+      if (from >= 0) {
+        let to = from;
+        while (to < bl.length && /^\s*\|/.test(bl[to])) to++;
+        bl.splice(from, to - from);
+      }
+      doc.coverExtra = bl.join("\n").trim();
+      continue;
+    }
     const st = findStatus(head);
     const nm = head.match(/^(\d{1,2})\s*[·.]\s*(.+?)(\s*[—-]\s*[⭕🔍✅🕊].*)?$/u);
     doc.sections.push({
@@ -685,21 +1119,54 @@ function inlineMd(s) {
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 }
+function splitRow(r) { return r.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map(c => c.trim()); }
+function isSepRow(r) { return /^\s*\|?[\s:|-]+\|?\s*$/.test(r) && r.includes("-"); }
+function renderTable(rows) {
+  let head = null, body = rows;
+  if (rows.length > 1 && isSepRow(rows[1])) { head = splitRow(rows[0]); body = rows.slice(2); }
+  const th = head
+    ? "<thead><tr>" + head.map(c => "<th>" + inlineMd(esc(c)) + "</th>").join("") + "</tr></thead>" : "";
+  const tb = "<tbody>" + body.map(r =>
+    "<tr>" + splitRow(r).map(c => "<td>" + inlineMd(esc(c)) + "</td>").join("") + "</tr>").join("") + "</tbody>";
+  return '<div class="tablewrap"><table class="md">' + th + tb + "</table></div>";
+}
+function renderFence(info, code) {
+  // ```witty:pnl etc. — Datenblöcke der Breakouts. Bis die gebaut sind: sichtbar,
+  // aber als Block markiert, damit das Format schon jetzt durchgereicht wird.
+  if (/^witty:/i.test(info)) {
+    return '<div class="databox"><span class="dblabel">' + esc(info) + "</span><pre>" + esc(code) + "</pre></div>";
+  }
+  return '<pre class="code">' + esc(code) + "</pre>";
+}
 function renderBody(body) {
-  const out = []; let quote = [], list = [];
+  const out = []; let quote = [], list = [], listTag = "ul", table = [], fence = null, fenceInfo = "";
   const flushQ = () => { if (quote.length) { out.push("<blockquote>" + quote.join("<br>") + "</blockquote>"); quote = []; } };
-  const flushL = () => { if (list.length) { out.push("<ul>" + list.map(li => "<li>" + li + "</li>").join("") + "</ul>"); list = []; } };
+  const flushL = () => { if (list.length) { out.push("<" + listTag + ">" + list.map(li => "<li>" + li + "</li>").join("") + "</" + listTag + ">"); list = []; } };
+  const flushT = () => { if (table.length) { out.push(renderTable(table)); table = []; } };
+  const pushList = (tag, item) => { if (list.length && listTag !== tag) flushL(); listTag = tag; list.push(item); };
   for (const raw of body.split(/\r?\n/)) {
     const l = raw.trim();
-    if (l.startsWith("> - ")) { quote.push("• " + inlineMd(esc(l.slice(4)))); continue; }
-    if (l.startsWith("> "))   { flushL(); quote.push(inlineMd(esc(l.slice(2)))); continue; }
+    if (fence !== null) {                                    // innerhalb eines Code-Blocks
+      if (l.startsWith("```")) { out.push(renderFence(fenceInfo, fence.join("\n"))); fence = null; fenceInfo = ""; }
+      else fence.push(raw);
+      continue;
+    }
+    if (l.startsWith("```"))  { flushQ(); flushL(); flushT(); fence = []; fenceInfo = l.slice(3).trim(); continue; }
+    if (l.startsWith("> - ")) { flushL(); flushT(); quote.push("• " + inlineMd(esc(l.slice(4)))); continue; }
+    if (l.startsWith("> "))   { flushL(); flushT(); quote.push(inlineMd(esc(l.slice(2)))); continue; }
     if (l === ">")            { quote.push(""); continue; }
     flushQ();
-    if (l.startsWith("- "))   { list.push(inlineMd(esc(l.slice(2)))); continue; }
+    if (/^\|.*\|\s*$/.test(l)) { flushL(); table.push(l); continue; }
+    flushT();
+    if (/^#{3,6}\s+/.test(l))  { flushL(); out.push("<h4>" + inlineMd(esc(l.replace(/^#{3,6}\s+/, ""))) + "</h4>"); continue; }
+    if (/^(-{3,}|_{3,}|\*{3,})$/.test(l)) { flushL(); out.push("<hr>"); continue; }
+    if (/^[-*]\s+/.test(l))    { pushList("ul", inlineMd(esc(l.replace(/^[-*]\s+/, "")))); continue; }
+    if (/^\d+\.\s+/.test(l))   { pushList("ol", inlineMd(esc(l.replace(/^\d+\.\s+/, "")))); continue; }
     flushL();
     if (l) out.push("<p>" + inlineMd(esc(l)) + "</p>");
   }
-  flushQ(); flushL();
+  if (fence !== null) out.push(renderFence(fenceInfo, fence.join("\n")));  // unterminiert
+  flushQ(); flushL(); flushT();
   return out.join("");
 }
 
@@ -726,6 +1193,8 @@ function renderMirror(md) {
        <td class="chip">${r.status.emoji}</td><td class="note">${inlineMd(esc(r.note))}</td>
      </tr>`).join("");
 
+  $("cover-extra").innerHTML = doc.coverExtra ? renderBody(doc.coverExtra) : "";
+
   $("sections").innerHTML = doc.sections.map((s, i) =>
     `<div class="step ${s.status ? s.status.cls : ""}" id="step-${s.n ?? "x" + i}">
        <h3>${s.status ? `<span class="chip">${s.status.emoji}</span>` : ""}
@@ -749,8 +1218,8 @@ function loadMd(md) {
 }
 
 /* ============ Wiring ============ */
-$("lang-de").onclick = () => { lang = "de"; localStorage.setItem(LS.lang, lang); applyI18n(); };
-$("lang-en").onclick = () => { lang = "en"; localStorage.setItem(LS.lang, lang); applyI18n(); };
+$("lang-de").onclick = () => { lang = "de"; localStorage.setItem(LS.lang, lang); applyI18n(); applyProjectFields(); };
+$("lang-en").onclick = () => { lang = "en"; localStorage.setItem(LS.lang, lang); applyI18n(); applyProjectFields(); };
 
 $("tab-spiegel").onclick = () => switchTab("spiegel");
 $("tab-prompt").onclick = () => switchTab("prompt");
@@ -819,7 +1288,37 @@ $("proj-stage").addEventListener("input", () => {
 });
 
 /* ============ Init ============ */
-PROJ_FIELDS.forEach(([id, key]) => { $(id).value = localStorage.getItem(LS[key]) || ""; });
+// Beim allerersten Besuch das Formular mit dem Demo-Projekt vorbefüllen — ein
+// ausgefülltes Beispiel erklärt schneller als jeder Hilfetext. Sobald eigene
+// Werte gespeichert sind, greift die Vorbefüllung nie wieder.
+const PREFILL = {
+  pname: "Fontane",
+  pdesc: {
+    de: "Browser-Tool, das aus Handschrift eine echte, installierbare Font-Datei macht — geräteunabhängig, mit Stift, Wacom, Maus oder Trackpad.",
+    en: "Browser tool that turns handwriting into a real, installable font file — device-agnostic, with stylus, Wacom, mouse or trackpad."
+  },
+  pgoal: {
+    de: "Comic-Schaffende, Illustrator:innen und Tätowierer:innen zu eigenen Fonts bringen — unabhängig von Betriebssystem und Gerät, für wenig oder kein Geld.",
+    en: "Get comic artists, illustrators and tattooers their own fonts — regardless of operating system or device, for little or no money."
+  },
+  pcomp: { de: "Glyphs, Fontself, Calligraphr", en: "Glyphs, Fontself, Calligraphr" },
+  pfocus: {
+    de: "Viele Funktionen gebaut — wie positioniere ich das Produkt monetär?",
+    en: "Lots of features built — how do I position this product commercially?"
+  },
+  pres: { de: "github.com/AisuStudio/fontane · fontane.studio", en: "github.com/AisuStudio/fontane · fontane.studio" }
+};
+function applyProjectFields() {
+  const untouched = !PROJ_FIELDS.some(([, key]) => localStorage.getItem(LS[key]));
+  PROJ_FIELDS.forEach(([id, key]) => {
+    const stored = localStorage.getItem(LS[key]);
+    const pre = untouched && PREFILL[key];
+    $(id).value = stored || (pre ? (typeof pre === "string" ? pre : pre[lang]) : "");
+  });
+  if (untouched && !localStorage.getItem(LS.pstage)) { $("proj-stage").value = "2"; stageSet = true; }  // Prototyp
+  return untouched;
+}
+applyProjectFields();
 const storedStage = localStorage.getItem(LS.pstage);
 if (["0","1","2","3","4","5"].includes(storedStage)) {
   $("proj-stage").value = storedStage; stageSet = true;
