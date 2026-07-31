@@ -65,8 +65,11 @@
     display: flex; align-items: center; gap: 8px; margin-bottom: var(--sp-sm);
   }
   .about-eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--color-accent); }
+  .about h3 {
+    font-family: var(--font-primary); font-weight: 700; font-style: italic;
+    font-size: 20px; line-height: 1.35; margin-bottom: var(--sp-sm);
+  }
   .about p { font-size: 14px; margin-bottom: var(--sp-sm); }
-  .about p em { color: var(--color-muted); }
 
   nav.tabs { display: flex; gap: var(--sp-sm); margin: var(--sp-md) 0 var(--sp-lg); border-bottom: 1px solid var(--color-border); }
   nav.tabs button {
@@ -236,10 +239,9 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
 
   <section class="about">
     <div class="about-eyebrow" data-i18n="aboutTitle"></div>
-    <p><em data-i18n="about1"></em></p>
+    <h3 data-i18n="about1"></h3>
     <p data-i18n="about2"></p>
     <p data-i18n="about3"></p>
-    <p data-i18n="about4"></p>
   </section>
 
   <nav class="tabs">
@@ -424,10 +426,9 @@ const I18N = {
     projHint: "Alles ist optional: leer lassen ist ok, wenn die LLM-Session dein Projekt schon kennt (z. B. Claude Code direkt im Repo) — der Prompt sagt ihr dann, den Kontext zu nutzen. Der Prompt unten aktualisiert sich live mit deinen Antworten.",
     btnCopy: "Prompt kopieren", copied: "✓ kopiert",
     aboutTitle: "Warum witty",
-    about1: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Ludwig Wittgenstein. Sprache beschreibt die Welt nicht nur, sie rahmt sie: Was man nicht sagen kann, kann man schwer denken.",
-    about2: "Im LLM-Zeitalter wird der Satz handfest: Man kann nur in die Richtungen prompten — und bauen —, für die man die Sprache hat. Produktmanagement hat eine eigene Terminologie; wer als Designer:in oder Engineer ohne sie baut, wendet viele PM-Methoden längst an — nur unbenannt, aus Halbwissen.",
-    about3: "Genau da setzt der Audit an. Er ist ein Spiegel, kein Examen: Er zeigt, was du längst machst, und gibt ihm seinen Namen — Postmortem, Spike, Positionierung. Mit dem Namen bekommst du Zugriff auf Literatur, Community und präzisere Prompts. Und was offen ist, wird als Frage sichtbar statt als Mangel.",
-    about4: "Halbwissen ist dabei kein Makel — wer die Norm nicht kennt, klammert nicht an ihr. Deshalb benennt witty Methoden, um sie verfügbar zu machen. Nie, um sie zu erzwingen.",
+    about1: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Ludwig Wittgenstein",
+    about2: "Im LLM-Zeitalter gilt das wörtlich: Man kann nur in die Richtungen prompten — und bauen —, für die man die Sprache hat. Wer ohne PM-Vokabular baut, wendet viele Methoden längst an — nur unbenannt.",
+    about3: "Der Audit ist ein Spiegel, kein Examen: Er benennt, was du längst machst, und macht Offenes als Frage sichtbar. Methoden sind dabei Optionen, nie Pflicht.",
     footer1: "witty · Markdown bleibt Source of Truth · Methoden sind Optionen, nie Pflicht.",
     footer2: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Wittgenstein",
     subLoaded: "geladen · bleibt lokal (localStorage)",
@@ -458,10 +459,9 @@ const I18N = {
     projHint: "Everything is optional: leaving it empty is fine if the LLM session already knows your project (e.g. Claude Code inside the repo) — the prompt tells it to use that context. The prompt below updates live with your answers.",
     btnCopy: "Copy prompt", copied: "✓ copied",
     aboutTitle: "Why witty",
-    about1: "“The limits of my language mean the limits of my world.” — Ludwig Wittgenstein. Language doesn't just describe the world, it frames it: what you cannot say is hard to think.",
-    about2: "In the LLM era that sentence becomes concrete: you can only prompt — and build — in the directions you have language for. Product management has its own terminology; designers and engineers who build without it already practice many PM methods — just unnamed, from half-knowledge.",
-    about3: "That's where the audit comes in. It is a mirror, not an exam: it shows what you already do and gives it its name — postmortem, spike, positioning. With the name comes access: literature, community, sharper prompts. And what's open becomes visible as a question, not a deficiency.",
-    about4: "Half-knowledge is no flaw — those who don't know the norm don't cling to it. That's why witty names methods to make them available. Never to enforce them.",
+    about1: "“The limits of my language mean the limits of my world.” — Ludwig Wittgenstein",
+    about2: "In the LLM era that is literal: you can only prompt — and build — in the directions you have language for. Builders without PM vocabulary already practice many of the methods — just unnamed.",
+    about3: "The audit is a mirror, not an exam: it names what you already do and turns what's open into questions. Methods are options, never mandatory.",
     footer1: "witty · markdown stays the source of truth · methods are options, never mandatory.",
     footer2: "“The limits of my language mean the limits of my world.” — Wittgenstein",
     subLoaded: "loaded · stays local (localStorage)",
