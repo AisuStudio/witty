@@ -95,6 +95,7 @@
   }
   .btn:hover { transform: translateY(-1px); }
   .btn.secondary { background: var(--color-surface-2); color: var(--color-text); border: 1px solid var(--color-border); }
+  .btn.small { padding: 5px 12px; font-size: 12px; font-weight: 500; }
   .btn.lemon { background: var(--color-highlight); color: var(--color-on-accent); }
   textarea.paste {
     width: 100%; min-height: 140px; margin-top: var(--sp-md);
@@ -269,6 +270,7 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
         <div class="projecthead">
           <h2 id="proj-title"></h2>
           <span class="sub" id="proj-sub"></span>
+          <button class="btn secondary small" id="btn-reset-top" data-i18n="btnReset"></button>
         </div>
         <div class="counts" id="counts"></div>
         <table class="dash">
@@ -761,12 +763,15 @@ $("file-input").onchange = (e) => {
 };
 $("btn-demo").onclick = () => loadMd($("demo-md").textContent.trim());
 $("btn-paste").onclick = () => { const v = $("paste-area").value.trim(); if (v) loadMd(v); };
-$("btn-reset").onclick = () => {
+function resetProject() {
   localStorage.removeItem(LS.md);
   $("mirror").classList.add("hidden");
   $("loader").classList.remove("hidden");
   $("paste-area").value = "";
-};
+  window.scrollTo({ top: 0 });
+}
+$("btn-reset").onclick = resetProject;
+$("btn-reset-top").onclick = resetProject;
 
 const drop = $("loader");
 drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("dragover"); });
