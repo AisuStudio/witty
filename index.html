@@ -37,7 +37,7 @@
   nav.tabs { display: flex; gap: var(--sp-sm); margin: var(--sp-md) 0 var(--sp-lg); border-bottom: 1px solid var(--color-border); }
   nav.tabs button {
     border: 0; background: transparent; cursor: pointer;
-    font-family: "iA Writer Mono S", monospace; font-size: 14px; color: var(--color-muted);
+    font-family: var(--font-primary); font-weight: 500; font-size: 14px; color: var(--color-muted);
     padding: var(--sp-sm) var(--sp-md); border-bottom: 3px solid transparent; margin-bottom: -1px;
   }
   nav.tabs button.active { color: var(--color-text); border-bottom-color: var(--color-accent); font-weight: 700; }
@@ -46,12 +46,12 @@
   .card + .card { margin-top: var(--sp-lg); }
 
   /* Empty state / loader */
-  .loader h2 { font-family: "iA Writer Mono S", monospace; font-size: 18px; margin-bottom: var(--sp-sm); }
+  .loader h2 { font-family: var(--font-primary); font-weight: 700; font-size: 18px; margin-bottom: var(--sp-sm); }
   .loader p { color: var(--color-muted); font-size: 14px; max-width: 60ch; }
   .loadrow { display: flex; flex-wrap: wrap; gap: var(--sp-sm); margin-top: var(--sp-md); }
   .btn {
     display: inline-block; border: 0; cursor: pointer; text-decoration: none;
-    font-family: "iA Writer Mono S", monospace; font-size: 14px; font-weight: 700;
+    font-family: var(--font-primary); font-size: 14px; font-weight: 700;
     padding: 10px 18px; border-radius: var(--radius-sm);
     background: var(--color-accent); color: var(--color-vanilla);
     transition: transform var(--duration-fast) var(--ease-standard);
@@ -70,7 +70,7 @@
 
   /* Spiegel view */
   .projecthead { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-sm); margin-bottom: var(--sp-md); }
-  .projecthead h2 { font-family: "iA Writer Mono S", monospace; font-size: 22px; }
+  .projecthead h2 { font-family: var(--font-primary); font-weight: 700; font-size: 22px; }
   .projecthead .sub { color: var(--color-muted); font-size: 13px; }
   .counts { display: flex; flex-wrap: wrap; gap: var(--sp-sm); margin-bottom: var(--sp-lg); }
   .count {
@@ -100,7 +100,7 @@
 
   /* Sections */
   .step { margin-top: var(--sp-lg); }
-  .step h3 { font-family: "iA Writer Mono S", monospace; font-size: 15px; display: flex; gap: var(--sp-sm); align-items: baseline; }
+  .step h3 { font-family: var(--font-primary); font-weight: 700; font-size: 15px; display: flex; gap: var(--sp-sm); align-items: baseline; }
   .step h3 .chip { font-size: 14px; }
   .stepbody { margin-top: var(--sp-sm); font-size: 14.5px; }
   .stepbody blockquote {
@@ -114,7 +114,7 @@
   .stepbody em { color: var(--color-muted); }
 
   /* Prompt view */
-  .promptcard h2 { font-family: "iA Writer Mono S", monospace; font-size: 18px; margin-bottom: var(--sp-sm); }
+  .promptcard h2 { font-family: var(--font-primary); font-weight: 700; font-size: 18px; margin-bottom: var(--sp-sm); }
   .promptcard p.expl { color: var(--color-muted); font-size: 14px; max-width: 62ch; margin-bottom: var(--sp-md); }
   pre.prompt {
     background: var(--color-blueberry); color: var(--color-vanilla);
