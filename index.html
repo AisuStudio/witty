@@ -119,6 +119,10 @@
   .projlabel { display: block; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--color-accent); margin-bottom: 4px; }
   .projform { max-width: 560px; margin-bottom: var(--sp-sm); }
   .projform .q { display: block; font-size: 13px; font-weight: 500; margin: var(--sp-sm) 0 3px; }
+  .stagewrap { display: flex; align-items: center; gap: var(--sp-md); margin-bottom: var(--sp-sm); }
+  .stageslider { flex: 1; accent-color: var(--color-accent); }
+  .stagelabel { font-family: var(--font-mono); font-size: 12px; min-width: 11ch; color: var(--color-accent); white-space: nowrap; }
+  .stagelabel.unset { color: var(--color-muted); }
   .projfield {
     width: 100%; max-width: 560px; display: block;
     border: 1px solid var(--color-border); border-radius: var(--radius-sm);
@@ -206,22 +210,22 @@
         <input type="text" class="projfield" id="proj-name" data-i18n-ph="q1ph">
         <label class="q" for="proj-desc" data-i18n="q2"></label>
         <textarea class="projfield projdesc" id="proj-desc" rows="2" data-i18n-ph="q2ph"></textarea>
-        <label class="q" for="proj-stage" data-i18n="q3"></label>
-        <select class="projfield" id="proj-stage">
-          <option value=""></option>
-          <option value="idea" data-i18n="q3a"></option>
-          <option value="building" data-i18n="q3b"></option>
-          <option value="live" data-i18n="q3c"></option>
-        </select>
-        <label class="q" for="proj-sources" data-i18n="q4"></label>
+        <label class="q" for="proj-goal" data-i18n="qGoal"></label>
+        <input type="text" class="projfield" id="proj-goal" data-i18n-ph="qGoalPh">
+        <label class="q" for="proj-stage" data-i18n="qStage"></label>
+        <div class="stagewrap">
+          <input type="range" class="stageslider" id="proj-stage" min="0" max="5" step="1" value="2">
+          <div class="stagelabel" id="stage-label"></div>
+        </div>
+        <label class="q" for="proj-sources" data-i18n="qSources"></label>
         <select class="projfield" id="proj-sources">
           <option value=""></option>
-          <option value="context" data-i18n="q4a"></option>
-          <option value="attached" data-i18n="q4b"></option>
-          <option value="answers" data-i18n="q4c"></option>
+          <option value="context" data-i18n="qSrcA"></option>
+          <option value="attached" data-i18n="qSrcB"></option>
+          <option value="answers" data-i18n="qSrcC"></option>
         </select>
-        <label class="q" for="proj-focus" data-i18n="q5"></label>
-        <input type="text" class="projfield" id="proj-focus" data-i18n-ph="q5ph">
+        <label class="q" for="proj-focus" data-i18n="qWhy"></label>
+        <input type="text" class="projfield" id="proj-focus" data-i18n-ph="qWhyPh">
       </div>
       <p class="projhint" data-i18n="projHint"></p>
       <div class="loadrow" style="margin:0 0 var(--sp-md)">
@@ -330,11 +334,13 @@ const I18N = {
     projLabel: "Dein Projekt — Antworten werden in den Prompt eingebaut",
     q1: "Wie heißt das Projekt?", q1ph: "z. B. \"Fontane\"",
     q2: "Was ist es, in 1–2 Sätzen?", q2ph: "z. B. \"Web-Tool, das Handschrift in echte Fonts verwandelt\"",
-    q3: "Wo steht es gerade?",
-    q3a: "Noch Idee — nichts gebaut", q3b: "Im Bau — es existiert Code/Material", q3c: "Live — es gibt echte Nutzer:innen",
-    q4: "Wo kann die LLM nachschauen?",
-    q4a: "Sie sitzt im Projekt (z. B. Claude Code im Repo)", q4b: "Ich hänge Dateien an (README, Notizen …)", q4c: "Nur meine Antworten im Chat",
-    q5: "Wo hakt es gerade / was ist dir unklar? (optional)", q5ph: "z. B. \"weiß nicht, ob ich Geld verlangen soll\"",
+    qGoal: "Was ist das Ziel?", qGoalPh: "z. B. \"soll sich selbst tragen\" oder \"1000 Nutzer:innen\"",
+    qStage: "Wo steht es gerade?",
+    st0: "Idee", st1: "Im Bau", st2: "Prototyp", st3: "Beta", st4: "Voll live", st5: "Etabliert",
+    stUnset: "— nicht gesetzt",
+    qSources: "Wo kann die LLM nachschauen?",
+    qSrcA: "Sie sitzt im Projekt (z. B. Claude Code im Repo)", qSrcB: "Ich hänge Dateien an (README, Notizen …)", qSrcC: "Nur meine Antworten im Chat",
+    qWhy: "Warum das Audit? (optional)", qWhyPh: "z. B. \"strategische Verortung\" oder \"entscheiden, ob ich Geld verlangen soll\"",
     projHint: "Alles ist optional: leer lassen ist ok, wenn die LLM-Session dein Projekt schon kennt (z. B. Claude Code direkt im Repo) — der Prompt sagt ihr dann, den Kontext zu nutzen. Der Prompt unten aktualisiert sich live mit deinen Antworten.",
     btnCopy: "Prompt kopieren", copied: "✓ kopiert",
     footer1: "witty · Markdown bleibt Source of Truth · Methoden sind Optionen, nie Pflicht.",
@@ -357,11 +363,13 @@ const I18N = {
     projLabel: "Your project — answers get built into the prompt",
     q1: "What is the project called?", q1ph: "e.g. \"Fontane\"",
     q2: "What is it, in 1–2 sentences?", q2ph: "e.g. \"web tool that turns handwriting into real fonts\"",
-    q3: "Where does it stand?",
-    q3a: "Still an idea — nothing built", q3b: "Being built — code/material exists", q3c: "Live — real users exist",
-    q4: "Where can the LLM look?",
-    q4a: "It sits inside the project (e.g. Claude Code in the repo)", q4b: "I'll attach files (README, notes …)", q4c: "Only my answers in this chat",
-    q5: "What's stuck / unclear right now? (optional)", q5ph: "e.g. \"not sure if I should charge money\"",
+    qGoal: "What is the goal?", qGoalPh: "e.g. \"should sustain itself\" or \"1000 users\"",
+    qStage: "Where does it stand?",
+    st0: "Idea", st1: "Building", st2: "Prototype", st3: "Beta", st4: "Fully live", st5: "Established",
+    stUnset: "— not set",
+    qSources: "Where can the LLM look?",
+    qSrcA: "It sits inside the project (e.g. Claude Code in the repo)", qSrcB: "I'll attach files (README, notes …)", qSrcC: "Only my answers in this chat",
+    qWhy: "Why this audit? (optional)", qWhyPh: "e.g. \"strategic positioning\" or \"decide whether to charge money\"",
     projHint: "Everything is optional: leaving it empty is fine if the LLM session already knows your project (e.g. Claude Code inside the repo) — the prompt tells it to use that context. The prompt below updates live with your answers.",
     btnCopy: "Copy prompt", copied: "✓ copied",
     footer1: "witty · markdown stays the source of truth · methods are options, never mandatory.",
@@ -418,7 +426,7 @@ Zum Schluss:
 ## Spiegel-Lesart
 > [3-5 Sätze: welche Methoden werden implizit bereits praktiziert (mit Lehrbuch-Namen — das ist der Spiegel), wo liegen die echten Lücken, und was ist der nächste wertvollste Schritt.]
 
-Regeln: Methoden sind Optionen, nie Pflicht — nichts erzwingen. Klartext vor Fachbegriff. Ehrlich statt gefällig: ein sauberes ⭕ ist wertvoller als ein geschöntes ✅.`,
+Regeln: Methoden sind Optionen, nie Pflicht — nichts erzwingen. Klartext vor Fachbegriff. Ehrlich statt gefällig: ein sauberes ⭕ ist wertvoller als ein geschöntes ✅. Falls unter PROJEKT ein Anlass für das Audit genannt ist, beantworte ihn in der Spiegel-Lesart direkt.`,
 
 en: String.raw`You are a PM audit assistant (the "witty" audit). The project to audit is stated at the END of this prompt under PROJECT. Analyze everything available about it — code repository, git history, README, documents, attached files, prior conversations. If you lack context, ask targeted questions FIRST instead of guessing.
 
@@ -466,7 +474,7 @@ Finally:
 ## Mirror Reading
 > [3-5 sentences: which methods are already practiced implicitly (with their textbook names — that is the mirror), where the real gaps are, and what the next most valuable step is.]
 
-Rules: methods are options, never mandatory — force nothing. Plain language before jargon. Honest beats flattering: a clean ⭕ is worth more than a polished ✅.`
+Rules: methods are options, never mandatory — force nothing. Plain language before jargon. Honest beats flattering: a clean ⭕ is worth more than a polished ✅. If a reason for this audit is stated under PROJECT, address it directly in the Mirror Reading.`
 };
 
 /* ============ Projekt-Injektion in den Prompt ============ */
@@ -488,27 +496,28 @@ const SOURCE_LINES = {
     answers:  "There are ONLY the answers in this chat — rely on them, ask targeted follow-ups, and only assign 🔍 when evidence was named."
   }
 };
-const STAGE_KEYS = { idea: "q3a", building: "q3b", live: "q3c" };
+let stageSet = false; // Slider hat immer einen Wert — nur zählen, wenn bewusst bewegt/geladen
 function projectBlock() {
   const name = $("proj-name").value.trim();
   const desc = $("proj-desc").value.trim();
-  const stage = $("proj-stage").value;
+  const goal = $("proj-goal").value.trim();
   const sources = $("proj-sources").value;
   const focus = $("proj-focus").value.trim();
-  if (!name && !desc && !stage && !sources && !focus) return PROJECT_FALLBACK[lang];
+  if (!name && !desc && !goal && !stageSet && !sources && !focus) return PROJECT_FALLBACK[lang];
   const de = lang === "de";
   const lines = [(de ? "PROJEKT" : "PROJECT") + ": " + (name || "—")];
-  if (desc)    lines.push((de ? "Was es ist: " : "What it is: ") + desc);
-  if (stage)   lines.push((de ? "Stand: " : "Stage: ") + t(STAGE_KEYS[stage]));
-  if (sources) lines.push((de ? "Evidenz: " : "Evidence: ") + SOURCE_LINES[lang][sources]);
-  if (focus)   lines.push((de ? "Aktueller Fokus / offene Frage: " : "Current focus / open question: ") + focus);
+  if (desc)     lines.push((de ? "Was es ist: " : "What it is: ") + desc);
+  if (goal)     lines.push((de ? "Ziel: " : "Goal: ") + goal);
+  if (stageSet) lines.push((de ? "Stand: " : "Stage: ") + t("st" + $("proj-stage").value));
+  if (sources)  lines.push((de ? "Evidenz: " : "Evidence: ") + SOURCE_LINES[lang][sources]);
+  if (focus)    lines.push((de ? "Anlass für das Audit: " : "Reason for this audit: ") + focus);
   return lines.join("\n");
 }
 function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
 
 /* ============ State ============ */
-const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pstage: "witty.proj.stage", psources: "witty.proj.sources", pfocus: "witty.proj.focus" };
-const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-stage","pstage"],["proj-sources","psources"],["proj-focus","pfocus"]];
+const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", psources: "witty.proj.sources", pfocus: "witty.proj.focus" };
+const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-sources","psources"],["proj-focus","pfocus"]];
 let lang = localStorage.getItem(LS.lang) || "de";
 
 const $ = (id) => document.getElementById(id);
@@ -521,6 +530,7 @@ function applyI18n() {
   $("lang-de").classList.toggle("active", lang === "de");
   $("lang-en").classList.toggle("active", lang === "en");
   $("prompt-text").textContent = buildPrompt();
+  updateStageLabel();
   const saved = localStorage.getItem(LS.md);
   if (saved) renderMirror(saved); // re-render counts/labels in new language
 }
@@ -707,8 +717,26 @@ PROJ_FIELDS.forEach(([id, key]) => ["input", "change"].forEach(ev =>
     $("prompt-text").textContent = buildPrompt();
   })));
 
+function updateStageLabel() {
+  const el = $("stage-label");
+  el.textContent = stageSet ? t("st" + $("proj-stage").value) : t("stUnset");
+  el.classList.toggle("unset", !stageSet);
+}
+$("proj-stage").addEventListener("input", () => {
+  stageSet = true;
+  localStorage.setItem(LS.pstage, $("proj-stage").value);
+  updateStageLabel();
+  $("prompt-text").textContent = buildPrompt();
+});
+
 /* ============ Init ============ */
 PROJ_FIELDS.forEach(([id, key]) => { $(id).value = localStorage.getItem(LS[key]) || ""; });
+const storedStage = localStorage.getItem(LS.pstage);
+if (["0","1","2","3","4","5"].includes(storedStage)) {
+  $("proj-stage").value = storedStage; stageSet = true;
+} else if (storedStage !== null) {
+  localStorage.removeItem(LS.pstage); // Altformat (z. B. "live") verwerfen
+}
 applyI18n();
 const saved = localStorage.getItem(LS.md);
 if (saved) renderMirror(saved);
