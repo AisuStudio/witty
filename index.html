@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>witty — PM Spiegel</title>
+<link rel="stylesheet" href="design/tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: "Public Sans", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+  .mono { font-family: "iA Writer Mono S", ui-monospace, "SF Mono", monospace; }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: var(--sp-lg) var(--gutter) var(--sp-4xl); }
+
+  header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: var(--sp-md); padding: var(--sp-lg) 0 var(--sp-md);
+  }
+  .wordmark { font-family: "iA Writer Mono S", monospace; font-size: 28px; font-weight: 700; }
+  .wordmark span { color: var(--color-accent); }
+  .tagline { color: var(--color-muted); font-size: 13px; margin-top: 2px; }
+
+  .langtoggle { display: flex; gap: 2px; border: 1px solid var(--color-border); border-radius: var(--radius-full); padding: 2px; background: var(--color-surface); }
+  .langtoggle button {
+    border: 0; background: transparent; border-radius: var(--radius-full);
+    font-family: "iA Writer Mono S", monospace; font-size: 12px; padding: 4px 12px; cursor: pointer; color: var(--color-muted);
+  }
+  .langtoggle button.active { background: var(--color-highlight); color: var(--color-on-accent); font-weight: 700; }
+
+  nav.tabs { display: flex; gap: var(--sp-sm); margin: var(--sp-md) 0 var(--sp-lg); border-bottom: 1px solid var(--color-border); }
+  nav.tabs button {
+    border: 0; background: transparent; cursor: pointer;
+    font-family: "iA Writer Mono S", monospace; font-size: 14px; color: var(--color-muted);
+    padding: var(--sp-sm) var(--sp-md); border-bottom: 3px solid transparent; margin-bottom: -1px;
+  }
+  nav.tabs button.active { color: var(--color-text); border-bottom-color: var(--color-accent); font-weight: 700; }
+
+  .card { background: var(--color-surface); border-radius: var(--radius-md); padding: var(--sp-lg); box-shadow: var(--shadow-sm); }
+  .card + .card { margin-top: var(--sp-lg); }
+
+  /* Empty state / loader */
+  .loader h2 { font-family: "iA Writer Mono S", monospace; font-size: 18px; margin-bottom: var(--sp-sm); }
+  .loader p { color: var(--color-muted); font-size: 14px; max-width: 60ch; }
+  .loadrow { display: flex; flex-wrap: wrap; gap: var(--sp-sm); margin-top: var(--sp-md); }
+  .btn {
+    display: inline-block; border: 0; cursor: pointer; text-decoration: none;
+    font-family: "iA Writer Mono S", monospace; font-size: 14px; font-weight: 700;
+    padding: 10px 18px; border-radius: var(--radius-sm);
+    background: var(--color-accent); color: var(--color-vanilla);
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.secondary { background: var(--color-surface-2); color: var(--color-text); border: 1px solid var(--color-border); }
+  .btn.lemon { background: var(--color-highlight); color: var(--color-on-accent); }
+  textarea.paste {
+    width: 100%; min-height: 140px; margin-top: var(--sp-md);
+    border: 1px dashed var(--color-border); border-radius: var(--radius-sm);
+    background: var(--color-surface-2); padding: var(--sp-md);
+    font-family: "iA Writer Mono S", monospace; font-size: 12px; color: var(--color-text);
+    resize: vertical;
+  }
+  .droptarget.dragover { outline: 3px dashed var(--color-accent); outline-offset: 4px; }
+
+  /* Spiegel view */
+  .projecthead { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-sm); margin-bottom: var(--sp-md); }
+  .projecthead h2 { font-family: "iA Writer Mono S", monospace; font-size: 22px; }
+  .projecthead .sub { color: var(--color-muted); font-size: 13px; }
+  .counts { display: flex; flex-wrap: wrap; gap: var(--sp-sm); margin-bottom: var(--sp-lg); }
+  .count {
+    font-family: "iA Writer Mono S", monospace; font-size: 13px;
+    padding: 4px 12px; border-radius: var(--radius-full); background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+  .count b { font-size: 15px; }
+  .count.mirror { background: var(--color-highlight); color: var(--color-on-accent); border-color: transparent; }
+
+  table.dash { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.dash th {
+    font-family: "iA Writer Mono S", monospace; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--color-muted); text-align: left;
+    padding: 6px 10px; border-bottom: 2px solid var(--color-border);
+  }
+  table.dash td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  table.dash tr { cursor: pointer; }
+  table.dash tr:hover td { background: var(--color-surface-2); }
+  table.dash tr.st-mirror td { background: color-mix(in srgb, var(--color-lemon) 28%, transparent); }
+  table.dash tr.st-mirror:hover td { background: color-mix(in srgb, var(--color-lemon) 45%, transparent); }
+  td.num, td.chip { font-family: "iA Writer Mono S", monospace; white-space: nowrap; }
+  td.num { color: var(--color-muted); }
+  td.note { color: var(--color-muted); }
+
+  .legend { margin-top: var(--sp-md); font-size: 12px; color: var(--color-muted); }
+
+  /* Sections */
+  .step { margin-top: var(--sp-lg); }
+  .step h3 { font-family: "iA Writer Mono S", monospace; font-size: 15px; display: flex; gap: var(--sp-sm); align-items: baseline; }
+  .step h3 .chip { font-size: 14px; }
+  .stepbody { margin-top: var(--sp-sm); font-size: 14.5px; }
+  .stepbody blockquote {
+    border-left: 3px solid var(--color-accent); background: var(--color-surface-2);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: var(--sp-sm) var(--sp-md); margin: var(--sp-xs) 0;
+  }
+  .step.st-mirror .stepbody blockquote { border-left-color: var(--color-lemon); }
+  .stepbody ul { padding-left: 1.2em; margin: var(--sp-xs) 0; }
+  .stepbody code { font-family: "iA Writer Mono S", monospace; font-size: .9em; background: var(--color-surface-2); padding: 1px 5px; border-radius: 3px; }
+  .stepbody em { color: var(--color-muted); }
+
+  /* Prompt view */
+  .promptcard h2 { font-family: "iA Writer Mono S", monospace; font-size: 18px; margin-bottom: var(--sp-sm); }
+  .promptcard p.expl { color: var(--color-muted); font-size: 14px; max-width: 62ch; margin-bottom: var(--sp-md); }
+  pre.prompt {
+    background: var(--color-blueberry); color: var(--color-vanilla);
+    border-radius: var(--radius-sm); padding: var(--sp-lg);
+    font-family: "iA Writer Mono S", monospace; font-size: 12px; line-height: 1.6;
+    white-space: pre-wrap; max-height: 480px; overflow: auto;
+  }
+  .copiedflash { display: none; margin-left: var(--sp-sm); font-family: "iA Writer Mono S", monospace; font-size: 13px; color: var(--color-accent); }
+
+  footer { margin-top: var(--sp-3xl); font-size: 12px; color: var(--color-muted); }
+  footer em { font-style: italic; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="wordmark">witty<span>.</span></div>
+      <div class="tagline" data-i18n="tagline"></div>
+    </div>
+    <div class="langtoggle">
+      <button id="lang-de">DE</button>
+      <button id="lang-en">EN</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button id="tab-spiegel" class="active" data-i18n="tabSpiegel"></button>
+    <button id="tab-prompt" data-i18n="tabPrompt"></button>
+  </nav>
+
+  <!-- ===== Spiegel view ===== -->
+  <section id="view-spiegel">
+    <div id="loader" class="card loader droptarget">
+      <h2 data-i18n="loadTitle"></h2>
+      <p data-i18n="loadExpl"></p>
+      <div class="loadrow">
+        <button class="btn" id="btn-file" data-i18n="btnFile"></button>
+        <input type="file" id="file-input" accept=".md,.markdown,.txt" class="hidden">
+        <button class="btn secondary" id="btn-demo" data-i18n="btnDemo"></button>
+        <button class="btn lemon" id="btn-to-prompt" data-i18n="btnNoMd"></button>
+      </div>
+      <textarea class="paste" id="paste-area" data-i18n-ph="pastePh"></textarea>
+      <div class="loadrow"><button class="btn secondary" id="btn-paste" data-i18n="btnPaste"></button></div>
+    </div>
+
+    <div id="mirror" class="hidden">
+      <div class="card">
+        <div class="projecthead">
+          <h2 id="proj-title"></h2>
+          <span class="sub" id="proj-sub"></span>
+        </div>
+        <div class="counts" id="counts"></div>
+        <table class="dash">
+          <thead><tr>
+            <th>#</th><th data-i18n="thStep"></th><th data-i18n="thStatus"></th><th data-i18n="thNote"></th>
+          </tr></thead>
+          <tbody id="dash-body"></tbody>
+        </table>
+        <div class="legend" data-i18n="legend"></div>
+      </div>
+      <div class="card" id="sections"></div>
+      <div class="loadrow" style="margin-top:var(--sp-lg)">
+        <button class="btn secondary" id="btn-reset" data-i18n="btnReset"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Prompt view ===== -->
+  <section id="view-prompt" class="hidden">
+    <div class="card promptcard">
+      <h2 data-i18n="promptTitle"></h2>
+      <p class="expl" data-i18n="promptExpl"></p>
+      <div class="loadrow" style="margin:0 0 var(--sp-md)">
+        <button class="btn" id="btn-copy" data-i18n="btnCopy"></button>
+        <span class="copiedflash" id="copied" data-i18n="copied"></span>
+      </div>
+      <pre class="prompt" id="prompt-text"></pre>
+    </div>
+  </section>
+
+  <footer>
+    <span data-i18n="footer1"></span><br>
+    <em data-i18n="footer2"></em>
+  </footer>
+</div>
+
+<script type="text/markdown" id="demo-md">
+# PM-STATUS — witty
+
+> Stand: Juli 2026 · v0.1 · witty ist sein eigener erster Use Case
+
+## Abdeckung auf einen Blick
+
+| # | Schritt | Status | Stand in einem Satz |
+|---|---|---|---|
+| 1 | Spark | ✅ | 2 Monate bauen ohne PM-Bewusstsein — es fehlte der Spiegel |
+| 2 | Vision & Ambition | ✅ | Trägt sich, Weg zu mehr offen |
+| 3 | Zielgruppe | ✅ | PM-Anfänger + AI-Builders ohne PM-Vokabular |
+| 4 | Nein-Liste | 🔍 | 5 Neins aus Session-Entscheidungen, materialisiert |
+| 5 | Unterschied | 🔍 | Methoden-Basis + LLM-Facilitation + Hindsight-Spiegel kombiniert |
+| 6 | Strategie | ✅ | Stufenplan: Template+Skill → MCP → Webtool |
+| 7 | User Flows | ✅ | Der SPIEGEL führt Phase 1 |
+| 8 | Priorisierung | 🔍 | Klein, 1 Projekt reicht, MD-first; Schnitt: Viewer + Prompt |
+| 9 | Go-to-Market | 🔍 | Beachhead: DL-School-Batch + build in public |
+| 10 | Ökonomie | 🕊️ | ~0 € Kosten; vertagt bis Fremdnutzung |
+| 11 | Nordstern | ⭕ | Kandidat: # Projekte mit lebendem PM-STATUS |
+| 12 | PMF-Stufe | ⭕ | Stufe 0→1; Beweis: eine fremde Person füllt ein Projekt aus |
+| 13 | Validierungs-Loop | ✅ | Dogfooding an eigenen Projekten (Fontane-Lauf = Test 1) |
+| 14 | Snapshot-Regel | ✅ | Nach jedem Phase-Ship aktualisieren |
+
+## 1 · Spark — ✅
+> "Ich habe in 2 Monaten einige Produkte gebaut, immer nur von der Produktvision her — ohne das ganze PM-Hokuspokus. Das hat gut geklappt, aber ich habe wenig Bewusstsein dafür, welche Methoden ich anwende und welche Fragen offen sind."
+
+## 2 · Vision & Ambition — ✅
+> Mehr über die eigene Arbeit erfahren · sich strategisch verorten · neue Wege evaluieren · mittelfristig anderen zur Verfügung stellen. Ambition: trägt sich, Weg zu mehr offen.
+
+## 3 · Zielgruppe — ✅
+> PM-Anfänger:innen und AI-Builders ohne PM-Bewusstsein. Wenn ich als Builder ohne PM-Vokabular ein Produkt baue, will ich sehen, welche PM-Fragen offen sind und welche Methoden ich längst anwende, damit ich bewusst entscheide statt aus Halbwissen.
+
+## 4 · Nein-Liste — 🔍
+> - Kein Normzwang: Methoden sind Optionen, nie Pflicht
+> - Keine Zwangs-Reihenfolge, keine Freischalt-Gates
+> - Fachbegriffe sind nie Eintrittshürde — Klartext zuerst
+> - Markdown bleibt Source of Truth, auf jeder Ausbaustufe
+
+## 5 · Unterschied — 🔍
+> witty kombiniert eine feste Methoden-Basis (14 Schritte, Klartext + Fachbegriff, DE/EN), LLM-Facilitation und einen Hindsight-Audit über echte Projektdaten. Notion-Templates sind tote Formulare, ChatGPT hat keine Methoden-Basis, PM-Kurse spiegeln nicht die eigene Arbeit.
+
+## 6 · Strategie — ✅
+> Wette 1: Template + Skill zuerst. Wette 2: MCP-Server als Mittelstufe. Wette 3: Webtool als Renderer über dieselben MDs. Wette 4: der Hindsight-Spiegel als Differenzierer.
+
+## 7 · User Flows — ✅
+> Der SPIEGEL führt: Projekt zeigen → witty sagt "das machst du längst — so heißt es" → Aha = Selbsterkenntnis.
+
+## 8 · Priorisierung — 🔍
+> Phase 1 = dieser Viewer + der Copy-Paste-Audit-Prompt. Klein, MD-first, ein Projekt reicht.
+
+## 9 · Go-to-Market — 🔍
+> Zuerst: DL-School-Batch (warm) + build in public. Rest vertagt.
+
+## 10 · Ökonomie — 🕊️
+> Statisch gehostet ≈ 0 €/Monat. Ernsthaft rechnen erst bei Fremdnutzung.
+
+## 11 · Nordstern — ⭕
+> Kandidat: Anzahl Projekte mit lebendem PM-STATUS. Zu entscheiden.
+
+## 12 · PMF-Stufe — ⭕
+> Stufe 0→1. Nächster Beweis: eine fremde Person füllt ein eigenes Projekt aus.
+
+## 13 · Validierungs-Loop — ✅
+> Dogfooding an eigenen Projekten. Richtungswechsel, wenn sich das Ausfüllen als Pflichtübung anfühlt statt als Erkenntnis.
+
+## 14 · Snapshot-Regel — ✅
+> Nach jedem Phase-Ship wird dieses Dokument erneuert.
+
+## Spiegel-Lesart
+> witty wendet sein eigenes Schema an: die Kopf-Entscheidungen (Spark, Vision, Zielgruppe, Wow-Moment) sind explizit gefallen, bevor Code entstand; Nein-Liste und Strategie sind aus Session-Entscheidungen materialisiert (implizit → benannt). Offen sind Nordstern und PMF — beides braucht erst echte Nutzung. Nächster wertvollster Schritt: den Prompt an eine fremde Person geben.
+</script>
+
+<script>
+/* ============ i18n ============ */
+const I18N = {
+  de: {
+    tagline: "Der PM-Spiegel — sieh, was du längst machst, und wie es heißt.",
+    tabSpiegel: "Spiegel", tabPrompt: "Audit-Prompt",
+    loadTitle: "Audit-Ergebnis laden",
+    loadExpl: "Lade einen PM-STATUS als Markdown-Datei (per Datei, Drag & Drop oder Einfügen) — witty rendert daraus dein Dashboard und deinen Spiegel. Noch kein Audit-MD? Hol dir den Prompt.",
+    btnFile: "MD-Datei laden", btnDemo: "Demo ansehen (witty selbst)", btnNoMd: "→ Ich brauche erst den Prompt",
+    pastePh: "…oder Markdown hier einfügen", btnPaste: "Eingefügtes laden",
+    thStep: "Schritt", thStatus: "Status", thNote: "Stand in einem Satz",
+    legend: "⭕ offen · 🔍 implizit abgedeckt (dein Spiegel — gelb) · ✅ beantwortet · 🕊️ bewusst vertagt · Zeile anklicken springt zum Detail",
+    btnReset: "Anderes Projekt laden",
+    cOpen: "offen", cMirror: "implizit — dein Spiegel", cDone: "beantwortet", cDeferred: "bewusst vertagt",
+    promptTitle: "Der Audit-Prompt (kopieren & loslegen)",
+    promptExpl: "Kopiere diesen Prompt in eine LLM-Session, die dein Projekt sehen kann (z. B. Claude Code im Repo, oder häng README/Notizen an). Das Ergebnis ist ein PM-STATUS.md — speichere es ins Projekt und lade es links im Spiegel.",
+    btnCopy: "Prompt kopieren", copied: "✓ kopiert",
+    footer1: "witty · Markdown bleibt Source of Truth · Methoden sind Optionen, nie Pflicht.",
+    footer2: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Wittgenstein",
+    subLoaded: "geladen · bleibt lokal (localStorage)",
+  },
+  en: {
+    tagline: "The PM mirror — see what you already do, and what it's called.",
+    tabSpiegel: "Mirror", tabPrompt: "Audit prompt",
+    loadTitle: "Load an audit result",
+    loadExpl: "Load a PM-STATUS markdown file (file picker, drag & drop, or paste) — witty renders your dashboard and your mirror. No audit MD yet? Grab the prompt.",
+    btnFile: "Load MD file", btnDemo: "View demo (witty itself)", btnNoMd: "→ I need the prompt first",
+    pastePh: "…or paste markdown here", btnPaste: "Load pasted text",
+    thStep: "Step", thStatus: "Status", thNote: "State in one sentence",
+    legend: "⭕ open · 🔍 implicitly covered (your mirror — yellow) · ✅ answered · 🕊️ deliberately deferred · click a row to jump to detail",
+    btnReset: "Load another project",
+    cOpen: "open", cMirror: "implicit — your mirror", cDone: "answered", cDeferred: "deferred",
+    promptTitle: "The audit prompt (copy & go)",
+    promptExpl: "Copy this prompt into an LLM session that can see your project (e.g. Claude Code inside the repo, or attach your README/notes). The result is a PM-STATUS.md — save it to the project and load it in the mirror.",
+    btnCopy: "Copy prompt", copied: "✓ copied",
+    footer1: "witty · markdown stays the source of truth · methods are options, never mandatory.",
+    footer2: "“The limits of my language mean the limits of my world.” — Wittgenstein",
+    subLoaded: "loaded · stays local (localStorage)",
+  }
+};
+
+/* ============ Audit-Prompts ============ */
+const PROMPTS = {
+de: String.raw`Du bist ein PM-Audit-Assistent ("witty"-Audit). Analysiere das Projekt, in dessen Kontext du arbeitest — Code-Repository, Git-Historie, README, Dokumente, bisherige Gespräche, was verfügbar ist. Wenn dir Kontext fehlt, stelle ZUERST gezielte Fragen, statt zu raten.
+
+Erstelle daraus einen PM-STATUS als Markdown. Das Audit prüft 14 Schritte. Vergib pro Schritt genau einen Status:
+- ⭕ offen — nie beantwortet
+- 🔍 implizit abgedeckt — faktisch getan/entschieden, aber nie so benannt. NUR mit konkretem Beleg (Commit, Datei, Zitat, Feature). Sei streng: im Zweifel ⭕ statt eines großzügigen 🔍.
+- ✅ beantwortet — explizit entschieden oder dokumentiert
+- 🕊️ bewusst vertagt — aktiv entschieden, dass die Frage jetzt nicht dran ist
+
+Die 14 Schritte (Klartext-Frage · [Fachbegriff als Lern-Anker]):
+1. Spark — Welcher konkrete Moment hat zum Bauen geführt? [Problem Statement]
+2. Vision & Ambition — Was soll entstehen (1-2 Sätze), und wie groß: Hobby / soll sich tragen / Geschäft? [Vision Statement]
+3. Zielgruppe — Für wen? Eine konkrete typische Person + "Wenn ich ___, will ich ___, damit ___." [Archetyp/ICP, Jobs-to-be-Done]
+4. Nein-Liste — Was macht das Produkt bewusst NICHT? [Product Principles]
+5. Unterschied — Warum dieses Tool statt der Alternativen? Ein nachprüfbarer Satz. [Positioning]
+6. Strategie — Die 3-5 großen Wetten: was · warum · was man dafür bewusst nicht tut. [Strategy Pillars]
+7. User Flows — Was tut die Zielperson Schritt für Schritt bis zum Wow-Moment? [User Stories, Aha-Moment]
+8. Priorisierung — Was zuerst (Phase 1 = kleinste Version, die den Wow-Moment enthält), was später, was nie? [MVP]
+9. Go-to-Market — Wer erfährt zuerst davon, über welche Wege, zu welchem Preis, was muss vorher stehen? [Beachhead, GTM]
+10. Ökonomie — Kosten/Monat, Kosten pro Nutzer:in, ab wann trägt es sich? [Unit Economics]
+11. Nordstern — Die EINE Erfolgszahl + 2-3 heute schon messbare Hilfszahlen. [North Star Metric]
+12. PMF-Stufe — 1 eine Person liebt es · 2 eine zahlt oder kehrt wöchentlich zurück · 3 mehrere · 4 es zieht von allein · 5 konstantes Wachstum — plus: der nächste beobachtbare Beweis. [Product-Market Fit]
+13. Validierungs-Loop — Wie wird laufend geprüft, und was würde einen RICHTUNGSwechsel auslösen (nicht nur Detail-Anpassung)? [Build-Measure-Learn, Pivot vs. Iterate]
+14. Snapshot-Regel — Bei welchem EREIGNIS wird dieses Dokument erneuert (kein Kalenderdatum)? [Review-Kadenz]
+
+AUSGABEFORMAT — exakt diese Markdown-Struktur (der witty-Viewer parst sie):
+
+# PM-STATUS — [Projektname]
+
+> Stand: [Monat Jahr] · v0.1 · erstellt mit witty-Audit-Prompt
+
+## Abdeckung auf einen Blick
+
+| # | Schritt | Status | Stand in einem Satz |
+|---|---|---|---|
+| 1 | Spark | [Emoji] | [ein Satz] |
+| 2 | Vision & Ambition | [Emoji] | [ein Satz] |
+(… alle 14 Zeilen; Schrittnamen exakt: Spark, Vision & Ambition, Zielgruppe, Nein-Liste, Unterschied, Strategie, User Flows, Priorisierung, Go-to-Market, Ökonomie, Nordstern, PMF-Stufe, Validierungs-Loop, Snapshot-Regel)
+
+Danach pro Schritt eine Sektion:
+## [N] · [Schrittname] — [Emoji]
+> [Befund. Bei 🔍: Beleg nennen (Commit/Datei/Zitat). Bei ⭕: die offene Klartext-Frage + ggf. ein Vorschlag. Bei 🕊️: wann die Frage wieder dran ist.]
+
+Zum Schluss:
+## Spiegel-Lesart
+> [3-5 Sätze: welche Methoden werden implizit bereits praktiziert (mit Lehrbuch-Namen — das ist der Spiegel), wo liegen die echten Lücken, und was ist der nächste wertvollste Schritt.]
+
+Regeln: Methoden sind Optionen, nie Pflicht — nichts erzwingen. Klartext vor Fachbegriff. Ehrlich statt gefällig: ein sauberes ⭕ ist wertvoller als ein geschöntes ✅.`,
+
+en: String.raw`You are a PM audit assistant (the "witty" audit). Analyze the project in whose context you are working — code repository, git history, README, documents, prior conversations, whatever is available. If you lack context, ask targeted questions FIRST instead of guessing.
+
+Produce a PM-STATUS as markdown. The audit checks 14 steps. Assign exactly one status per step:
+- ⭕ open — never answered
+- 🔍 implicitly covered — actually done/decided, but never named as such. ONLY with concrete evidence (commit, file, quote, feature). Be strict: when in doubt, ⭕ beats a generous 🔍.
+- ✅ answered — explicitly decided or documented
+- 🕊️ deliberately deferred — actively decided this question is not due now
+
+The 14 steps (plain question · [textbook term as learning anchor]):
+1. Spark — Which concrete moment led to building this? [Problem Statement]
+2. Vision & Ambition — What should this become (1-2 sentences), and how big: hobby / should sustain itself / business? [Vision Statement]
+3. Audience — For whom? One concrete typical person + "When I ___, I want to ___, so that ___." [Archetype/ICP, Jobs-to-be-Done]
+4. No-list — What does the product deliberately NOT do? [Product Principles]
+5. Difference — Why this tool instead of the alternatives? One verifiable sentence. [Positioning]
+6. Strategy — The 3-5 big bets: what · why · what you deliberately don't do for each. [Strategy Pillars]
+7. User Flows — What does the target person do step by step until the wow moment? [User Stories, Aha Moment]
+8. Prioritization — What first (phase 1 = smallest version that still contains the wow moment), what later, what never? [MVP]
+9. Go-to-Market — Who hears about it first, through which channels, at what price, and what must be ready beforehand? [Beachhead, GTM]
+10. Economics — Cost/month, cost per user, and when does it sustain itself? [Unit Economics]
+11. North Star — The ONE success number + 2-3 helper numbers measurable today. [North Star Metric]
+12. PMF Stage — 1 one person loves it · 2 one pays or returns weekly · 3 several do · 4 it pulls on its own · 5 constant growth — plus: the next observable proof. [Product-Market Fit]
+13. Validation Loop — How is it continuously checked, and what would trigger a change of DIRECTION (not just detail)? [Build-Measure-Learn, Pivot vs. Iterate]
+14. Snapshot Rule — On which EVENT does this document get renewed (not a calendar date)? [Review cadence]
+
+OUTPUT FORMAT — exactly this markdown structure (the witty viewer parses it):
+
+# PM-STATUS — [project name]
+
+> As of: [month year] · v0.1 · created with the witty audit prompt
+
+## Coverage at a glance
+
+| # | Step | Status | State in one sentence |
+|---|---|---|---|
+| 1 | Spark | [emoji] | [one sentence] |
+| 2 | Vision & Ambition | [emoji] | [one sentence] |
+(… all 14 rows; step names exactly: Spark, Vision & Ambition, Audience, No-list, Difference, Strategy, User Flows, Prioritization, Go-to-Market, Economics, North Star, PMF Stage, Validation Loop, Snapshot Rule)
+
+Then one section per step:
+## [N] · [Step name] — [emoji]
+> [Finding. For 🔍: name the evidence (commit/file/quote). For ⭕: the open plain question + optionally one suggestion. For 🕊️: when the question becomes due.]
+
+Finally:
+## Mirror Reading
+> [3-5 sentences: which methods are already practiced implicitly (with their textbook names — that is the mirror), where the real gaps are, and what the next most valuable step is.]
+
+Rules: methods are options, never mandatory — force nothing. Plain language before jargon. Honest beats flattering: a clean ⭕ is worth more than a polished ✅.`
+};
+
+/* ============ State ============ */
+const LS = { lang: "witty.lang", md: "witty.project.md" };
+let lang = localStorage.getItem(LS.lang) || "de";
+
+const $ = (id) => document.getElementById(id);
+const t = (k) => (I18N[lang] && I18N[lang][k]) || k;
+
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  $("lang-de").classList.toggle("active", lang === "de");
+  $("lang-en").classList.toggle("active", lang === "en");
+  $("prompt-text").textContent = PROMPTS[lang];
+  const saved = localStorage.getItem(LS.md);
+  if (saved) renderMirror(saved); // re-render counts/labels in new language
+}
+
+/* ============ Markdown parsing ============ */
+const STATUS = {
+  "⭕": { key: "open",     cls: "st-open" },
+  "🔍": { key: "mirror",   cls: "st-mirror" },
+  "✅": { key: "done",     cls: "st-done" },
+  "🕊️": { key: "deferred", cls: "st-deferred" },
+  "🕊":  { key: "deferred", cls: "st-deferred" },
+};
+function findStatus(s) {
+  for (const emoji of ["🕊️", "🕊", "⭕", "🔍", "✅"]) if (s.includes(emoji)) return { emoji: emoji === "🕊" ? "🕊️" : emoji, ...STATUS[emoji] };
+  return null;
+}
+
+function parseStatusMd(md) {
+  const lines = md.split(/\r?\n/);
+  const doc = { title: "PM-STATUS", meta: "", rows: [], sections: [] };
+
+  const h1 = lines.find(l => l.startsWith("# "));
+  if (h1) doc.title = h1.replace(/^#\s*/, "").trim();
+  const meta = lines.find(l => /^>\s*(Stand|As of)/i.test(l));
+  if (meta) doc.meta = meta.replace(/^>\s*/, "").trim();
+
+  // dashboard table rows: | n | name | status | note |
+  for (const l of lines) {
+    const m = l.match(/^\|\s*(\d{1,2})\s*\|([^|]+)\|([^|]+)\|([^|]*)\|?\s*$/);
+    if (m) {
+      const st = findStatus(m[3]);
+      if (st) doc.rows.push({ n: +m[1], name: m[2].trim(), status: st, note: m[4].trim() });
+    }
+  }
+
+  // sections: ## ... (skip the dashboard heading)
+  const parts = md.split(/^##\s+/m).slice(1);
+  for (const p of parts) {
+    const nl = p.indexOf("\n");
+    const head = (nl < 0 ? p : p.slice(0, nl)).trim();
+    if (/^(Abdeckung|Coverage)/i.test(head)) continue;
+    const body = nl < 0 ? "" : p.slice(nl + 1).trim();
+    const st = findStatus(head);
+    const nm = head.match(/^(\d{1,2})\s*[·.]\s*(.+?)(\s*[—-]\s*[⭕🔍✅🕊].*)?$/u);
+    doc.sections.push({
+      n: nm ? +nm[1] : null,
+      name: nm ? nm[2].trim() : head.replace(/[—-]\s*[⭕🔍✅🕊].*$/u, "").trim(),
+      status: st, body
+    });
+  }
+
+  // fallback dashboard from sections
+  if (!doc.rows.length) {
+    doc.sections.filter(s => s.n).forEach(s => doc.rows.push({
+      n: s.n, name: s.name, status: s.status || { emoji: "⭕", ...STATUS["⭕"] }, note: ""
+    }));
+  }
+  return doc;
+}
+
+function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function inlineMd(s) {
+  return s
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+function renderBody(body) {
+  const out = []; let quote = [], list = [];
+  const flushQ = () => { if (quote.length) { out.push("<blockquote>" + quote.join("<br>") + "</blockquote>"); quote = []; } };
+  const flushL = () => { if (list.length) { out.push("<ul>" + list.map(li => "<li>" + li + "</li>").join("") + "</ul>"); list = []; } };
+  for (const raw of body.split(/\r?\n/)) {
+    const l = raw.trim();
+    if (l.startsWith("> - ")) { quote.push("• " + inlineMd(esc(l.slice(4)))); continue; }
+    if (l.startsWith("> "))   { flushL(); quote.push(inlineMd(esc(l.slice(2)))); continue; }
+    if (l === ">")            { quote.push(""); continue; }
+    flushQ();
+    if (l.startsWith("- "))   { list.push(inlineMd(esc(l.slice(2)))); continue; }
+    flushL();
+    if (l) out.push("<p>" + inlineMd(esc(l)) + "</p>");
+  }
+  flushQ(); flushL();
+  return out.join("");
+}
+
+/* ============ Render ============ */
+function renderMirror(md) {
+  let doc;
+  try { doc = parseStatusMd(md); } catch (e) { alert("Parse error: " + e.message); return; }
+  if (!doc.rows.length && !doc.sections.length) { alert(lang === "de" ? "Kein PM-STATUS-Format erkannt." : "No PM-STATUS format recognized."); return; }
+
+  $("proj-title").textContent = doc.title.replace(/^PM-STATUS\s*[—-]\s*/i, "");
+  $("proj-sub").textContent = (doc.meta ? doc.meta + " · " : "") + t("subLoaded");
+
+  const counts = { open: 0, mirror: 0, done: 0, deferred: 0 };
+  doc.rows.forEach(r => counts[r.status.key]++);
+  $("counts").innerHTML =
+    `<span class="count mirror">🔍 <b>${counts.mirror}</b> ${t("cMirror")}</span>` +
+    `<span class="count">✅ <b>${counts.done}</b> ${t("cDone")}</span>` +
+    `<span class="count">⭕ <b>${counts.open}</b> ${t("cOpen")}</span>` +
+    `<span class="count">🕊️ <b>${counts.deferred}</b> ${t("cDeferred")}</span>`;
+
+  $("dash-body").innerHTML = doc.rows.map(r =>
+    `<tr class="${r.status.cls}" data-jump="step-${r.n}">
+       <td class="num">${r.n}</td><td>${esc(r.name)}</td>
+       <td class="chip">${r.status.emoji}</td><td class="note">${inlineMd(esc(r.note))}</td>
+     </tr>`).join("");
+
+  $("sections").innerHTML = doc.sections.map((s, i) =>
+    `<div class="step ${s.status ? s.status.cls : ""}" id="step-${s.n ?? "x" + i}">
+       <h3>${s.status ? `<span class="chip">${s.status.emoji}</span>` : ""}
+           ${s.n ? s.n + " · " : ""}${esc(s.name)}</h3>
+       <div class="stepbody">${renderBody(s.body)}</div>
+     </div>`).join("");
+
+  document.querySelectorAll("tr[data-jump]").forEach(tr =>
+    tr.addEventListener("click", () => {
+      const el = $(tr.dataset.jump);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+
+  $("loader").classList.add("hidden");
+  $("mirror").classList.remove("hidden");
+}
+
+function loadMd(md) {
+  localStorage.setItem(LS.md, md);
+  renderMirror(md);
+}
+
+/* ============ Wiring ============ */
+$("lang-de").onclick = () => { lang = "de"; localStorage.setItem(LS.lang, lang); applyI18n(); };
+$("lang-en").onclick = () => { lang = "en"; localStorage.setItem(LS.lang, lang); applyI18n(); };
+
+$("tab-spiegel").onclick = () => switchTab("spiegel");
+$("tab-prompt").onclick = () => switchTab("prompt");
+$("btn-to-prompt").onclick = () => switchTab("prompt");
+function switchTab(which) {
+  $("tab-spiegel").classList.toggle("active", which === "spiegel");
+  $("tab-prompt").classList.toggle("active", which === "prompt");
+  $("view-spiegel").classList.toggle("hidden", which !== "spiegel");
+  $("view-prompt").classList.toggle("hidden", which !== "prompt");
+}
+
+$("btn-file").onclick = () => $("file-input").click();
+$("file-input").onchange = (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(loadMd);
+};
+$("btn-demo").onclick = () => loadMd($("demo-md").textContent.trim());
+$("btn-paste").onclick = () => { const v = $("paste-area").value.trim(); if (v) loadMd(v); };
+$("btn-reset").onclick = () => {
+  localStorage.removeItem(LS.md);
+  $("mirror").classList.add("hidden");
+  $("loader").classList.remove("hidden");
+  $("paste-area").value = "";
+};
+
+const drop = $("loader");
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("dragover"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("dragover"));
+drop.addEventListener("drop", e => {
+  e.preventDefault(); drop.classList.remove("dragover");
+  const f = e.dataTransfer.files[0];
+  if (f) f.text().then(loadMd);
+});
+
+$("btn-copy").onclick = async () => {
+  try { await navigator.clipboard.writeText(PROMPTS[lang]); }
+  catch {
+    const ta = document.createElement("textarea");
+    ta.value = PROMPTS[lang]; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+  }
+  const c = $("copied"); c.style.display = "inline";
+  setTimeout(() => { c.style.display = "none"; }, 1600);
+};
+
+/* ============ Init ============ */
+applyI18n();
+const saved = localStorage.getItem(LS.md);
+if (saved) renderMirror(saved);
+</script>
+</body>
+</html>
