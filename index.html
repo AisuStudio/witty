@@ -19,12 +19,36 @@
 
   .wrap { max-width: 880px; margin: 0 auto; padding: var(--sp-lg) var(--gutter) var(--sp-4xl); }
 
-  header {
-    display: flex; align-items: baseline; justify-content: space-between;
-    gap: var(--sp-md); padding: var(--sp-lg) 0 var(--sp-md);
+  /* Hero — Wittgenstein aus witty!-Lettern, fix Vanilla auf Blueberry (theme-unabhängig) */
+  header.hero {
+    position: relative; overflow: hidden;
+    background: var(--color-blueberry);
+    border-radius: var(--radius-md);
+    margin-top: var(--sp-lg);
+    box-shadow: var(--shadow-md);
   }
-  .wordmark { font-family: "iA Writer Mono S", monospace; font-size: 28px; font-weight: 700; }
-  .wordmark span { color: var(--color-accent); }
+  .hero-ascii {
+    margin: 0; display: block;
+    font-family: "iA Writer Mono S", ui-monospace, monospace; font-weight: 700;
+    font-size: min(11.18px, calc((100vw - 48px) / 74.4));
+    line-height: 1; letter-spacing: 0;
+    color: var(--color-vanilla);
+    user-select: none; pointer-events: none;
+  }
+  .hero-top {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--sp-md) var(--sp-lg);
+    background: linear-gradient(rgba(31,25,52,.85), transparent);
+  }
+  .hero-tag {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: var(--sp-xl) var(--sp-lg) var(--sp-md);
+    background: linear-gradient(transparent, rgba(31,25,52,.94) 55%);
+    color: var(--color-vanilla); font-size: 14px;
+  }
+  .wordmark { font-family: "iA Writer Mono S", monospace; font-size: 28px; font-weight: 700; color: var(--color-vanilla); }
+  .wordmark span { color: var(--color-lemon); }
   .tagline { color: var(--color-muted); font-size: 13px; margin-top: 2px; }
 
   .langtoggle { display: flex; gap: 2px; border: 1px solid var(--color-border); border-radius: var(--radius-full); padding: 2px; background: var(--color-surface); }
@@ -147,15 +171,57 @@
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div>
-      <div class="wordmark">witty<span>.</span></div>
-      <div class="tagline" data-i18n="tagline"></div>
+  <header class="hero">
+    <pre class="hero-ascii" aria-hidden="true">                                                                                                                            
+                                                        !!!!!!!!!!                                                          
+                                                     !itywywwyyyyy!                                                         
+                                                   !yywwwwwwwwwwwy!                                                         
+                                                  !ywwwwwwwwwyyywwy!                                                        
+                                                  ywwwytyyti!   !twyti                                                      
+                                                  ywwti!!!    !!!!ywwwi                                                     
+                                                  twyi!!!       !!twwwi                                                     
+                                                  twwi!!!!!!!itti!!yww!                                                     
+                                                  iwwityywy!iwyytt!!wy                                                      
+                                                   yy!tyttt!!iii!!!!iii                                                     
+                                                  !it!!!!!!!!!!!!!!!!i!                                                     
+                                                  !tt!!!!!iyyt!!!!ii!!                                                      
+                                                   !iiii!!!iti!!!!iii!                                                      
+                                                    !iiiiitytttii!i!                                                        
+                                                      !iiittttiiiiii                                                        
+                                                      !ttiii!!!!iiii                                                        
+                                                       ityyttyytttti                                                        
+                                                     !!!itywwwyyttii!i!!                                                    
+                                                !!iitti!iitttttttii !tttii!                                                 
+                                            !!!ittttttt !iiittiiiii tyyttttii!!                                             
+                                          !iiiitttttttt  !!iiiiitit!yyytttttiiii!                                           
+                                        iiiiiitytttttty!!i!iiiiiiiityyttttttiiiiiii!                                        
+                                       iiitiiityyyttttytii !ttt! yyyyytttyttttiitiii                                        
+                                      !itttyttyyyyttttttyi  !i!!ywyyytttyytttttytttt!                                       
+                                      iitttyytytttttttttwy!!  !yyyyyytttttttttyttyyti                                       
+                                      itttytytytttttttttyy!!i iyyyyyttttttyttyytyytyt                                       
+                                     !tttyyyyyyttttitttttt!!!!tyyyyyttttyyttyyyyyyytt!                                      
+                                     iitytywwyyytttttttttt!!ittyyyyytyyyyytywwyyyytty!                                      
+                                    itttyywwwwyyttttttttttiiytyyyyyytywwwyyywyyyyyyyt!                                      
+                                    iiyyyyyywwyyyttttttitttttyyyyyyyywwwyyywwyyyttttti                                      
+                                    itttttyywwwywyttttttttttyyyyyyyywwwyyywwyttttttyyi                                      
+                                    ittyyyyyyywwwyttttttttyyyyyyyyywwwwwwwwwytttttttti                                      
+                                    itttiitttywwywytttttttwwyyyyywwwwwwwwwwyyttyyytttt                                      
+                                    tttttttyyywwwwwtttttttwyyyyywwywywwwwwwyyyttyttttt!                                     
+                                    iiittyyyyyywwwwytttttywyyyywwyywwwwwwwwytttttttttt!                                     
+                                    iittyyyyttwwwwwwyttttywyyywwwwwwwwwwwwwyyttttttyyyi                                     
+                                    yyyytttyyywwwwywwyttyywyyywwwwwwwwwwwwyyyttttyyyyti                                     
+                                    ttttyyyyywwwwwwwwwyywwwtywyyywwwwwwwwwyyyyyyyyyttt!                                     
+                                    ityyyyyywwwwwwwwwwwwwwyywyyywwwwwwwwwwwwyytttttttyi                                     
+                                    ytttyyyyyyywwwyyyywwwwwwwywwwyyywwwwwwwyyyyyttywyyt                                     
+                                    ittttityyyywwwwyywwwwwwwwwyyyyywwwwwwwyytttttyttytt                                     </pre>
+    <div class="hero-top">
+      <div class="wordmark">witty<span>!</span></div>
+      <div class="langtoggle">
+        <button id="lang-de">DE</button>
+        <button id="lang-en">EN</button>
+      </div>
     </div>
-    <div class="langtoggle">
-      <button id="lang-de">DE</button>
-      <button id="lang-en">EN</button>
-    </div>
+    <div class="hero-tag" data-i18n="tagline"></div>
   </header>
 
   <nav class="tabs">
