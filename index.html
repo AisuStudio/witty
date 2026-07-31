@@ -306,6 +306,8 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
           <input type="range" class="stageslider" id="proj-stage" min="0" max="5" step="1" value="2">
           <div class="stagelabel" id="stage-label"></div>
         </div>
+        <label class="q" for="proj-comp" data-i18n="qComp"></label>
+        <input type="text" class="projfield" id="proj-comp" data-i18n-ph="qCompPh">
         <label class="q" for="proj-focus" data-i18n="qWhy"></label>
         <input type="text" class="projfield" id="proj-focus" data-i18n-ph="qWhyPh">
         <label class="q qres" for="proj-resources" data-i18n="qRes"></label>
@@ -422,6 +424,7 @@ const I18N = {
     qStage: "Wo steht es gerade?",
     st0: "Idee", st1: "Im Bau", st2: "Prototyp", st3: "Beta", st4: "Voll live", st5: "Etabliert",
     stUnset: "— nicht gesetzt",
+    qComp: "Wer macht etwas Ähnliches? (optional)", qCompPh: "z. B. \"Calligraphr, iFontMaker\" — oder \"kenne keine\"",
     qWhy: "Warum das Audit? (optional)", qWhyPh: "z. B. \"strategische Verortung\" oder \"entscheiden, ob ich Geld verlangen soll\"",
     qRes: "Ressourcen",
     qResPh: "GitHub-Link, Website, Dateipfade, Doku … — leer lassen, wenn die LLM schon im Projekt sitzt oder du Dateien anhängst",
@@ -455,6 +458,7 @@ const I18N = {
     qStage: "Where does it stand?",
     st0: "Idea", st1: "Building", st2: "Prototype", st3: "Beta", st4: "Fully live", st5: "Established",
     stUnset: "— not set",
+    qComp: "Who does something similar? (optional)", qCompPh: "e.g. \"Calligraphr, iFontMaker\" — or \"none I know of\"",
     qWhy: "Why this audit? (optional)", qWhyPh: "e.g. \"strategic positioning\" or \"decide whether to charge money\"",
     qRes: "Resources",
     qResPh: "GitHub link, website, file paths, docs … — leave empty if the LLM already sits inside the project or you attach files",
@@ -581,14 +585,16 @@ function projectBlock() {
   const name = $("proj-name").value.trim();
   const desc = $("proj-desc").value.trim();
   const goal = $("proj-goal").value.trim();
+  const comp = $("proj-comp").value.trim();
   const focus = $("proj-focus").value.trim();
   const res = $("proj-resources").value.trim();
-  if (!name && !desc && !goal && !stageSet && !focus && !res) return PROJECT_FALLBACK[lang];
+  if (!name && !desc && !goal && !stageSet && !comp && !focus && !res) return PROJECT_FALLBACK[lang];
   const de = lang === "de";
   const lines = [(de ? "PROJEKT" : "PROJECT") + ": " + (name || "—")];
   if (desc)     lines.push((de ? "Was es ist: " : "What it is: ") + desc);
   if (goal)     lines.push((de ? "Ziel: " : "Goal: ") + goal);
   if (stageSet) lines.push((de ? "Stand: " : "Stage: ") + t("st" + $("proj-stage").value));
+  if (comp)     lines.push((de ? "Ähnliche Produkte/Alternativen (Input für Schritt 5, Unterschied): " : "Similar products/alternatives (input for step 5, Difference): ") + comp);
   if (focus)    lines.push((de ? "Anlass für das Audit: " : "Reason for this audit: ") + focus);
   if (res)      lines.push((de ? "Ressourcen (nutze sie als Evidenzquellen): " : "Resources (use them as evidence sources): ") + res);
   return lines.join("\n");
@@ -596,8 +602,8 @@ function projectBlock() {
 function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
 
 /* ============ State ============ */
-const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pfocus: "witty.proj.focus", pres: "witty.proj.res" };
-const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-focus","pfocus"],["proj-resources","pres"]];
+const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pcomp: "witty.proj.comp", pfocus: "witty.proj.focus", pres: "witty.proj.res" };
+const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-comp","pcomp"],["proj-focus","pfocus"],["proj-resources","pres"]];
 let lang = localStorage.getItem(LS.lang) || "de";
 
 const $ = (id) => document.getElementById(id);
