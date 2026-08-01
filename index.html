@@ -213,6 +213,58 @@
     white-space: pre-wrap; max-height: 480px; overflow: auto;
   }
   .copiedflash { display: none; margin-left: var(--sp-sm); font-family: "iA Writer Mono S", monospace; font-size: 13px; color: var(--color-accent); }
+  .copiedflash.show { display: inline; }
+
+  /* Speicherleiste — erscheint, sobald ein Breakout das Dokument verändert hat */
+  .savebar {
+    position: sticky; bottom: var(--sp-md); z-index: 5;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: var(--sp-sm); margin-top: var(--sp-md);
+    background: var(--color-surface); border: 1px solid var(--color-lemon);
+    border-radius: var(--radius-md); padding: var(--sp-sm) var(--sp-md);
+    box-shadow: var(--shadow-sm); font-size: 13.5px;
+  }
+  .savebar-actions { display: flex; align-items: center; gap: var(--sp-sm); flex-wrap: wrap; }
+
+  /* Linsen-Umschalter: dieselben Antworten, andere Anordnung */
+  .lenses { display: flex; gap: var(--sp-xs); margin: var(--sp-lg) 0 var(--sp-sm); flex-wrap: wrap; }
+  .lens {
+    border: 1px solid var(--color-border); background: transparent; cursor: pointer;
+    font-family: var(--font-primary); font-weight: 500; font-size: 13px; color: var(--color-muted);
+    padding: 6px var(--sp-md); border-radius: 999px;
+  }
+  .lens.active { color: var(--color-text); border-color: var(--color-accent); background: var(--color-surface); font-weight: 700; }
+
+  /* Business Model Canvas — klassische Anordnung, auf Mobil einspaltig */
+  .bmc-intro { font-size: 13.5px; color: var(--color-muted); margin-bottom: var(--sp-md); }
+  .bmc-grid { display: grid; gap: var(--sp-sm); grid-template-columns: 1fr; }
+  @media (min-width: 800px) {
+    .bmc-grid {
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-areas:
+        "kp ka vp cr seg"
+        "kp kr vp ch seg"
+        "cost cost cost rev rev";
+    }
+    .bmc-kp{grid-area:kp} .bmc-ka{grid-area:ka} .bmc-kr{grid-area:kr} .bmc-vp{grid-area:vp}
+    .bmc-cr{grid-area:cr} .bmc-ch{grid-area:ch} .bmc-seg{grid-area:seg}
+    .bmc-cost{grid-area:cost} .bmc-rev{grid-area:rev}
+  }
+  .bmc-box {
+    border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    padding: var(--sp-sm) var(--sp-md); min-height: 96px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .bmc-box h4 {
+    font-family: var(--font-primary); font-size: 11px; font-weight: 700; margin: 0;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted);
+  }
+  .bmc-box p { margin: 0; font-size: 13.5px; }
+  .bmc-src { margin-top: auto; font-family: "iA Writer Mono S", monospace; font-size: 11px; color: var(--color-muted); }
+  .bmc-src[data-jump] { cursor: pointer; text-decoration: underline dotted; }
+  .bmc-box.gap { border-style: dashed; }
+  .bmc-box.gap p { color: var(--color-muted); font-style: italic; }
+  .bmc-box.noschema { border-style: dashed; border-color: color-mix(in srgb, var(--color-lemon) 60%, var(--color-border)); }
+  .bmc-box.noschema h4 { color: var(--color-text); }
 
   footer { margin-top: var(--sp-3xl); font-size: 12px; color: var(--color-muted); }
   footer em { font-style: italic; }
@@ -318,9 +370,24 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
         <div class="stepbody" id="cover-extra"></div>
         <div class="legend" data-i18n="legend"></div>
       </div>
+      <!-- Linsen: dieselben Antworten, andere Anordnung -->
+      <div class="lenses">
+        <button class="lens active" id="lens-steps" data-i18n="lensSteps"></button>
+        <button class="lens" id="lens-bmc" data-i18n="lensBmc"></button>
+      </div>
       <div class="card" id="sections"></div>
+      <div class="card hidden" id="bmc"></div>
       <div class="loadrow" style="margin-top:var(--sp-lg)">
         <button class="btn secondary" id="btn-reset" data-i18n="btnReset"></button>
+      </div>
+      <!-- Erscheint, sobald ein Breakout das Dokument verändert hat -->
+      <div class="savebar hidden" id="savebar">
+        <span id="savebar-text"></span>
+        <span class="savebar-actions">
+          <button class="btn lemon small" id="btn-download-md" data-i18n="btnDownloadMd"></button>
+          <button class="btn secondary small" id="btn-copy-md" data-i18n="btnCopyMd"></button>
+          <span class="copiedflash" id="copied-md" data-i18n="copied"></span>
+        </span>
       </div>
     </div>
   </section>
@@ -343,6 +410,8 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
           <input type="range" class="stageslider" id="proj-stage" min="0" max="5" step="1" value="2">
           <div class="stagelabel" id="stage-label"></div>
         </div>
+        <label class="q" for="proj-money" data-i18n="qMoney"></label>
+        <input type="text" class="projfield" id="proj-money" data-i18n-ph="qMoneyPh">
         <label class="q" for="proj-comp" data-i18n="qComp"></label>
         <input type="text" class="projfield" id="proj-comp" data-i18n-ph="qCompPh">
         <label class="q" for="proj-focus" data-i18n="qWhy"></label>
@@ -712,7 +781,16 @@ const I18N = {
     tabSpiegel: "Spiegel", tabPrompt: "Audit-Prompt",
     loadTitle: "Audit-Ergebnis laden",
     loadExpl: "Lade einen PM-STATUS als Markdown-Datei (per Datei, Drag & Drop oder Einfügen) — witty rendert daraus dein Dashboard und deinen Spiegel. Noch kein Audit-MD? Hol dir den Prompt.",
-    btnFile: "MD-Datei laden", btnDemo: "Demo ansehen (witty selbst)", btnNoMd: "→ Ich brauche erst den Prompt",
+    btnFile: "MD-Datei laden", btnDemo: "Demo ansehen (Fontane)", btnNoMd: "→ Ich brauche erst den Prompt",
+    saveDirty: "Im Dokument geändert — noch nicht gespeichert.",
+    btnDownloadMd: "Markdown herunterladen", btnCopyMd: "Markdown kopieren",
+    lensSteps: "Schritte", lensBmc: "Business Model Canvas",
+    bmcIntro: "Dieselben Antworten, anders angeordnet: Das Business Model Canvas ist ein Neun-Felder-Raster für ein Geschäftsmodell. Sieben Felder speisen sich aus deinen Schritten — gestrichelte Kästen sind Lücken.",
+    bmcFrom: "aus Schritt ", bmcEmpty: "noch offen — kommt aus Schritt ",
+    bmcNoSchema: "Im 14-Schritte-Schema nicht vorgesehen — eine Lücke des Schemas, nicht deines Projekts.",
+    bmcKp: "Schlüsselpartner", bmcKa: "Schlüsselaktivitäten", bmcKr: "Schlüsselressourcen",
+    bmcVp: "Wertversprechen", bmcCr: "Kundenbeziehungen", bmcCh: "Kanäle",
+    bmcSeg: "Kundensegmente", bmcCost: "Kostenstruktur", bmcRev: "Einnahmequellen",
     pastePh: "…oder Markdown hier einfügen", btnPaste: "Eingefügtes laden",
     thStep: "Schritt", thStatus: "Status", thNote: "Stand in einem Satz",
     legend: "⭕ offen · 🔍 implizit abgedeckt (dein Spiegel — gelb) · ✅ beantwortet · 🕊️ bewusst vertagt · Zeile anklicken springt zum Detail",
@@ -727,6 +805,7 @@ const I18N = {
     qStage: "Wo steht es gerade?",
     st0: "Idee", st1: "Im Bau", st2: "Prototyp", st3: "Beta", st4: "Voll live", st5: "Etabliert",
     stUnset: "— nicht gesetzt",
+    qMoney: "Kostet es Geld, bringt es Geld? (optional)", qMoneyPh: "z. B. \"Vercel Free, Domain 30 €/Jahr, noch keine Einnahmen\"",
     qComp: "Wer macht etwas Ähnliches? (optional)", qCompPh: "z. B. \"Calligraphr, iFontMaker\" — oder \"kenne keine\"",
     qWhy: "Warum das Audit? (optional)", qWhyPh: "z. B. \"strategische Verortung\" oder \"entscheiden, ob ich Geld verlangen soll\"",
     qRes: "Ressourcen",
@@ -746,7 +825,16 @@ const I18N = {
     tabSpiegel: "Mirror", tabPrompt: "Audit prompt",
     loadTitle: "Load an audit result",
     loadExpl: "Load a PM-STATUS markdown file (file picker, drag & drop, or paste) — witty renders your dashboard and your mirror. No audit MD yet? Grab the prompt.",
-    btnFile: "Load MD file", btnDemo: "View demo (witty itself)", btnNoMd: "→ I need the prompt first",
+    btnFile: "Load MD file", btnDemo: "View demo (Fontane)", btnNoMd: "→ I need the prompt first",
+    saveDirty: "Changed in the document — not saved yet.",
+    btnDownloadMd: "Download markdown", btnCopyMd: "Copy markdown",
+    lensSteps: "Steps", lensBmc: "Business Model Canvas",
+    bmcIntro: "The same answers, arranged differently: the Business Model Canvas is a nine-field grid for a business model. Seven fields are fed by your steps — dashed boxes are gaps.",
+    bmcFrom: "from step ", bmcEmpty: "still open — comes from step ",
+    bmcNoSchema: "Not covered by the 14-step schema — a gap in the schema, not in your project.",
+    bmcKp: "Key partners", bmcKa: "Key activities", bmcKr: "Key resources",
+    bmcVp: "Value proposition", bmcCr: "Customer relationships", bmcCh: "Channels",
+    bmcSeg: "Customer segments", bmcCost: "Cost structure", bmcRev: "Revenue streams",
     pastePh: "…or paste markdown here", btnPaste: "Load pasted text",
     thStep: "Step", thStatus: "Status", thNote: "State in one sentence",
     legend: "⭕ open · 🔍 implicitly covered (your mirror — yellow) · ✅ answered · 🕊️ deliberately deferred · click a row to jump to detail",
@@ -761,6 +849,7 @@ const I18N = {
     qStage: "Where does it stand?",
     st0: "Idea", st1: "Building", st2: "Prototype", st3: "Beta", st4: "Fully live", st5: "Established",
     stUnset: "— not set",
+    qMoney: "Does it cost money, does it make money? (optional)", qMoneyPh: "e.g. \"Vercel free tier, domain €30/year, no revenue yet\"",
     qComp: "Who does something similar? (optional)", qCompPh: "e.g. \"Calligraphr, iFontMaker\" — or \"none I know of\"",
     qWhy: "Why this audit? (optional)", qWhyPh: "e.g. \"strategic positioning\" or \"decide whether to charge money\"",
     qRes: "Resources",
@@ -997,15 +1086,17 @@ function projectBlock() {
   const name = $("proj-name").value.trim();
   const desc = $("proj-desc").value.trim();
   const goal = $("proj-goal").value.trim();
+  const money = $("proj-money").value.trim();
   const comp = $("proj-comp").value.trim();
   const focus = $("proj-focus").value.trim();
   const res = $("proj-resources").value.trim();
-  if (!name && !desc && !goal && !stageSet && !comp && !focus && !res) return PROJECT_FALLBACK[lang];
+  if (!name && !desc && !goal && !stageSet && !money && !comp && !focus && !res) return PROJECT_FALLBACK[lang];
   const de = lang === "de";
   const lines = [(de ? "PROJEKT" : "PROJECT") + ": " + (name || "—")];
   if (desc)     lines.push((de ? "Was es ist: " : "What it is: ") + desc);
   if (goal)     lines.push((de ? "Ziel: " : "Goal: ") + goal);
   if (stageSet) lines.push((de ? "Stand: " : "Stage: ") + t("st" + $("proj-stage").value));
+  if (money)    lines.push((de ? "Kosten/Einnahmen (Input für Schritt 10, Ökonomie — nutze diese Zahlen statt Annahmen): " : "Costs/revenue (input for step 10, Economics — use these figures instead of assumptions): ") + money);
   if (comp)     lines.push((de ? "Ähnliche Produkte/Alternativen (Input für Schritt 5, Unterschied): " : "Similar products/alternatives (input for step 5, Difference): ") + comp);
   if (focus)    lines.push((de ? "Anlass für das Audit: " : "Reason for this audit: ") + focus);
   if (res)      lines.push((de ? "Ressourcen (nutze sie als Evidenzquellen): " : "Resources (use them as evidence sources): ") + res);
@@ -1014,8 +1105,8 @@ function projectBlock() {
 function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
 
 /* ============ State ============ */
-const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pcomp: "witty.proj.comp", pfocus: "witty.proj.focus", pres: "witty.proj.res" };
-const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-comp","pcomp"],["proj-focus","pfocus"],["proj-resources","pres"]];
+const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pmoney: "witty.proj.money", pcomp: "witty.proj.comp", pfocus: "witty.proj.focus", pres: "witty.proj.res" };
+const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-money","pmoney"],["proj-comp","pcomp"],["proj-focus","pfocus"],["proj-resources","pres"]];
 let lang = localStorage.getItem(LS.lang) || "de";
 
 const $ = (id) => document.getElementById(id);
@@ -1130,10 +1221,109 @@ function renderTable(rows) {
     "<tr>" + splitRow(r).map(c => "<td>" + inlineMd(esc(c)) + "</td>").join("") + "</tr>").join("") + "</tbody>";
   return '<div class="tablewrap"><table class="md">' + th + tb + "</table></div>";
 }
+/* ============ Breakouts ============
+   Ein Breakout liest einen ```witty:<name>-Block aus dem Markdown, bearbeitet
+   ihn im Browser und schreibt ihn in dasselbe Dokument zurück. Die MD-Datei
+   bleibt Source of Truth — kein Konto, kein Backend, kein eigenes Format.
+   Wer hier nichts registriert hat, bekommt weiterhin den sichtbaren Datenblock. */
+const BREAKOUTS = {};                       // name -> (data, rawCode) => html
+let currentMd = "";                         // Rohtext des geladenen Dokuments
+let dirty = false;                          // seit dem Laden verändert?
+
+// "schlüssel: wert" je Zeile. Kommentare (#) und Leerzeilen werden übersprungen.
+function parseBlock(text) {
+  const data = {};
+  text.split(/\r?\n/).forEach(l => {
+    const m = l.match(/^\s*([A-Za-z_][\w-]*)\s*[:=]\s*(.*?)\s*$/);
+    if (m && !l.trim().startsWith("#")) data[m[1].toLowerCase()] = m[2];
+  });
+  return data;
+}
+function serializeBlock(data) {
+  return Object.entries(data).map(([k, v]) => k + ": " + v).join("\n");
+}
+// Schlüssel normalisieren: "Ziel Stück" -> "ziel_stueck", damit eingefügte
+// Tabellenzeilen dieselben Namen treffen wie die Blöcke im Dokument.
+function slugKey(s) {
+  return s.toLowerCase()
+    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+    .replace(/[^a-z0-9_]+/g, "_").replace(/^_|_$/g, "");
+}
+// CSV, Semikolon-CSV oder Tab-getrennt (so kommt es aus Excel/Numbers via Copy).
+// Erwartet zwei Spalten: Schlüssel und Wert. Trenner nach Priorität, damit ein
+// Dezimalkomma ("9,99") nicht als Spaltentrenner missverstanden wird.
+function parseCsv(text) {
+  const data = {};
+  text.split(/\r?\n/).forEach(line => {
+    if (!line.trim()) return;
+    const delim = line.includes("\t") ? "\t" : (line.includes(";") ? ";" : ",");
+    let cells = line.split(delim).map(c => c.trim().replace(/^"|"$/g, ""));
+    if (cells.length < 2) return;
+    // Komma-CSV mit deutschem Dezimalkomma: die letzten beiden Zahlteile gehören zusammen
+    if (delim === "," && cells.length > 2 && /^\d+$/.test(cells[cells.length - 1]) && /^-?\d+$/.test(cells[cells.length - 2])) {
+      const dec = cells.pop(); cells[cells.length - 1] += "," + dec;
+    }
+    const key = slugKey(cells[0]);
+    if (key) data[key] = cells[cells.length - 1];
+  });
+  return data;
+}
+function num(v, fallback) {
+  if (v === undefined || v === null || v === "") return fallback;
+  const n = parseFloat(String(v).replace(/[^\d.,-]/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", "."));
+  return isFinite(n) ? n : fallback;
+}
+// Ersetzt den Inhalt eines witty-Blocks im Markdown. Blocknamen sind pro
+// Dokument eindeutig; fehlt der Block, passiert nichts (der Aufrufer prüft das).
+function replaceFence(md, name, body) {
+  const re = new RegExp("(^|\\n)```witty:" + name + "[^\\n]*\\n[\\s\\S]*?\\n```", "i");
+  if (!re.test(md)) return null;
+  return md.replace(re, (m, lead) => lead + "```witty:" + name + "\n" + body + "\n```");
+}
+function commitBreakout(name, body) {
+  const next = replaceFence(currentMd, name, body);
+  if (next === null) return false;
+  currentMd = next;
+  localStorage.setItem(LS.md, next);
+  dirty = true;
+  updateSaveBar();
+  return true;
+}
+function updateSaveBar() {
+  const bar = $("savebar");
+  if (!bar) return;
+  bar.classList.toggle("hidden", !dirty);
+  const label = $("savebar-text");
+  if (label) label.textContent = t("saveDirty");
+}
+function downloadMd() {
+  const name = (($("proj-title").textContent || "PM-STATUS").trim().replace(/[^\w\-]+/g, "-") || "PM-STATUS") + ".md";
+  const url = URL.createObjectURL(new Blob([currentMd], { type: "text/markdown;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  dirty = false; updateSaveBar();
+}
+async function copyMd() {
+  try { await navigator.clipboard.writeText(currentMd); flash("copied-md"); }
+  catch { const ta = document.createElement("textarea"); ta.value = currentMd; document.body.appendChild(ta);
+          ta.select(); document.execCommand("copy"); document.body.removeChild(ta); flash("copied-md"); }
+}
+function flash(id) {
+  const el = $(id); if (!el) return;
+  el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 1600);
+}
+
 function renderFence(info, code) {
-  // ```witty:pnl etc. — Datenblöcke der Breakouts. Bis die gebaut sind: sichtbar,
-  // aber als Block markiert, damit das Format schon jetzt durchgereicht wird.
-  if (/^witty:/i.test(info)) {
+  // ```witty:<name> — wenn ein Breakout registriert ist, rendert er; sonst bleibt
+  // der Datenblock sichtbar, damit das Format auch ohne Werkzeug durchgereicht wird.
+  const m = info.match(/^witty:([\w-]+)/i);
+  if (m) {
+    const name = m[1].toLowerCase();
+    if (BREAKOUTS[name]) {
+      try { return BREAKOUTS[name](parseBlock(code), code); }
+      catch (e) { console.warn("Breakout " + name + " fehlgeschlagen:", e); }
+    }
     return '<div class="databox"><span class="dblabel">' + esc(info) + "</span><pre>" + esc(code) + "</pre></div>";
   }
   return '<pre class="code">' + esc(code) + "</pre>";
@@ -1202,19 +1392,90 @@ function renderMirror(md) {
        <div class="stepbody">${renderBody(s.body)}</div>
      </div>`).join("");
 
-  document.querySelectorAll("tr[data-jump]").forEach(tr =>
-    tr.addEventListener("click", () => {
-      const el = $(tr.dataset.jump);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  currentDoc = doc;
+  $("bmc").innerHTML = renderBmc(doc);
+
+  document.querySelectorAll("[data-jump]").forEach(el =>
+    el.addEventListener("click", () => {
+      switchLens("steps");                       // aus der Canvas-Linse zurück in die Schritte
+      const target = $(el.dataset.jump);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     }));
 
   $("loader").classList.add("hidden");
   $("mirror").classList.remove("hidden");
 }
 
+let currentDoc = null;
+let lens = "steps";
+function switchLens(which) {
+  lens = which;
+  $("lens-steps").classList.toggle("active", which === "steps");
+  $("lens-bmc").classList.toggle("active", which === "bmc");
+  $("sections").classList.toggle("hidden", which !== "steps");
+  $("bmc").classList.toggle("hidden", which !== "bmc");
+}
+
+/* ============ Linse: Business Model Canvas ============
+   Nichts wird neu abgefragt — die neun Felder werden aus den bereits
+   beantworteten Schritten zusammengesetzt. Zwei Felder haben im
+   14-Schritte-Schema keine Quelle; genau das macht die Linse sichtbar. */
+const BMC_FIELDS = [
+  { key: "kp",   cls: "bmc-kp",   steps: [] },
+  { key: "ka",   cls: "bmc-ka",   steps: [6, 8] },
+  { key: "kr",   cls: "bmc-kr",   steps: [] },
+  { key: "vp",   cls: "bmc-vp",   steps: [5, 2] },
+  { key: "cr",   cls: "bmc-cr",   steps: [13, 12] },
+  { key: "ch",   cls: "bmc-ch",   steps: [9] },
+  { key: "seg",  cls: "bmc-seg",  steps: [3] },
+  { key: "cost", cls: "bmc-cost", steps: [10] },
+  { key: "rev",  cls: "bmc-rev",  steps: [9, 10] }
+];
+// Kurzbefund einer Sektion: die erste Blockquote-Zeile, ohne das Präfix.
+function shortVerdict(section) {
+  if (!section) return "";
+  const line = section.body.split(/\r?\n/).find(l => /^>\s*\S/.test(l));
+  return line ? line.replace(/^>\s*/, "").replace(/^(Kurzbefund|Short verdict)\s*:\s*/i, "").trim() : "";
+}
+function renderBmc(doc) {
+  if (!doc) return "";
+  const byN = {};
+  doc.sections.forEach(s => { if (s.n) byN[s.n] = s; });
+  doc.rows.forEach(r => { if (!byN[r.n]) byN[r.n] = null; });
+  const noteOf = n => {
+    const row = doc.rows.find(r => r.n === n);
+    return shortVerdict(byN[n]) || (row ? row.note : "");
+  };
+  const statusOf = n => {
+    const row = doc.rows.find(r => r.n === n);
+    return (byN[n] && byN[n].status) || (row && row.status) || null;
+  };
+  const boxes = BMC_FIELDS.map(f => {
+    const title = esc(t("bmc" + f.key.charAt(0).toUpperCase() + f.key.slice(1)));
+    if (!f.steps.length) {
+      return `<div class="bmc-box noschema ${f.cls}"><h4>${title}</h4>
+        <p>${esc(t("bmcNoSchema"))}</p></div>`;
+    }
+    const src = f.steps.find(n => noteOf(n)) || f.steps[0];
+    const text = noteOf(src);
+    const st = statusOf(src);
+    const isGap = !text || (st && st.key === "open");
+    const body = text
+      ? `<p>${inlineMd(esc(text))}</p>`
+      : `<p>${esc(t("bmcEmpty"))}${f.steps.join(", ")}</p>`;
+    const chip = st ? st.emoji + " " : "";
+    return `<div class="bmc-box ${isGap ? "gap" : ""} ${f.cls}"><h4>${title}</h4>${body}
+      <span class="bmc-src" data-jump="step-${src}">${chip}${esc(t("bmcFrom"))}${f.steps.join(" · ")}</span></div>`;
+  }).join("");
+  return `<div class="bmc-intro">${esc(t("bmcIntro"))}</div><div class="bmc-grid">${boxes}</div>`;
+}
+
 function loadMd(md) {
+  currentMd = md;
+  dirty = false;
   localStorage.setItem(LS.md, md);
   renderMirror(md);
+  updateSaveBar();
 }
 
 /* ============ Wiring ============ */
@@ -1247,6 +1508,10 @@ function resetProject() {
 }
 $("btn-reset").onclick = resetProject;
 $("btn-reset-top").onclick = resetProject;
+$("btn-download-md").onclick = downloadMd;
+$("btn-copy-md").onclick = copyMd;
+$("lens-steps").onclick = () => switchLens("steps");
+$("lens-bmc").onclick = () => switchLens("bmc");
 
 const drop = $("loader");
 drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("dragover"); });
@@ -1301,6 +1566,10 @@ const PREFILL = {
     de: "Comic-Schaffende, Illustrator:innen und Tätowierer:innen zu eigenen Fonts bringen — unabhängig von Betriebssystem und Gerät, für wenig oder kein Geld.",
     en: "Get comic artists, illustrators and tattooers their own fonts — regardless of operating system or device, for little or no money."
   },
+  pmoney: {
+    de: "Hosting im Gratis-Tarif, Domain ~30 €/Jahr, bisher keine Einnahmen",
+    en: "Hosting on the free tier, domain ~€30/year, no revenue yet"
+  },
   pcomp: { de: "Glyphs, Fontself, Calligraphr", en: "Glyphs, Fontself, Calligraphr" },
   pfocus: {
     de: "Viele Funktionen gebaut — wie positioniere ich das Produkt monetär?",
@@ -1327,7 +1596,7 @@ if (["0","1","2","3","4","5"].includes(storedStage)) {
 }
 applyI18n();
 const saved = localStorage.getItem(LS.md);
-if (saved) renderMirror(saved);
+if (saved) loadMd(saved);   // setzt zugleich currentMd für die Breakouts
 </script>
 </body>
 </html>
