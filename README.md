@@ -15,10 +15,21 @@ Wittgenstein: *"The limits of my language mean the limits of my world"*
 
 ## Status
 
-Konzeptphase / concept stage — see [PM-STATUS.md](./PM-STATUS.md)
-(witty is its own first use case). Schema und Templates entstehen
-aktuell in `SpiritSprint/pm-flow-concept.md` und ziehen hierher um,
-sobald der Phase-1-Schnitt entschieden ist.
+Live auf [witty.aisu.studio](https://witty.aisu.studio) — Spiegel-Ansicht,
+Audit-Prompt und drei Breakouts (BMC, Mini-P&L, Roadmap). Siehe
+[PM-STATUS.md](./PM-STATUS.md) (witty is its own first use case).
+
+**DE** — Das methodische Fundament liegt in
+[`docs/pm-flow-concept.md`](./docs/pm-flow-concept.md): die 14 Schritte
+mit Leitfrage, Methode, Output-Format und Fertig-Kriterium, dazu der
+Experiment-Layer (Validierung) und der optionale AI-Layer. Der
+Audit-Prompt in `index.html` ist die Übersetzung dieses Schemas — ändert
+sich das Schema, gehört der Prompt nachgezogen.
+
+**EN** — The methodological source of truth lives in
+[`docs/pm-flow-concept.md`](./docs/pm-flow-concept.md): the 14 steps plus
+the experiment layer. The audit prompt in `index.html` is a translation
+of that schema; when the schema changes, the prompt follows.
 
 ## Prinzipien / Principles
 
