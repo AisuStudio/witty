@@ -266,6 +266,28 @@
   .bmc-box.noschema { border-style: dashed; border-color: color-mix(in srgb, var(--color-lemon) 60%, var(--color-border)); }
   .bmc-box.noschema h4 { color: var(--color-text); }
 
+  /* Breakout: Rechner statt Datenblock */
+  .breakout {
+    border: 1px solid var(--color-lemon); border-radius: var(--radius-sm);
+    padding: var(--sp-md); margin: var(--sp-sm) 0; background: var(--color-surface-2);
+  }
+  .bo-head { margin-bottom: var(--sp-sm); }
+  .pnl-grid { display: grid; gap: var(--sp-sm); grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .pnl-field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--color-muted); }
+  .pnl-field input {
+    font-family: "iA Writer Mono S", monospace; font-size: 14px;
+    background: var(--color-surface); color: var(--color-text);
+    border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 8px; width: 100%;
+  }
+  .pnl-field input:focus { outline: 2px solid var(--color-accent); outline-offset: -1px; }
+  .pnl-out { margin-top: var(--sp-md); }
+  .pnl-out tr.pnl-key td { background: color-mix(in srgb, var(--color-lemon) 22%, transparent); }
+  .pnl-import { margin-top: var(--sp-sm); font-size: 13px; }
+  .pnl-import summary { cursor: pointer; color: var(--color-muted); }
+  .pnl-paste { margin-top: var(--sp-sm); min-height: 88px; }
+  .pnl-msg { font-size: 12px; color: var(--color-accent); align-self: center; }
+  .pnl-note { margin-top: var(--sp-sm); font-size: 12px; color: var(--color-muted); }
+
   footer { margin-top: var(--sp-3xl); font-size: 12px; color: var(--color-muted); }
   footer em { font-style: italic; }
   .hidden { display: none !important; }
@@ -791,6 +813,18 @@ const I18N = {
     bmcKp: "Schlüsselpartner", bmcKa: "Schlüsselaktivitäten", bmcKr: "Schlüsselressourcen",
     bmcVp: "Wertversprechen", bmcCr: "Kundenbeziehungen", bmcCh: "Kanäle",
     bmcSeg: "Kundensegmente", bmcCost: "Kostenstruktur", bmcRev: "Einnahmequellen",
+    pnlTitle: "Mini-P&L — rechnen statt schätzen",
+    pnlCostMonth: "Kosten pro Monat", pnlGross: "Bruttopreis", pnlVat: "USt in %",
+    pnlFeePct: "Gebühren in %", pnlFeeFix: "Gebühr fix", pnlTarget: "Zielstückzahl",
+    pnlHours: "Bauzeit in Stunden (optional)",
+    pnlNetPerUnit: "Netto pro verkaufter Einheit", pnlYearCost: "Kosten pro Jahr",
+    pnlBreakEven: "Deckungspunkt", pnlUnits: "Stück",
+    pnlTargetRevenue: "Erlös bei Zielstückzahl", pnlSurplus: "Überschuss nach Kosten",
+    pnlHourly: "…entspricht pro Stunde Bauzeit",
+    pnlImport: "Zahlen einfügen (CSV oder aus einer Tabelle kopiert)",
+    pnlImportPh: "Kosten pro Monat;3\nBruttopreis;9,99\nZiel Stück;100",
+    pnlImportBtn: "Übernehmen", pnlImportOk: "{n} Werte übernommen", pnlImportNone: "Keine passenden Zeilen erkannt",
+    pnlNote: "Änderungen wandern zurück ins Dokument — unten herunterladen, damit sie erhalten bleiben.",
     pastePh: "…oder Markdown hier einfügen", btnPaste: "Eingefügtes laden",
     thStep: "Schritt", thStatus: "Status", thNote: "Stand in einem Satz",
     legend: "⭕ offen · 🔍 implizit abgedeckt (dein Spiegel — gelb) · ✅ beantwortet · 🕊️ bewusst vertagt · Zeile anklicken springt zum Detail",
@@ -835,6 +869,18 @@ const I18N = {
     bmcKp: "Key partners", bmcKa: "Key activities", bmcKr: "Key resources",
     bmcVp: "Value proposition", bmcCr: "Customer relationships", bmcCh: "Channels",
     bmcSeg: "Customer segments", bmcCost: "Cost structure", bmcRev: "Revenue streams",
+    pnlTitle: "Mini P&L — calculate instead of guess",
+    pnlCostMonth: "Cost per month", pnlGross: "Gross price", pnlVat: "VAT in %",
+    pnlFeePct: "Fees in %", pnlFeeFix: "Fixed fee", pnlTarget: "Target units",
+    pnlHours: "Build time in hours (optional)",
+    pnlNetPerUnit: "Net per unit sold", pnlYearCost: "Cost per year",
+    pnlBreakEven: "Break-even", pnlUnits: "units",
+    pnlTargetRevenue: "Revenue at target units", pnlSurplus: "Surplus after cost",
+    pnlHourly: "…which is per hour of build time",
+    pnlImport: "Paste numbers (CSV or copied from a spreadsheet)",
+    pnlImportPh: "Cost per month;3\nGross price;9.99\nTarget units;100",
+    pnlImportBtn: "Apply", pnlImportOk: "{n} values applied", pnlImportNone: "No matching rows found",
+    pnlNote: "Changes are written back into the document — download it below to keep them.",
     pastePh: "…or paste markdown here", btnPaste: "Load pasted text",
     thStep: "Step", thStatus: "Status", thNote: "State in one sentence",
     legend: "⭕ open · 🔍 implicitly covered (your mirror — yellow) · ✅ answered · 🕊️ deliberately deferred · click a row to jump to detail",
@@ -1394,6 +1440,7 @@ function renderMirror(md) {
 
   currentDoc = doc;
   $("bmc").innerHTML = renderBmc(doc);
+  mountBreakouts();
 
   document.querySelectorAll("[data-jump]").forEach(el =>
     el.addEventListener("click", () => {
@@ -1415,6 +1462,118 @@ function switchLens(which) {
   $("sections").classList.toggle("hidden", which !== "steps");
   $("bmc").classList.toggle("hidden", which !== "bmc");
 }
+
+/* ============ Breakout: Mini-P&L ============
+   Ersetzt den witty:pnl-Datenblock durch einen Rechner. Deutsche und
+   englische Schlüssel treffen dieselben Felder, damit ein Dokument aus dem
+   einen Prompt auch in der anderen Sprache rechnet. */
+const PNL_FIELDS = [
+  { id: "cost_month",  aliases: ["kosten_monat", "kosten_pro_monat", "laufende_kosten"], label: "pnlCostMonth", def: 0 },
+  { id: "gross",       aliases: ["brutto", "bruttopreis", "preis"],                      label: "pnlGross",     def: 0 },
+  { id: "vat_percent", aliases: ["ust_prozent", "mwst_prozent", "ust"],                  label: "pnlVat",       def: 0 },
+  { id: "fee_percent", aliases: ["gebuehr_prozent", "gebuehren_prozent"],                label: "pnlFeePct",    def: 0 },
+  { id: "fee_fixed",   aliases: ["gebuehr_fix", "gebuehren_fix"],                        label: "pnlFeeFix",    def: 0 },
+  { id: "target_units",aliases: ["ziel_stueck", "zielstueck", "ziel"],                   label: "pnlTarget",    def: 0 },
+  { id: "hours",       aliases: ["stunden", "bauzeit_stunden"],                          label: "pnlHours",     def: 0 }
+];
+function pnlRead(data) {
+  const out = {};
+  PNL_FIELDS.forEach(f => {
+    const key = [f.id, ...f.aliases].find(k => data[k] !== undefined);
+    out[f.id] = num(key ? data[key] : undefined, f.def);
+  });
+  out.currency = data.currency || data.waehrung || "€";
+  // Merkt sich, ob das Dokument deutsche Schlüssel benutzt — dann wird auch so zurückgeschrieben.
+  out._de = PNL_FIELDS.some(f => f.aliases.some(a => data[a] !== undefined));
+  return out;
+}
+function pnlWrite(v) {
+  const pick = f => (v._de ? f.aliases[0] : f.id);
+  // Optionale Felder nur schreiben, wenn sie gesetzt sind — sonst wächst der
+  // Block bei jedem Speichern um Nullwerte, die niemand eingetragen hat.
+  const lines = PNL_FIELDS.filter(f => f.id !== "hours" || v.hours).map(f => pick(f) + ": " + v[f.id]);
+  if (v.currency && v.currency !== "€") lines.push((v._de ? "waehrung" : "currency") + ": " + v.currency);
+  return lines.join("\n");
+}
+function pnlCompute(v) {
+  const netPerUnit = v.gross / (1 + v.vat_percent / 100) - v.gross * (v.fee_percent / 100) - v.fee_fixed;
+  const yearCost = v.cost_month * 12;
+  const breakEven = netPerUnit > 0 ? Math.ceil(yearCost / netPerUnit) : null;
+  const targetRevenue = v.target_units * netPerUnit;
+  const surplus = targetRevenue - yearCost;
+  const hourly = v.hours > 0 ? surplus / v.hours : null;
+  return { netPerUnit, yearCost, breakEven, targetRevenue, surplus, hourly };
+}
+function fmt(n, cur) {
+  if (n === null || !isFinite(n)) return "—";
+  const s = n.toLocaleString(lang === "de" ? "de-DE" : "en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return cur ? s + " " + cur : s;
+}
+function renderPnl(data) {
+  const v = pnlRead(data);
+  const inputs = PNL_FIELDS.map(f =>
+    `<label class="pnl-field"><span>${esc(t(f.label))}</span>
+       <input type="number" step="any" data-pnl="${f.id}" value="${v[f.id]}"></label>`).join("");
+  return `<div class="breakout" data-breakout="pnl" data-currency="${esc(v.currency)}" data-de="${v._de ? 1 : 0}">
+    <div class="bo-head"><span class="dblabel">${esc(t("pnlTitle"))}</span></div>
+    <div class="pnl-grid">${inputs}</div>
+    <div class="pnl-out"></div>
+    <details class="pnl-import">
+      <summary>${esc(t("pnlImport"))}</summary>
+      <textarea class="paste pnl-paste" rows="4" placeholder="${esc(t("pnlImportPh"))}"></textarea>
+      <div class="loadrow"><button class="btn secondary small pnl-apply">${esc(t("pnlImportBtn"))}</button>
+        <span class="pnl-msg"></span></div>
+    </details>
+    <p class="pnl-note">${esc(t("pnlNote"))}</p>
+  </div>`;
+}
+function mountPnl(root) {
+  const cur = root.dataset.currency || "€";
+  const isDe = root.dataset.de === "1";
+  const read = () => {
+    const v = { currency: cur, _de: isDe };
+    root.querySelectorAll("[data-pnl]").forEach(i => { v[i.dataset.pnl] = num(i.value, 0); });
+    return v;
+  };
+  const paint = () => {
+    const v = read(), c = pnlCompute(v);
+    const rows = [
+      [t("pnlNetPerUnit"), fmt(c.netPerUnit, cur)],
+      [t("pnlYearCost"), fmt(c.yearCost, cur)],
+      [t("pnlBreakEven"), c.breakEven === null ? "—" : c.breakEven + " " + t("pnlUnits")],
+      [t("pnlTargetRevenue"), fmt(c.targetRevenue, cur)],
+      [t("pnlSurplus"), fmt(c.surplus, cur)]
+    ];
+    if (c.hourly !== null) rows.push([t("pnlHourly"), fmt(c.hourly, cur)]);
+    root.querySelector(".pnl-out").innerHTML =
+      '<div class="tablewrap"><table class="md"><tbody>' +
+      rows.map(([k, val], i) =>
+        `<tr class="${i === 2 ? "pnl-key" : ""}"><td>${esc(k)}</td><td><b>${esc(val)}</b></td></tr>`).join("") +
+      "</tbody></table></div>";
+    return v;
+  };
+  const save = () => { const v = read(); commitBreakout("pnl", pnlWrite(v)); };
+  root.querySelectorAll("[data-pnl]").forEach(i => {
+    i.addEventListener("input", paint);
+    i.addEventListener("change", () => { paint(); save(); });
+  });
+  const applyBtn = root.querySelector(".pnl-apply");
+  if (applyBtn) applyBtn.addEventListener("click", () => {
+    const parsed = pnlRead(parseCsv(root.querySelector(".pnl-paste").value));
+    let hits = 0;
+    root.querySelectorAll("[data-pnl]").forEach(i => {
+      if (parsed[i.dataset.pnl]) { i.value = parsed[i.dataset.pnl]; hits++; }
+    });
+    root.querySelector(".pnl-msg").textContent = hits ? t("pnlImportOk").replace("{n}", hits) : t("pnlImportNone");
+    paint(); if (hits) save();
+  });
+  paint();
+}
+// Nach jedem Rendern die Breakouts verdrahten.
+function mountBreakouts() {
+  document.querySelectorAll('[data-breakout="pnl"]').forEach(mountPnl);
+}
+BREAKOUTS.pnl = renderPnl;
 
 /* ============ Linse: Business Model Canvas ============
    Nichts wird neu abgefragt — die neun Felder werden aus den bereits
