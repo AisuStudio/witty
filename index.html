@@ -467,6 +467,8 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
         <input type="text" class="projfield" id="proj-comp" data-i18n-ph="qCompPh">
         <label class="q" for="proj-focus" data-i18n="qWhy"></label>
         <input type="text" class="projfield" id="proj-focus" data-i18n-ph="qWhyPh">
+        <label class="q" for="proj-space" data-i18n="qSpace"></label>
+        <input type="text" class="projfield" id="proj-space" data-i18n-ph="qSpacePh">
         <label class="q qres" for="proj-resources" data-i18n="qRes"></label>
         <textarea class="projfield projdesc" id="proj-resources" rows="2" data-i18n-ph="qResPh"></textarea>
       </div>
@@ -894,6 +896,8 @@ const I18N = {
     st0: "Idee", st1: "Im Bau", st2: "Prototyp", st3: "Beta", st4: "Voll live", st5: "Etabliert",
     stUnset: "— nicht gesetzt",
     qMoney: "Kostet es Geld, bringt es Geld? (optional)", qMoneyPh: "z. B. \"Vercel Free, Domain 30 €/Jahr, noch keine Einnahmen\"",
+    qSpace: "Themen oder Nachbarmärkte, die dich reizen? (optional)",
+    qSpacePh: "Dinge, von denen du wenig Ahnung hast — witty liefert das Vokabular und sagt ehrlich, ob es Gewinn oder Ballast wäre",
     qComp: "Wer macht etwas Ähnliches? (optional)", qCompPh: "z. B. \"Calligraphr, iFontMaker\" — oder \"kenne keine\"",
     qWhy: "Warum das Audit? (optional)", qWhyPh: "z. B. \"strategische Verortung\" oder \"entscheiden, ob ich Geld verlangen soll\"",
     qRes: "Ressourcen",
@@ -961,6 +965,8 @@ const I18N = {
     st0: "Idea", st1: "Building", st2: "Prototype", st3: "Beta", st4: "Fully live", st5: "Established",
     stUnset: "— not set",
     qMoney: "Does it cost money, does it make money? (optional)", qMoneyPh: "e.g. \"Vercel free tier, domain €30/year, no revenue yet\"",
+    qSpace: "Topics or adjacent markets that draw you in? (optional)",
+    qSpacePh: "Things you know little about — witty supplies the vocabulary and says honestly whether it would be gain or ballast",
     qComp: "Who does something similar? (optional)", qCompPh: "e.g. \"Calligraphr, iFontMaker\" — or \"none I know of\"",
     qWhy: "Why this audit? (optional)", qWhyPh: "e.g. \"strategic positioning\" or \"decide whether to charge money\"",
     qRes: "Resources",
@@ -1090,6 +1096,32 @@ gebuehr_prozent: [Zahl]
 gebuehr_fix: [Zahl]
 ziel_stueck: [Zahl]
 ${FENCE}
+
+SPRACHRAUM — nur erzeugen, wenn unter PROJEKT Themen oder Nachbarmärkte genannt sind:
+
+Der Zweck: Zu einem Feld, für das jemand noch kein Vokabular hat, die Sprache liefern — und ehrlich sagen, ob sie Gewinn oder Ballast wäre. Ein Vokabular ohne Urteil ist schlechter als Nichtwissen, weil es sich nach Verstehen anfühlt. Deshalb ist das Verdikt Pflicht, nicht Zierrat.
+
+Drei Filter für das Verdikt:
+1. Anschluss — hängt das Feld an etwas, das im Projekt schon passiert? Wenn ja, gehört es in den Spiegel, nicht ins Neuland.
+2. Entscheidungsrelevanz — würde dieses Wissen eine Entscheidung in einem der 14 Schritte verändern? Wenn kein einziger Begriff das tut, ist das Feld vorerst Ballast.
+3. Vier-Wochen-Probe — was würde in den nächsten vier Wochen anders gemacht? Wenn nichts: Es ist Faszination. Das ist legitim, muss aber so benannt und nicht als Arbeit getarnt werden.
+
+Sektion direkt vor dem Fazit, pro genanntem Thema ein Block:
+
+## Sprachraum — [Thema 1] · [Thema 2] …
+
+### [Thema]
+**Worum es geht.** [2-3 Sätze Klartext, ohne Fachbegriffe]
+**Das Vokabular.** [5-8 Begriffe, je einer pro Zeile mit einem Satz Erklärung — das ist die eigentliche Lieferung]
+**Was das Feld fragt.** [2-3 Leitfragen, die dort üblich sind]
+**Anschluss.** [an welchen der 14 Schritte es andockt — oder ehrlich: an keinen]
+**Gewinn.** [was es diesem Projekt konkret gäbe]
+**Kosten.** [Zeit, zusätzliche Komplexität, Risiko von geliehenem Jargon]
+**Verdikt: aufnehmen · später · bewusst nicht** — [ein Satz Begründung]
+
+Verdikt-Folgen benennen: "aufnehmen" heißt, es ist eine Wette und gehört als solche in Schritt 6 mit einem Horizont (2 = Erweiterung, 3 = Neues). "bewusst nicht" heißt, es gehört als Zeile auf die Nein-Liste in Schritt 4. "später" braucht einen Auslöser, kein Datum.
+
+Sei hier besonders unbestechlich: Bei einem Werkzeug in der Frühphase ist die richtige Antwort meistens "später" oder "bewusst nicht". Ein begründetes Nein ist wertvoller als ein höfliches Ja.
 
 Zum Schluss drei Sektionen:
 
@@ -1223,6 +1255,32 @@ fee_fixed: [number]
 target_units: [number]
 ${FENCE}
 
+LANGUAGE SPACE — only produce this if topics or adjacent markets are named under PROJECT:
+
+The purpose: for a field someone has no vocabulary for yet, supply the language — and say honestly whether it would be gain or ballast. Vocabulary without judgement is worse than not knowing, because it feels like understanding. The verdict is therefore mandatory, not decoration.
+
+Three filters for the verdict:
+1. Attachment — does the field connect to something already happening in the project? If so it belongs in the mirror, not in new territory.
+2. Decision relevance — would this knowledge change a decision in any of the 14 steps? If no single term does, the field is ballast for now.
+3. Four-week test — what would be done differently in the next four weeks? If nothing: it is fascination. Legitimate, but label it as such instead of dressing it as work.
+
+Section directly before the verdict section, one block per named topic:
+
+## Language Space — [topic 1] · [topic 2] …
+
+### [topic]
+**What it is.** [2-3 plain sentences, no jargon]
+**The vocabulary.** [5-8 terms, one per line with a one-sentence explanation — this is the actual delivery]
+**What the field asks.** [2-3 questions that are standard there]
+**Attachment.** [which of the 14 steps it connects to — or honestly: none]
+**Gain.** [what it would concretely give this project]
+**Cost.** [time, added complexity, risk of borrowed jargon]
+**Verdict: adopt · later · deliberately not** — [one sentence of reasoning]
+
+Name the consequence of each verdict: "adopt" means it is a bet and belongs in step 6 with a horizon (2 = extension, 3 = something new). "deliberately not" means it belongs as a line on the no-list in step 4. "later" needs a trigger, not a date.
+
+Be especially incorruptible here: for an early-stage tool the right answer is usually "later" or "deliberately not". A reasoned no is worth more than a polite yes.
+
 Finally three sections:
 
 ## Verdict — the next five questions, in this order
@@ -1262,8 +1320,9 @@ function projectBlock() {
   const money = $("proj-money").value.trim();
   const comp = $("proj-comp").value.trim();
   const focus = $("proj-focus").value.trim();
+  const space = $("proj-space").value.trim();
   const res = $("proj-resources").value.trim();
-  if (!name && !desc && !goal && !stageSet && !money && !comp && !focus && !res) return PROJECT_FALLBACK[lang];
+  if (!name && !desc && !goal && !stageSet && !money && !comp && !focus && !space && !res) return PROJECT_FALLBACK[lang];
   const de = lang === "de";
   const lines = [(de ? "PROJEKT" : "PROJECT") + ": " + (name || "—")];
   if (desc)     lines.push((de ? "Was es ist: " : "What it is: ") + desc);
@@ -1272,14 +1331,15 @@ function projectBlock() {
   if (money)    lines.push((de ? "Kosten/Einnahmen (Input für Schritt 10, Ökonomie — nutze diese Zahlen statt Annahmen): " : "Costs/revenue (input for step 10, Economics — use these figures instead of assumptions): ") + money);
   if (comp)     lines.push((de ? "Ähnliche Produkte/Alternativen (Input für Schritt 5, Unterschied): " : "Similar products/alternatives (input for step 5, Difference): ") + comp);
   if (focus)    lines.push((de ? "Anlass für das Audit: " : "Reason for this audit: ") + focus);
+  if (space)    lines.push((de ? "Themen/Nachbarmärkte zum Erkunden (erzeuge dafür die Sprachraum-Sektion): " : "Topics/adjacent markets to explore (produce the Language-Space section for these): ") + space);
   if (res)      lines.push((de ? "Ressourcen (nutze sie als Evidenzquellen): " : "Resources (use them as evidence sources): ") + res);
   return lines.join("\n");
 }
 function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
 
 /* ============ State ============ */
-const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pmoney: "witty.proj.money", pcomp: "witty.proj.comp", pfocus: "witty.proj.focus", pres: "witty.proj.res" };
-const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-money","pmoney"],["proj-comp","pcomp"],["proj-focus","pfocus"],["proj-resources","pres"]];
+const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pmoney: "witty.proj.money", pspace: "witty.proj.space", pcomp: "witty.proj.comp", pfocus: "witty.proj.focus", pres: "witty.proj.res" };
+const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-money","pmoney"],["proj-comp","pcomp"],["proj-focus","pfocus"],["proj-space","pspace"],["proj-resources","pres"]];
 let lang = localStorage.getItem(LS.lang) || "de";
 
 const $ = (id) => document.getElementById(id);
@@ -2140,6 +2200,10 @@ const PREFILL = {
     en: "Hosting on the free tier, domain ~€30/year, no revenue yet"
   },
   pcomp: { de: "Glyphs, Fontself, Calligraphr", en: "Glyphs, Fontself, Calligraphr" },
+  pspace: {
+    de: "Variable Fonts, Tattoo-Flash-Sheets, Lettering-Kurse",
+    en: "variable fonts, tattoo flash sheets, lettering courses"
+  },
   pfocus: {
     de: "Viele Funktionen gebaut — wie positioniere ich das Produkt monetär?",
     en: "Lots of features built — how do I position this product commercially?"
