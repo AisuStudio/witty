@@ -216,7 +216,7 @@ Er ist vorlaufend (wer zum zweiten Mal auditiert, ist geblieben), er misst den g
 
 **Die unbequeme Präzisierung.** Diese eine Person ist der Autor. Das ist bei einem Werkzeug für die eigene Arbeit legitim und trotzdem der schwächste denkbare Beleg — der Erbauer stolpert nicht über die Stellen, die er selbst gebaut hat.
 
-**Nächster Beweis, unverändert seit Juli:** eine fremde Person füllt ein eigenes Projekt aus. Er steht seit einem Monat, und in dieser Zeit ist das Werkzeug erheblich gewachsen, ohne dass er näher gerückt wäre.
+**Nächster Beweis, unverändert:** eine fremde Person füllt ein eigenes Projekt aus. Er wurde am 31.07. definiert — und an dem einen Tag danach ist das Werkzeug von einem Renderer zu vier Breakouts mit Dateianbindung gewachsen, ohne dass der Beweis näher gerückt wäre. Das Missverhältnis ist nicht die Dauer, sondern das Tempo: Gebaut wird schnell, geprüft gar nicht.
 
 ```witty:experiment
 annahme: Ein Mensch ohne PM-Vokabular versteht den Spiegel ohne Erklärung.
@@ -255,7 +255,7 @@ ergebnis: offen
 
 | # | Die Frage | Aufwand | Was sie freischaltet |
 |---|---|---|---|
-| **1** | Kommt eine fremde Person allein zurecht? | 1 Gespräch | Schritt 12 und 7; der Beweis steht seit einem Monat aus |
+| **1** | Kommt eine fremde Person allein zurecht? | 1 Gespräch | Schritt 12 und 7; die einzige Frage, die man nicht am Schreibtisch klären kann |
 | **2** | Messen oder bewusst nicht messen? | 30 Min. | Schritt 11; die Nicht-Entscheidung kollidiert mit der eigenen Nein-Liste |
 | **3** | Bleibt die MCP-Stufe im Plan? | 30 Min. | Schritt 6; ein übersprungener Schritt gehört benannt, nicht vergessen |
 | **4** | Wer erfährt davon, über welchen Weg? | 1 Std. | Schritt 9, der heute von 🔍 auf ⭕ gefallen ist |
@@ -267,7 +267,7 @@ ergebnis: offen
 
 **Was das Projekt bereits kann — mit Lehrbuch-Namen.** Ein Problem Statement aus eigenem Erleben, ein scharfes ICP („build for who you were"), gelebte Product Principles, die heute nachweislich eine Entscheidung verhindert haben, eine Priorisierung, die Abhängigkeit über Attraktivität stellte, und ein Build-Measure-Learn-Zyklus, der zweimal an einem Tag geschlossen wurde. Dazu eine ereignisbasierte Review-Kadenz, die sich selbst ausgelöst hat.
 
-**Wo die echten Lücken sind.** Nicht im Werkzeug — es ist gebaut, es läuft, es kostet nichts. Die Lücke ist, dass **alles über eine Person weiß**: Der einzige Nutzer ist der Erbauer, das ICP ist seine eigene Vergangenheit, der PMF-Beweis steht seit einem Monat unverändert offen. Jede Zahl, die man jetzt erheben würde, misst die Nähe zum Autor. Und zwei Schritte sind heute **schwächer** als im Juli: Go-to-Market, weil das Werkzeug erklärungsbedürftiger geworden ist, und der Nordstern, weil der Anspruch an Messbarkeit mit dem Produkt gewachsen ist.
+**Wo die echten Lücken sind.** Nicht im Werkzeug — es ist gebaut, es läuft, es kostet nichts. Die Lücke ist, dass **alles über eine Person weiß**: Der einzige Nutzer ist der Erbauer, das ICP ist seine eigene Vergangenheit, der PMF-Beweis ist seit seiner Definition am 31.07. keinen Schritt näher gerückt, während das Werkzeug an einem Tag um vier Breakouts wuchs. Jede Zahl, die man jetzt erheben würde, misst die Nähe zum Autor. Und zwei Schritte sind heute **schwächer** als im Juli: Go-to-Market, weil das Werkzeug erklärungsbedürftiger geworden ist, und der Nordstern, weil der Anspruch an Messbarkeit mit dem Produkt gewachsen ist.
 
 **Der Widerspruch, der benannt gehört.** witty verlangt von jedem Projekt eine vorlaufende Kennzahl und misst selbst nichts. Das ist auflösbar — entweder man baut Zähler ein oder man entscheidet bewusst, bei fünf Nutzenden auf Gespräche statt Zahlen zu setzen. Unauflösbar ist nur, es weiter offen zu lassen.
 
@@ -311,4 +311,5 @@ ergebnis: offen
 2026-08-01 | 12 | ⭕ → ✅ | Stufe 1 belegt: zwei echte Projekte auditiert
 2026-08-01 | 9 | 🔍 → ⭕ | Rückschritt: mehr Umfang verlangt mehr GTM, als bisher gedacht war
 2026-08-01 | 11 | ⭕ | Unverändert offen — und der Widerspruch ist jetzt benannt: witty misst selbst nichts
+2026-08-01 | 12 | Korrektur | "seit einem Monat offen" war falsch: Der PMF-Beweis wurde am 31.07. definiert, also einen Tag zuvor
 ```
