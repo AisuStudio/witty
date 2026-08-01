@@ -17,7 +17,7 @@
   }
   .mono { font-family: "iA Writer Mono S", ui-monospace, "SF Mono", monospace; }
 
-  .wrap { max-width: 880px; margin: 0 auto; padding: var(--sp-lg) var(--gutter) var(--sp-4xl); }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: var(--sp-lg) var(--gutter) var(--sp-4xl); }
 
   /* Hero — Wittgenstein aus witty!-Lettern, fix Vanilla auf Blueberry (theme-unabhängig) */
   header.hero {
@@ -237,6 +237,13 @@
   }
   .lens.active { color: var(--color-text); border-color: var(--color-accent); background: var(--color-surface); font-weight: 700; }
 
+  /* Gruppen-Navigation über den Schritten */
+  .groupnav { display: flex; flex-wrap: wrap; gap: var(--sp-xs); margin: 0 0 var(--sp-md); }
+  .groupnav .lens { font-size: 12.5px; padding: 5px var(--sp-sm); }
+  .grprange { font-family: "iA Writer Mono S", monospace; font-size: 11px; color: var(--color-muted); }
+  .grpcount { font-size: 11px; letter-spacing: -.02em; margin-left: 2px; white-space: nowrap; }
+  .groupnav .lens.active .grprange { color: var(--color-text); }
+
   /* Business Model Canvas — klassische Anordnung, auf Mobil einspaltig */
   .bmc-intro { font-size: 13.5px; color: var(--color-muted); margin-bottom: var(--sp-md); }
   .bmc-grid { display: grid; gap: var(--sp-sm); grid-template-columns: 1fr; }
@@ -447,6 +454,7 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
         <button class="lens active" id="lens-steps" data-i18n="lensSteps"></button>
         <button class="lens" id="lens-bmc" data-i18n="lensBmc"></button>
       </div>
+      <nav class="groupnav" id="groupnav"></nav>
       <div class="card" id="sections"></div>
       <div class="card hidden" id="bmc"></div>
       <div class="loadrow" style="margin-top:var(--sp-lg)">
@@ -884,6 +892,8 @@ const I18N = {
     conflictOlder: "Achtung: Der aktuelle Stand hat Änderungen von {mine}, die geladene Datei ist von {theirs}.\n\nDie ältere Datei würde den neueren Stand ersetzen. Trotzdem laden?",
     conflictNoLog: "ohne Verlauf",
     lensSteps: "Schritte", lensBmc: "Business Model Canvas",
+    grpAll: "Alle", grpConcept: "Konzept & Strategie", grpProduct: "Produkt",
+    grpMarket: "Markt & Geld", grpLearn: "Messen & Lernen", grpSummary: "Auswertung",
     bmcIntro: "Dieselben Antworten, anders angeordnet: Das Business Model Canvas ist ein Neun-Felder-Raster für ein Geschäftsmodell. Sieben Felder speisen sich aus deinen Schritten — gestrichelte Kästen sind Lücken.",
     bmcFrom: "aus Schritt ", bmcEmpty: "noch offen — kommt aus Schritt ",
     bmcNoSchema: "Im 14-Schritte-Schema nicht vorgesehen — eine Lücke des Schemas, nicht deines Projekts.",
@@ -964,6 +974,8 @@ const I18N = {
     conflictOlder: "Careful: the current state has changes from {mine}, the file you are loading is from {theirs}.\n\nThe older file would replace the newer state. Load anyway?",
     conflictNoLog: "without history",
     lensSteps: "Steps", lensBmc: "Business Model Canvas",
+    grpAll: "All", grpConcept: "Concept & strategy", grpProduct: "Product",
+    grpMarket: "Market & money", grpLearn: "Measure & learn", grpSummary: "Summary",
     bmcIntro: "The same answers, arranged differently: the Business Model Canvas is a nine-field grid for a business model. Seven fields are fed by your steps — dashed boxes are gaps.",
     bmcFrom: "from step ", bmcEmpty: "still open — comes from step ",
     bmcNoSchema: "Not covered by the 14-step schema — a gap in the schema, not in your project.",
@@ -1848,19 +1860,22 @@ function renderMirror(md) {
   $("cover-extra").innerHTML = doc.coverExtra ? renderBody(doc.coverExtra) : "";
 
   $("sections").innerHTML = doc.sections.map((s, i) =>
-    `<div class="step ${s.status ? s.status.cls : ""}" id="step-${s.n ?? "x" + i}">
+    `<div class="step ${s.status ? s.status.cls : ""}" data-group="${groupOf(s.n)}" id="step-${s.n ?? "x" + i}">
        <h3>${s.status ? `<span class="chip">${s.status.emoji}</span>` : ""}
            ${s.n ? s.n + " · " : ""}${esc(s.name)}</h3>
        <div class="stepbody">${renderBody(s.body)}</div>
      </div>`).join("");
 
   currentDoc = doc;
+  group = "alle";
+  renderGroupNav(doc);
   $("bmc").innerHTML = renderBmc(doc);
   mountBreakouts();
 
   document.querySelectorAll("[data-jump]").forEach(el =>
     el.addEventListener("click", () => {
       switchLens("steps");                       // aus der Canvas-Linse zurück in die Schritte
+      applyGroup("alle");                        // Filter lösen, sonst springt es ins Verborgene
       const target = $(el.dataset.jump);
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     }));
@@ -1871,11 +1886,60 @@ function renderMirror(md) {
 
 let currentDoc = null;
 let lens = "steps";
+
+/* ============ Gruppen ============
+   20 Sektionen am Stück sind nicht lesbar. Die Schritte werden deshalb in
+   vier inhaltliche Bündel geteilt, alles Unnummerierte (Sprachraum, Fazit,
+   Spiegel-Lesart, Empfehlungen, Glossar, Verlauf) bildet ein fünftes. */
+const GROUPS = [
+  { id: "alle",       from: 0,  to: 99, label: "grpAll" },
+  { id: "konzept",    from: 1,  to: 6,  label: "grpConcept" },
+  { id: "produkt",    from: 7,  to: 8,  label: "grpProduct" },
+  { id: "markt",      from: 9,  to: 10, label: "grpMarket" },
+  { id: "messen",     from: 11, to: 14, label: "grpLearn" },
+  { id: "auswertung", from: -1, to: -1, label: "grpSummary" }
+];
+function groupOf(n) {
+  if (!n) return "auswertung";
+  const g = GROUPS.find(g => g.id !== "alle" && n >= g.from && n <= g.to);
+  return g ? g.id : "auswertung";
+}
+let group = "alle";
+function renderGroupNav(doc) {
+  const nav = $("groupnav");
+  if (!nav) return;
+  nav.innerHTML = GROUPS.map(g => {
+    let extra = "";
+    if (g.id !== "alle") {
+      const rows = doc.rows.filter(r => groupOf(r.n) === g.id);
+      if (rows.length) {
+        const c = { open: 0, mirror: 0, done: 0, deferred: 0 };
+        rows.forEach(r => c[r.status.key]++);
+        extra = " <span class=\"grpcount\">" +
+          [["done","✅"],["mirror","🔍"],["open","⭕"],["deferred","🕊️"]]
+            .filter(([k]) => c[k]).map(([k, e]) => e + c[k]).join(" ") + "</span>";
+      }
+    }
+    const span = g.id === "konzept" || g.id === "produkt" || g.id === "markt" || g.id === "messen"
+      ? ` <span class="grprange">${g.from}–${g.to}</span>` : "";
+    return `<button class="lens${g.id === group ? " active" : ""}" data-group="${g.id}">${esc(t(g.label))}${span}${extra}</button>`;
+  }).join("");
+  nav.querySelectorAll("[data-group]").forEach(b =>
+    b.addEventListener("click", () => applyGroup(b.dataset.group)));
+}
+function applyGroup(id) {
+  group = id;
+  $("groupnav").querySelectorAll("[data-group]").forEach(b =>
+    b.classList.toggle("active", b.dataset.group === id));
+  document.querySelectorAll("#sections .step").forEach(el =>
+    el.classList.toggle("hidden", id !== "alle" && el.dataset.group !== id));
+}
 function switchLens(which) {
   lens = which;
   $("lens-steps").classList.toggle("active", which === "steps");
   $("lens-bmc").classList.toggle("active", which === "bmc");
   $("sections").classList.toggle("hidden", which !== "steps");
+  $("groupnav").classList.toggle("hidden", which !== "steps");
   $("bmc").classList.toggle("hidden", which !== "bmc");
 }
 
