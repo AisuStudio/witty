@@ -220,10 +220,12 @@
     position: sticky; bottom: var(--sp-md); z-index: 5;
     display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
     gap: var(--sp-sm); margin-top: var(--sp-md);
-    background: var(--color-surface); border: 1px solid var(--color-lemon);
+    background: var(--color-surface); border: 1px solid var(--color-border);
     border-radius: var(--radius-md); padding: var(--sp-sm) var(--sp-md);
     box-shadow: var(--shadow-sm); font-size: 13.5px;
   }
+  /* Nur alarmierend, wenn Änderungen wirklich in keiner Datei stehen */
+  .savebar.warn { border-color: var(--color-lemon); }
   .savebar-actions { display: flex; align-items: center; gap: var(--sp-sm); flex-wrap: wrap; }
 
   /* Linsen-Umschalter: dieselben Antworten, andere Anordnung */
@@ -430,6 +432,9 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
       <div class="savebar hidden" id="savebar">
         <span id="savebar-text"></span>
         <span class="savebar-actions">
+          <button class="btn lemon small hidden" id="btn-link-file" data-i18n="btnLinkFile"></button>
+          <button class="btn secondary small hidden" id="btn-create-file" data-i18n="btnCreateFile"></button>
+          <button class="btn secondary small hidden" id="btn-unlink-file" data-i18n="btnUnlinkFile"></button>
           <button class="btn lemon small" id="btn-download-md" data-i18n="btnDownloadMd"></button>
           <button class="btn secondary small" id="btn-copy-md" data-i18n="btnCopyMd"></button>
           <span class="copiedflash" id="copied-md" data-i18n="copied"></span>
@@ -842,8 +847,16 @@ const I18N = {
     loadTitle: "Audit-Ergebnis laden",
     loadExpl: "Lade einen PM-STATUS als Markdown-Datei (per Datei, Drag & Drop oder Einfügen) — witty rendert daraus dein Dashboard und deinen Spiegel. Noch kein Audit-MD? Hol dir den Prompt.",
     btnFile: "MD-Datei laden", btnDemo: "Demo ansehen (Fontane)", btnNoMd: "→ Ich brauche erst den Prompt",
-    saveDirty: "Im Dokument geändert — noch nicht gespeichert.",
+    saveDirty: "Geändert — noch in keiner Datei gesichert.",
     btnDownloadMd: "Markdown herunterladen", btnCopyMd: "Markdown kopieren",
+    btnLinkFile: "Mit Datei verbinden", btnCreateFile: "Neue Datei anlegen", btnUnlinkFile: "Verbindung lösen",
+    fileSaved: "in die Datei geschrieben", fileWriting: "wird geschrieben …",
+    fileNone: "Noch mit keiner Datei verbunden — der Browser-Speicher ist nur Absturzsicherung.",
+    fileNoApi: "Dieser Browser kann keine Datei verbinden — herunterladen und im Projekt ablegen.",
+    leaveWarn: "Es gibt Änderungen, die in keiner Datei stehen.",
+    logTitle: "Verlauf — was wann geändert wurde",
+    conflictOlder: "Achtung: Der aktuelle Stand hat Änderungen von {mine}, die geladene Datei ist von {theirs}.\n\nDie ältere Datei würde den neueren Stand ersetzen. Trotzdem laden?",
+    conflictNoLog: "ohne Verlauf",
     lensSteps: "Schritte", lensBmc: "Business Model Canvas",
     bmcIntro: "Dieselben Antworten, anders angeordnet: Das Business Model Canvas ist ein Neun-Felder-Raster für ein Geschäftsmodell. Sieben Felder speisen sich aus deinen Schritten — gestrichelte Kästen sind Lücken.",
     bmcFrom: "aus Schritt ", bmcEmpty: "noch offen — kommt aus Schritt ",
@@ -901,8 +914,16 @@ const I18N = {
     loadTitle: "Load an audit result",
     loadExpl: "Load a PM-STATUS markdown file (file picker, drag & drop, or paste) — witty renders your dashboard and your mirror. No audit MD yet? Grab the prompt.",
     btnFile: "Load MD file", btnDemo: "View demo (Fontane)", btnNoMd: "→ I need the prompt first",
-    saveDirty: "Changed in the document — not saved yet.",
+    saveDirty: "Changed — not stored in any file yet.",
     btnDownloadMd: "Download markdown", btnCopyMd: "Copy markdown",
+    btnLinkFile: "Link a file", btnCreateFile: "Create new file", btnUnlinkFile: "Unlink",
+    fileSaved: "written to the file", fileWriting: "writing …",
+    fileNone: "Not linked to a file yet — browser storage is only a crash buffer.",
+    fileNoApi: "This browser cannot link a file — download it and keep it with your project.",
+    leaveWarn: "There are changes that are not in any file.",
+    logTitle: "History — what changed when",
+    conflictOlder: "Careful: the current state has changes from {mine}, the file you are loading is from {theirs}.\n\nThe older file would replace the newer state. Load anyway?",
+    conflictNoLog: "without history",
     lensSteps: "Steps", lensBmc: "Business Model Canvas",
     bmcIntro: "The same answers, arranged differently: the Business Model Canvas is a nine-field grid for a business model. Seven fields are fed by your steps — dashed boxes are gaps.",
     bmcFrom: "from step ", bmcEmpty: "still open — comes from step ",
@@ -1328,7 +1349,100 @@ function renderTable(rows) {
    Wer hier nichts registriert hat, bekommt weiterhin den sichtbaren Datenblock. */
 const BREAKOUTS = {};                       // name -> (data, rawCode) => html
 let currentMd = "";                         // Rohtext des geladenen Dokuments
-let dirty = false;                          // seit dem Laden verändert?
+let dirty = false;                          // seit dem Laden verändert, noch nicht in die Datei geschrieben
+
+/* ============ Datei-Anbindung ============
+   witty ist ein Editor, keine Ablage: Die Datei auf der Platte ist die Wahrheit,
+   der Browser-Speicher nur Absturzsicherung. Wo die File System Access API
+   vorhanden ist (Chrome/Edge), wird eine echte Datei verbunden und bei jeder
+   Änderung direkt beschrieben — dann gibt es keinen ungespeicherten Zustand.
+   Wo sie fehlt (Safari/Firefox), bleibt das Herunterladen samt Warnung. */
+const CAN_LINK = typeof window.showSaveFilePicker === "function";
+let fileHandle = null;                       // FileSystemFileHandle oder null
+let lastWrite = null;                        // Zeitpunkt des letzten Schreibens
+
+// Der Handle überlebt Neustarts nur in IndexedDB — localStorage kann ihn nicht halten.
+function idb(mode, fn) {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open("witty", 1);
+    open.onupgradeneeded = () => open.result.createObjectStore("handles");
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const tx = open.result.transaction("handles", mode);
+      const req = fn(tx.objectStore("handles"));
+      tx.oncomplete = () => resolve(req && req.result);
+      tx.onerror = () => reject(tx.error);
+    };
+  });
+}
+const saveHandle = h => idb("readwrite", s => s.put(h, "current")).catch(() => {});
+const readHandle = () => idb("readonly", s => s.get("current")).catch(() => null);
+const forgetHandle = () => idb("readwrite", s => s.delete("current")).catch(() => {});
+
+async function handleWritable(h, ask) {
+  if (!h || !h.queryPermission) return false;
+  const opts = { mode: "readwrite" };
+  if (await h.queryPermission(opts) === "granted") return true;
+  if (!ask) return false;
+  return await h.requestPermission(opts) === "granted";
+}
+async function writeToFile() {
+  if (!fileHandle) return false;
+  try {
+    const w = await fileHandle.createWritable();
+    await w.write(currentMd);
+    await w.close();
+    lastWrite = new Date();
+    dirty = false;
+    updateSaveBar();
+    return true;
+  } catch (e) {
+    console.warn("Schreiben fehlgeschlagen:", e);
+    updateSaveBar();
+    return false;
+  }
+}
+// Schreiben zusammenfassen: Ein Schieberegler feuert sonst dutzende Schreibvorgänge.
+let writeTimer = null;
+function scheduleWrite() {
+  if (!fileHandle) return;
+  clearTimeout(writeTimer);
+  writeTimer = setTimeout(writeToFile, 400);
+}
+async function linkFile(create) {
+  try {
+    const name = (($("proj-title").textContent || "PM-STATUS").trim().replace(/[^\w\-]+/g, "-") || "PM-STATUS") + ".md";
+    const opts = { types: [{ description: "Markdown", accept: { "text/markdown": [".md", ".markdown"] } }] };
+    const h = create
+      ? await window.showSaveFilePicker({ ...opts, suggestedName: name })
+      : (await window.showOpenFilePicker({ ...opts, multiple: false }))[0];
+    if (!await handleWritable(h, true)) return;
+    fileHandle = h;
+    await saveHandle(h);
+    if (!create) {                       // bestehende Datei: ihr Inhalt gewinnt
+      const text = await (await h.getFile()).text();
+      if (text.trim()) { loadMd(text); return; }
+    }
+    await writeToFile();
+  } catch (e) {
+    if (e && e.name !== "AbortError") console.warn("Verbinden abgebrochen:", e);
+  }
+}
+async function unlinkFile() {
+  fileHandle = null; lastWrite = null;
+  await forgetHandle();
+  updateSaveBar();
+}
+// Beim Start: gemerkten Handle holen. Die Berechtigung darf ohne Klick nicht
+// erneuert werden — deshalb nur prüfen und den Zustand anzeigen.
+async function restoreHandle() {
+  if (!CAN_LINK) return;
+  const h = await readHandle();
+  if (!h) return;
+  fileHandle = h;
+  if (!await handleWritable(h, false)) fileHandle = h;   // bleibt verbunden, braucht einen Klick
+  updateSaveBar();
+}
 
 // "schlüssel: wert" je Zeile. Kommentare (#) und Leerzeilen werden übersprungen.
 function parseBlock(text) {
@@ -1380,21 +1494,82 @@ function replaceFence(md, name, body) {
   if (!re.test(md)) return null;
   return md.replace(re, (m, lead) => lead + "```witty:" + name + "\n" + body + "\n```");
 }
-function commitBreakout(name, body) {
+/* ============ Verlauf: witty:log ============
+   Jede Änderung hängt eine datierte Zeile an. Der Log ist dreierlei zugleich:
+   lesbare Historie im Dokument, Grundlage für den späteren Fortschritts-/
+   Rückschritt-Vergleich, und die Identität, an der witty beim Laden erkennt,
+   ob eine Datei älter ist als der aktuelle Stand.                        */
+const LOG_NAME = "log";
+function isoDay(d) { return d.toISOString().slice(0, 10); }
+function logLines(md) {
+  const m = md.match(/```witty:log[^\n]*\n([\s\S]*?)\n```/i);
+  return m ? m[1].split(/\r?\n/).filter(l => l.trim()) : [];
+}
+function logLatest(md) {
+  const last = logLines(md).map(l => (l.match(/^\s*([\d]{4}-[\d]{2}-[\d]{2}[T\d:]*)/) || [])[1]).filter(Boolean).sort();
+  return last.length ? last[last.length - 1] : null;
+}
+function appendLog(md, entry) {
+  const line = new Date().toISOString().slice(0, 16).replace("T", " ") + " | " + entry;
+  const re = /(```witty:log[^\n]*\n)([\s\S]*?)(\n```)/i;
+  if (re.test(md)) return md.replace(re, (m, head, body, tail) => head + (body.trim() ? body + "\n" : "") + line + tail);
+  // Noch kein Log im Dokument: einen anlegen, ganz am Ende.
+  return md.replace(/\s*$/, "\n\n## Verlauf\n\n```witty:log\n" + line + "\n```\n");
+}
+function commitBreakout(name, body, note) {
   const next = replaceFence(currentMd, name, body);
   if (next === null) return false;
-  currentMd = next;
-  localStorage.setItem(LS.md, next);
+  currentMd = note ? appendLog(next, note) : next;
+  localStorage.setItem(LS.md, currentMd);
   dirty = true;
+  if (note) renderLogView();
   updateSaveBar();
+  scheduleWrite();          // verbundene Datei: sofort durchschreiben
   return true;
 }
+// Der Log-Block wird als Tabelle gezeigt, nicht als Rohtext.
+BREAKOUTS.log = (_data, raw) => {
+  const rows = (raw || "").split(/\r?\n/).filter(l => l.trim()).reverse().map(l => {
+    const cells = l.split("|").map(c => c.trim());
+    return "<tr>" + cells.map(c => "<td>" + inlineMd(esc(c)) + "</td>").join("") + "</tr>";
+  }).join("");
+  return `<div class="breakout" data-breakout="log"><div class="bo-head"><span class="dblabel">${esc(t("logTitle"))}</span></div>
+    <div class="tablewrap"><table class="md"><tbody>${rows}</tbody></table></div></div>`;
+};
+// Nach einer Log-Änderung nur diesen einen Block neu zeichnen, damit die
+// Eingabefelder der anderen Breakouts ihren Fokus behalten.
+function renderLogView() {
+  const el = document.querySelector('[data-breakout="log"]');
+  const m = currentMd.match(/```witty:log[^\n]*\n([\s\S]*?)\n```/i);
+  if (!m) return;
+  if (el) { el.outerHTML = BREAKOUTS.log(null, m[1]); return; }
+  // Erster Eintrag überhaupt: Die Verlauf-Sektion gab es beim Rendern noch
+  // nicht, also einmal komplett neu zeichnen. Danach greift der Pfad oben.
+  renderMirror(currentMd);
+}
+function timeStr(d) {
+  return d ? d.toLocaleTimeString(lang === "de" ? "de-DE" : "en-US", { hour: "2-digit", minute: "2-digit" }) : "";
+}
 function updateSaveBar() {
-  const bar = $("savebar");
-  if (!bar) return;
-  bar.classList.toggle("hidden", !dirty);
-  const label = $("savebar-text");
-  if (label) label.textContent = t("saveDirty");
+  const bar = $("savebar"), label = $("savebar-text");
+  if (!bar || !label) return;
+  const loaded = !!currentMd;
+  bar.classList.toggle("hidden", !loaded);
+  bar.classList.toggle("warn", dirty && !fileHandle);
+  if (fileHandle) {
+    label.innerHTML = `<b>${esc(fileHandle.name)}</b> — ` +
+      esc(dirty ? t("fileWriting") : t("fileSaved") + (lastWrite ? " " + timeStr(lastWrite) : ""));
+  } else {
+    label.textContent = dirty ? t("saveDirty") : (CAN_LINK ? t("fileNone") : t("fileNoApi"));
+  }
+  // Knöpfe je nach Zustand
+  $("btn-link-file").classList.toggle("hidden", !CAN_LINK || !!fileHandle);
+  $("btn-create-file").classList.toggle("hidden", !CAN_LINK || !!fileHandle);
+  $("btn-unlink-file").classList.toggle("hidden", !fileHandle);
+  // Herunterladen und Kopieren bleiben auch mit verbundener Datei sichtbar —
+  // dann nicht als Speicherweg, sondern um eine Kopie zu verschicken.
+  $("btn-download-md").classList.toggle("lemon", !fileHandle);
+  $("btn-download-md").classList.toggle("secondary", !!fileHandle);
 }
 function downloadMd() {
   const name = (($("proj-title").textContent || "PM-STATUS").trim().replace(/[^\w\-]+/g, "-") || "PM-STATUS") + ".md";
@@ -1606,10 +1781,17 @@ function mountPnl(root) {
       "</tbody></table></div>";
     return v;
   };
-  const save = () => { const v = read(); commitBreakout("pnl", pnlWrite(v)); };
+  const save = note => { const v = read(); commitBreakout("pnl", pnlWrite(v), note); };
   root.querySelectorAll("[data-pnl]").forEach(i => {
+    let before = i.value;
+    i.addEventListener("focus", () => { before = i.value; });
     i.addEventListener("input", paint);
-    i.addEventListener("change", () => { paint(); save(); });
+    i.addEventListener("change", () => {
+      paint();
+      const note = before !== i.value ? `10 | P&L | ${i.dataset.pnl} ${before || "–"} → ${i.value}` : null;
+      save(note);
+      before = i.value;
+    });
   });
   const applyBtn = root.querySelector(".pnl-apply");
   if (applyBtn) applyBtn.addEventListener("click", () => {
@@ -1619,7 +1801,7 @@ function mountPnl(root) {
       if (parsed[i.dataset.pnl]) { i.value = parsed[i.dataset.pnl]; hits++; }
     });
     root.querySelector(".pnl-msg").textContent = hits ? t("pnlImportOk").replace("{n}", hits) : t("pnlImportNone");
-    paint(); if (hits) save();
+    paint(); if (hits) save(`10 | P&L | ${hits} Werte importiert`);
   });
   paint();
 }
@@ -1675,7 +1857,7 @@ function mountRoadmap(root) {
       c.querySelectorAll(".rm-card .rm-text").forEach(tx => cols[c.dataset.col].push(tx.textContent)));
     return cols;
   };
-  const save = () => commitBreakout("roadmap", rmWrite(state()));
+  const save = note => commitBreakout("roadmap", rmWrite(state()), note);
   const repaint = cols => {
     const wrap = root.parentElement;
     root.outerHTML = renderRoadmap(null, rmWrite(cols));
@@ -1699,13 +1881,16 @@ function mountRoadmap(root) {
       if (!to) return;
       cols[from].splice(idx, 1); cols[to].push(item);
     } else return;
-    repaint(cols); commitBreakout("roadmap", rmWrite(cols));
+    const short = item.length > 40 ? item.slice(0, 38) + "…" : item;
+    const target = dir === "up" || dir === "down" ? from : order[order.indexOf(from) + (dir === "left" ? -1 : 1)];
+    repaint(cols);
+    commitBreakout("roadmap", rmWrite(cols), `8 | Roadmap | ${short}: ${from} → ${target}`);
   }));
   // Drag & Drop für Zeigegeräte
   let dragged = null;
   root.querySelectorAll(".rm-card").forEach(card => {
     card.addEventListener("dragstart", () => { dragged = card; card.classList.add("dragging"); });
-    card.addEventListener("dragend", () => { card.classList.remove("dragging"); dragged = null; save(); });
+    card.addEventListener("dragend", () => { card.classList.remove("dragging"); dragged = null; save("8 | Roadmap | umsortiert"); });
   });
   root.querySelectorAll(".rm-cards").forEach(zone => {
     zone.addEventListener("dragover", e => {
@@ -1781,12 +1966,22 @@ function renderBmc(doc) {
   return `<div class="bmc-intro">${esc(t("bmcIntro"))}</div><div class="bmc-grid">${boxes}</div>`;
 }
 
-function loadMd(md) {
+function loadMd(md, opts) {
+  // Konfliktschutz: Wer eine ältere Datei über einen neueren Stand lädt, hat
+  // meist die falsche Kopie erwischt. Statt still zu überschreiben: fragen.
+  if (!(opts && opts.force) && currentMd && currentMd !== md) {
+    const mineAt = logLatest(currentMd), theirsAt = logLatest(md);
+    if (mineAt && (!theirsAt || theirsAt < mineAt)) {
+      const msg = t("conflictOlder").replace("{mine}", mineAt).replace("{theirs}", theirsAt || t("conflictNoLog"));
+      if (!confirm(msg)) return false;
+    }
+  }
   currentMd = md;
   dirty = false;
   localStorage.setItem(LS.md, md);
   renderMirror(md);
   updateSaveBar();
+  return true;
 }
 
 /* ============ Wiring ============ */
@@ -1808,7 +2003,8 @@ $("file-input").onchange = (e) => {
   const f = e.target.files[0]; if (!f) return;
   f.text().then(loadMd);
 };
-$("btn-demo").onclick = () => loadMd($("demo-md").textContent.trim());
+// Bewusster Dokumentwechsel — hier ist der Konfliktschutz fehl am Platz.
+$("btn-demo").onclick = () => loadMd($("demo-md").textContent.trim(), { force: true });
 $("btn-paste").onclick = () => { const v = $("paste-area").value.trim(); if (v) loadMd(v); };
 function resetProject() {
   localStorage.removeItem(LS.md);
@@ -1821,6 +2017,13 @@ $("btn-reset").onclick = resetProject;
 $("btn-reset-top").onclick = resetProject;
 $("btn-download-md").onclick = downloadMd;
 $("btn-copy-md").onclick = copyMd;
+$("btn-link-file").onclick = () => linkFile(false);
+$("btn-create-file").onclick = () => linkFile(true);
+$("btn-unlink-file").onclick = unlinkFile;
+// Ohne verbundene Datei ist der Browser-Speicher die einzige Kopie — davor warnen.
+window.addEventListener("beforeunload", e => {
+  if (dirty && !fileHandle) { e.preventDefault(); e.returnValue = t("leaveWarn"); return e.returnValue; }
+});
 $("lens-steps").onclick = () => switchLens("steps");
 $("lens-bmc").onclick = () => switchLens("bmc");
 
@@ -1908,6 +2111,7 @@ if (["0","1","2","3","4","5"].includes(storedStage)) {
 applyI18n();
 const saved = localStorage.getItem(LS.md);
 if (saved) loadMd(saved);   // setzt zugleich currentMd für die Breakouts
+restoreHandle();            // verbundene Datei aus der letzten Sitzung zurückholen
 </script>
 </body>
 </html>
