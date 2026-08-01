@@ -288,6 +288,30 @@
   .pnl-msg { font-size: 12px; color: var(--color-accent); align-self: center; }
   .pnl-note { margin-top: var(--sp-sm); font-size: 12px; color: var(--color-muted); }
 
+  /* Roadmap Now / Next / Later */
+  .rm-grid { display: grid; gap: var(--sp-sm); grid-template-columns: 1fr; }
+  @media (min-width: 700px) { .rm-grid { grid-template-columns: repeat(3, 1fr); } }
+  .rm-col { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--sp-sm); }
+  .rm-col h4 {
+    font-family: var(--font-primary); font-size: 11px; font-weight: 700; margin: 0 0 var(--sp-sm);
+    text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted);
+  }
+  .rm-col[data-col="now"] h4 { color: var(--color-text); }
+  .rm-cards { display: flex; flex-direction: column; gap: 6px; min-height: 48px; }
+  .rm-card {
+    background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    padding: 6px 8px; font-size: 13px; cursor: grab;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-xs);
+  }
+  .rm-card.dragging { opacity: .45; }
+  .rm-btns { display: flex; gap: 2px; flex-shrink: 0; }
+  .rm-move {
+    border: 0; background: transparent; cursor: pointer; color: var(--color-muted);
+    font-size: 12px; line-height: 1; padding: 2px 3px; border-radius: 3px;
+  }
+  .rm-move:hover { background: var(--color-surface-2); color: var(--color-text); }
+  .rm-empty { color: var(--color-muted); font-size: 13px; margin: 0; }
+
   footer { margin-top: var(--sp-3xl); font-size: 12px; color: var(--color-muted); }
   footer em { font-style: italic; }
   .hidden { display: none !important; }
@@ -638,6 +662,20 @@ Die drei billigsten Dinge stehen ganz oben, und keins davon ist Arbeit an Featur
 | Trichter messen | Export-Gate | Wiederverkaufs-Marktplatz |
 | 3 Kostenzahlen | Recht & Steuer | Geschenk-Edition |
 
+```witty:roadmap
+now: 5 Kundengespräche zur Zahlungsbereitschaft
+now: Preis-Intent-Button (misst Klicks, kassiert nichts)
+now: Trichter messen — Erstbesuch bis Export
+now: 3 Kostenzahlen erheben
+next: Konten (Magic Link)
+next: Zahlung + Kaufzustand
+next: Export-Gate und Freischalt-Moment
+next: Recht & Steuer
+later: Animation ausbauen
+later: Variable Schriften
+later: Wiederverkaufs-Marktplatz
+```
+
 ## 9 · Go-to-Market — ✅
 
 > Kurzbefund: Preis, Zahlweg, Zeitplan, Beachhead und Abbruchkriterium sind entschieden — die Liste „was muss vorher stehen" fehlt.
@@ -825,6 +863,9 @@ const I18N = {
     pnlImportPh: "Kosten pro Monat;3\nBruttopreis;9,99\nZiel Stück;100",
     pnlImportBtn: "Übernehmen", pnlImportOk: "{n} Werte übernommen", pnlImportNone: "Keine passenden Zeilen erkannt",
     pnlNote: "Änderungen wandern zurück ins Dokument — unten herunterladen, damit sie erhalten bleiben.",
+    rmTitle: "Roadmap — nur „Jetzt“ ist verbindlich",
+    rmNow: "Jetzt", rmNext: "Danach", rmLater: "Später",
+    rmNote: "Karten ziehen oder mit den Pfeilen verschieben — die Reihenfolge ist die Priorität und wandert zurück ins Dokument.",
     pastePh: "…oder Markdown hier einfügen", btnPaste: "Eingefügtes laden",
     thStep: "Schritt", thStatus: "Status", thNote: "Stand in einem Satz",
     legend: "⭕ offen · 🔍 implizit abgedeckt (dein Spiegel — gelb) · ✅ beantwortet · 🕊️ bewusst vertagt · Zeile anklicken springt zum Detail",
@@ -881,6 +922,9 @@ const I18N = {
     pnlImportPh: "Cost per month;3\nGross price;9.99\nTarget units;100",
     pnlImportBtn: "Apply", pnlImportOk: "{n} values applied", pnlImportNone: "No matching rows found",
     pnlNote: "Changes are written back into the document — download it below to keep them.",
+    rmTitle: "Roadmap — only “Now” is committed",
+    rmNow: "Now", rmNext: "Next", rmLater: "Later",
+    rmNote: "Drag the cards or move them with the arrows — the order is the priority and is written back into the document.",
     pastePh: "…or paste markdown here", btnPaste: "Load pasted text",
     thStep: "Step", thStatus: "Status", thNote: "State in one sentence",
     legend: "⭕ open · 🔍 implicitly covered (your mirror — yellow) · ✅ answered · 🕊️ deliberately deferred · click a row to jump to detail",
@@ -983,7 +1027,12 @@ Danach pro Schritt eine Sektion in genau dieser Gliederung:
 
 Tabellen nutzen, wo es etwas zu vergleichen gibt. Insbesondere:
 - Schritt 5: Vergleichstabelle gegen die genannten Alternativen (Achsen als Zeilen).
-- Schritt 8: RICE-Durchlauf über die offenen Kandidaten (Reach · Impact · Confidence · Effort · Score) plus eine Now/Next/Later-Tabelle.
+- Schritt 8: RICE-Durchlauf über die offenen Kandidaten (Reach · Impact · Confidence · Effort · Score) plus eine Now/Next/Later-Tabelle. Dazu denselben Inhalt als Datenblock, damit er im Werkzeug sortierbar wird — eine Zeile je Karte, Reihenfolge = Priorität:
+${FENCE}witty:roadmap
+now: [Kandidat]
+next: [Kandidat]
+later: [Kandidat]
+${FENCE}
 - Schritt 9/10: BMC-Zuordnung — welches der neun Business-Model-Canvas-Felder kommt aus welchem Schritt, und welche Felder bleiben leer.
 - Schritt 10: Mini-P&L in drei Tabellen (Erlös pro verkaufter Einheit nach Steuern/Gebühren · laufende Kosten pro Monat mit Leerspalte für echte Werte · Break-even in 2-3 Szenarien) und ein Satz, was die Zielzahl aus Schritt 2 wirklich bedeutet. Zusätzlich ein Datenblock, damit spätere Rechner damit arbeiten können:
 ${FENCE}witty:pnl
@@ -1084,7 +1133,12 @@ Then one section per step, in exactly this structure:
 
 Use tables wherever something is being compared. In particular:
 - Step 5: comparison table against the named alternatives (axes as rows).
-- Step 8: a RICE pass over the open candidates (Reach · Impact · Confidence · Effort · Score) plus a Now/Next/Later table.
+- Step 8: a RICE pass over the open candidates (Reach · Impact · Confidence · Effort · Score) plus a Now/Next/Later table. Add the same content as a data block so it becomes sortable in the tool — one line per card, order = priority:
+${FENCE}witty:roadmap
+now: [candidate]
+next: [candidate]
+later: [candidate]
+${FENCE}
 - Step 9/10: Business Model Canvas mapping — which of the nine BMC fields comes from which step, and which fields stay empty.
 - Step 10: a mini P&L in three tables (revenue per unit sold after tax and fees · monthly running cost with an empty column for real figures · break-even in 2-3 scenarios) and one sentence on what the target number from step 2 actually means. Plus a data block so later calculators can use it:
 ${FENCE}witty:pnl
@@ -1569,11 +1623,109 @@ function mountPnl(root) {
   });
   paint();
 }
+/* ============ Breakout: Roadmap Now / Next / Later ============
+   Format im Dokument, eine Zeile je Karte — les- und diffbar, und die
+   Reihenfolge im Text ist die Priorität:
+     now: 5 Kundengespräche
+     next: Konten anlegen
+     later: Animation ausbauen                                          */
+const RM_COLS = [
+  { id: "now",   match: /^(now|jetzt)$/i,                   label: "rmNow" },
+  { id: "next",  match: /^(next|danach|als_?n(ä|ae)chstes)$/i, label: "rmNext" },
+  { id: "later", match: /^(later|sp(ä|ae)ter)$/i,           label: "rmLater" }
+];
+function rmParse(raw) {
+  const cols = { now: [], next: [], later: [] };
+  (raw || "").split(/\r?\n/).forEach(line => {
+    const m = line.match(/^\s*([\wäöüÄÖÜ_]+)\s*:\s*(.+?)\s*$/);
+    if (!m) return;
+    const col = RM_COLS.find(c => c.match.test(m[1]));
+    if (col) cols[col.id].push(m[2]);
+  });
+  return cols;
+}
+function rmWrite(cols) {
+  return RM_COLS.flatMap(c => cols[c.id].map(item => c.id + ": " + item)).join("\n");
+}
+function renderRoadmap(_data, raw) {
+  const cols = rmParse(raw);
+  const col = c => `<div class="rm-col" data-col="${c.id}">
+      <h4>${esc(t(c.label))}</h4>
+      <div class="rm-cards">${cols[c.id].map((item, i) => `
+        <div class="rm-card" draggable="true" data-i="${i}">
+          <span class="rm-text">${inlineMd(esc(item))}</span>
+          <span class="rm-btns">
+            <button class="rm-move" data-dir="left"  title="←">←</button>
+            <button class="rm-move" data-dir="up"    title="↑">↑</button>
+            <button class="rm-move" data-dir="down"  title="↓">↓</button>
+            <button class="rm-move" data-dir="right" title="→">→</button>
+          </span>
+        </div>`).join("") || `<p class="rm-empty">—</p>`}</div>
+    </div>`;
+  return `<div class="breakout" data-breakout="roadmap">
+    <div class="bo-head"><span class="dblabel">${esc(t("rmTitle"))}</span></div>
+    <div class="rm-grid">${RM_COLS.map(col).join("")}</div>
+    <p class="pnl-note">${esc(t("rmNote"))}</p>
+  </div>`;
+}
+function mountRoadmap(root) {
+  const state = () => {
+    const cols = { now: [], next: [], later: [] };
+    root.querySelectorAll(".rm-col").forEach(c =>
+      c.querySelectorAll(".rm-card .rm-text").forEach(tx => cols[c.dataset.col].push(tx.textContent)));
+    return cols;
+  };
+  const save = () => commitBreakout("roadmap", rmWrite(state()));
+  const repaint = cols => {
+    const wrap = root.parentElement;
+    root.outerHTML = renderRoadmap(null, rmWrite(cols));
+    const fresh = wrap.querySelector('[data-breakout="roadmap"]');
+    if (fresh) mountRoadmap(fresh);
+  };
+  // Knöpfe: funktionieren auch auf Touch, wo Drag & Drop unzuverlässig ist
+  root.querySelectorAll(".rm-move").forEach(btn => btn.addEventListener("click", e => {
+    const card = e.target.closest(".rm-card");
+    const colEl = e.target.closest(".rm-col");
+    const cols = state();
+    const from = colEl.dataset.col;
+    const idx = [...colEl.querySelectorAll(".rm-card")].indexOf(card);
+    const item = cols[from][idx];
+    const order = RM_COLS.map(c => c.id);
+    const dir = e.target.dataset.dir;
+    if (dir === "up" && idx > 0) { cols[from].splice(idx, 1); cols[from].splice(idx - 1, 0, item); }
+    else if (dir === "down" && idx < cols[from].length - 1) { cols[from].splice(idx, 1); cols[from].splice(idx + 1, 0, item); }
+    else if (dir === "left" || dir === "right") {
+      const to = order[order.indexOf(from) + (dir === "left" ? -1 : 1)];
+      if (!to) return;
+      cols[from].splice(idx, 1); cols[to].push(item);
+    } else return;
+    repaint(cols); commitBreakout("roadmap", rmWrite(cols));
+  }));
+  // Drag & Drop für Zeigegeräte
+  let dragged = null;
+  root.querySelectorAll(".rm-card").forEach(card => {
+    card.addEventListener("dragstart", () => { dragged = card; card.classList.add("dragging"); });
+    card.addEventListener("dragend", () => { card.classList.remove("dragging"); dragged = null; save(); });
+  });
+  root.querySelectorAll(".rm-cards").forEach(zone => {
+    zone.addEventListener("dragover", e => {
+      e.preventDefault();
+      if (!dragged) return;
+      const after = [...zone.querySelectorAll(".rm-card:not(.dragging)")].find(c =>
+        e.clientY < c.getBoundingClientRect().top + c.getBoundingClientRect().height / 2);
+      zone.insertBefore(dragged, after || null);
+    });
+    zone.addEventListener("drop", e => e.preventDefault());
+  });
+}
+
 // Nach jedem Rendern die Breakouts verdrahten.
 function mountBreakouts() {
   document.querySelectorAll('[data-breakout="pnl"]').forEach(mountPnl);
+  document.querySelectorAll('[data-breakout="roadmap"]').forEach(mountRoadmap);
 }
 BREAKOUTS.pnl = renderPnl;
+BREAKOUTS.roadmap = renderRoadmap;
 
 /* ============ Linse: Business Model Canvas ============
    Nichts wird neu abgefragt — die neun Felder werden aus den bereits
