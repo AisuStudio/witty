@@ -246,6 +246,30 @@
   .groupnav .lens.isview { border-style: dashed; }
   .grparrow { color: var(--color-muted); margin-right: 2px; }
   .groupnav .lens.isview.active { border-style: solid; }
+  .groupnav .lens { display: inline-flex; align-items: center; gap: 6px; }
+  .grp { position: relative; }
+  .grpcaret { color: var(--color-muted); font-size: 9px; }
+  /* Fortschritt je Gruppe: ✅ voll, 🔍 halb — sichtbar ohne Zahlenlesen */
+  .grpbar {
+    display: inline-block; width: 34px; height: 4px; border-radius: 2px;
+    background: var(--color-surface-2); overflow: hidden; vertical-align: middle;
+  }
+  .grpbar i { display: block; height: 100%; background: var(--color-accent); }
+  .grpmenu {
+    position: absolute; top: calc(100% + 4px); left: 0; z-index: 20; min-width: 260px;
+    list-style: none; margin: 0; padding: 4px;
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+  }
+  .grpitem {
+    display: flex; align-items: baseline; gap: 6px; width: 100%; text-align: left;
+    border: 0; background: transparent; cursor: pointer; color: var(--color-text);
+    font-family: var(--font-body); font-size: 13px; padding: 6px 8px; border-radius: var(--radius-sm);
+  }
+  .grpitem:hover { background: var(--color-surface-2); }
+  .grpitem.all { color: var(--color-muted); font-size: 12px; border-bottom: 1px solid var(--color-border); border-radius: 0; margin-bottom: 2px; }
+  .grpnum { font-family: "iA Writer Mono S", monospace; font-size: 11px; color: var(--color-muted); }
+  @media (max-width: 600px) { .grpmenu { min-width: 220px; } }
 
   /* Business Model Canvas — klassische Anordnung, auf Mobil einspaltig */
   .bmc-intro { font-size: 13.5px; color: var(--color-muted); margin-bottom: var(--sp-md); }
@@ -890,7 +914,7 @@ const I18N = {
     conflictOlder: "Achtung: Der aktuelle Stand hat Änderungen von {mine}, die geladene Datei ist von {theirs}.\n\nDie ältere Datei würde den neueren Stand ersetzen. Trotzdem laden?",
     conflictNoLog: "ohne Verlauf",
     lensSteps: "Schritte", lensBmc: "Business Model Canvas",
-    grpAll: "Alle", grpConcept: "Konzept & Strategie", grpProduct: "Produkt",
+    grpAll: "Alle", grpShowAll: "Ganze Gruppe anzeigen", grpConcept: "Konzept & Strategie", grpProduct: "Produkt",
     grpMarket: "Markt & Geld", grpLearn: "Messen & Lernen", grpSummary: "Auswertung",
     bmcIntro: "Dieselben Antworten, anders angeordnet: Das Business Model Canvas ist ein Neun-Felder-Raster für ein Geschäftsmodell. Sieben Felder speisen sich aus deinen Schritten — gestrichelte Kästen sind Lücken.",
     bmcFrom: "aus Schritt ", bmcEmpty: "noch offen — kommt aus Schritt ",
@@ -972,7 +996,7 @@ const I18N = {
     conflictOlder: "Careful: the current state has changes from {mine}, the file you are loading is from {theirs}.\n\nThe older file would replace the newer state. Load anyway?",
     conflictNoLog: "without history",
     lensSteps: "Steps", lensBmc: "Business Model Canvas",
-    grpAll: "All", grpConcept: "Concept & strategy", grpProduct: "Product",
+    grpAll: "All", grpShowAll: "Show whole group", grpConcept: "Concept & strategy", grpProduct: "Product",
     grpMarket: "Market & money", grpLearn: "Measure & learn", grpSummary: "Summary",
     bmcIntro: "The same answers, arranged differently: the Business Model Canvas is a nine-field grid for a business model. Seven fields are fed by your steps — dashed boxes are gaps.",
     bmcFrom: "from step ", bmcEmpty: "still open — comes from step ",
@@ -1870,7 +1894,9 @@ function renderMirror(md) {
   $("bmc").innerHTML = renderBmc(doc);
   mountBreakouts();
 
-  document.querySelectorAll("[data-jump]").forEach(el =>
+  // Nur Dashboard-Zeilen und Canvas-Felder — die Menüeinträge der Navigation
+  // bringen ihren eigenen Handler mit und würden hier sonst überschrieben.
+  document.querySelectorAll("#dash-body [data-jump], #bmc [data-jump]").forEach(el =>
     el.addEventListener("click", () => {
       applyGroup("alle");   // zurück in die Schritte-Ansicht und Filter lösen,
                             // sonst springt es in eine ausgeblendete Sektion
@@ -1904,32 +1930,67 @@ function groupOf(n) {
   return g ? g.id : "auswertung";
 }
 let group = "alle";
+// Fortschritt einer Gruppe: ✅ zählt voll, 🔍 zur Hälfte — implizit abgedeckt
+// ist echter Fortschritt, aber noch nicht dasselbe wie beantwortet.
+function groupProgress(rows) {
+  if (!rows.length) return null;
+  const done = rows.filter(r => r.status.key === "done").length;
+  const half = rows.filter(r => r.status.key === "mirror").length;
+  const def  = rows.filter(r => r.status.key === "deferred").length;
+  return Math.round(((done + half * 0.5 + def) / rows.length) * 100);
+}
 function renderGroupNav(doc) {
   const nav = $("groupnav");
   if (!nav) return;
   nav.innerHTML = GROUPS.map(g => {
-    let extra = "";
-    if (g.id !== "alle") {
-      const rows = doc.rows.filter(r => groupOf(r.n) === g.id);
-      if (rows.length) {
-        const c = { open: 0, mirror: 0, done: 0, deferred: 0 };
-        rows.forEach(r => c[r.status.key]++);
-        extra = " <span class=\"grpcount\">" +
-          [["done","✅"],["mirror","🔍"],["open","⭕"],["deferred","🕊️"]]
-            .filter(([k]) => c[k]).map(([k, e]) => e + c[k]).join(" ") + "</span>";
-      }
-    }
-    const span = !g.view && g.from > 0 ? ` <span class="grprange">${g.from}–${g.to}</span>` : "";
-    const pre = g.view ? '<span class="grparrow">↳</span> ' : "";
-    return `<button class="lens${g.id === group ? " active" : ""}${g.view ? " isview" : ""}" data-group="${g.id}">${pre}${esc(t(g.label))}${span}${extra}</button>`;
+    const rows = g.view || g.id === "alle" ? [] : doc.rows.filter(r => groupOf(r.n) === g.id);
+    const pct = groupProgress(rows);
+    const range = !g.view && g.from > 0 ? `<span class="grprange">${g.from}–${g.to}</span>` : "";
+    const bar = pct === null ? "" :
+      `<span class="grpbar" title="${pct}%"><i style="width:${pct}%"></i></span>`;
+    const arrow = g.view ? '<span class="grparrow">↳</span> ' : "";
+    const caret = rows.length ? '<span class="grpcaret">▾</span>' : "";
+    const items = rows.map(r =>
+      `<li><button class="grpitem" data-jump="step-${r.n}" data-group="${g.id}">
+         <span class="chip">${r.status.emoji}</span>
+         <span class="grpnum">${r.n}</span> ${esc(r.name)}</button></li>`).join("");
+    const menu = rows.length
+      ? `<ul class="grpmenu hidden">
+           <li><button class="grpitem all" data-group="${g.id}">${esc(t("grpShowAll"))}</button></li>
+           ${items}
+         </ul>` : "";
+    return `<div class="grp">
+      <button class="lens${g.id === group ? " active" : ""}${g.view ? " isview" : ""}" data-group="${g.id}">
+        ${arrow}${esc(t(g.label))} ${range}${bar}${caret}
+      </button>${menu}</div>`;
   }).join("");
-  nav.querySelectorAll("[data-group]").forEach(b =>
-    b.addEventListener("click", () => applyGroup(b.dataset.group)));
+
+  nav.querySelectorAll(".grp > .lens").forEach(btn => btn.addEventListener("click", e => {
+    e.stopPropagation();
+    const menu = btn.parentElement.querySelector(".grpmenu");
+    const wasOpen = menu && !menu.classList.contains("hidden");
+    closeMenus();
+    if (menu && !wasOpen) { menu.classList.remove("hidden"); return; }   // erst öffnen
+    applyGroup(btn.dataset.group);                                       // ohne Untermenü: direkt filtern
+  }));
+  nav.querySelectorAll(".grpitem").forEach(item => item.addEventListener("click", e => {
+    e.stopPropagation();
+    closeMenus();
+    applyGroup(item.dataset.group);
+    const target = item.dataset.jump && $(item.dataset.jump);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }));
 }
+function closeMenus() {
+  document.querySelectorAll(".grpmenu").forEach(m => m.classList.add("hidden"));
+}
+document.addEventListener("click", closeMenus);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenus(); });
+
 function applyGroup(id) {
   const entry = GROUPS.find(g => g.id === id);
   group = id;
-  $("groupnav").querySelectorAll("[data-group]").forEach(b =>
+  $("groupnav").querySelectorAll(".grp > .lens").forEach(b =>
     b.classList.toggle("active", b.dataset.group === id));
   // Ein Eintrag ist entweder eine andere Ansicht (Canvas) oder ein Filter über
   // die Schritte — beides über dieselbe Leiste, damit es nur eine Navigation gibt.
@@ -1938,6 +1999,7 @@ function applyGroup(id) {
   document.querySelectorAll("#sections .step").forEach(el =>
     el.classList.toggle("hidden", id !== "alle" && el.dataset.group !== id));
 }
+
 function switchLens(which) {
   lens = which;
   $("sections").classList.toggle("hidden", which !== "steps");
