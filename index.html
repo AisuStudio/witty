@@ -992,19 +992,45 @@ Erstelle daraus einen PM-STATUS als Markdown. Das Audit prüft 14 Schritte. Verg
 
 Die 14 Schritte (Klartext-Frage · [Fachbegriff als Lern-Anker]):
 1. Spark — Welcher konkrete Moment hat zum Bauen geführt? [Problem Statement]
-2. Vision & Ambition — Was soll entstehen (1-2 Sätze), und wie groß: Hobby / soll sich tragen / Geschäft? [Vision Statement]
+2. Vision & Ambition — Was soll entstehen (1-2 Sätze), und wie groß: Hobby / soll sich tragen / Geschäft? Vision (wie sieht die Welt aus, wenn wir fertig sind — Basis für strategische Entscheidungen) UND Mission (warum gibt es uns, was tun wir — Basis für operative Ziele). [Vision Statement, Mission]
 3. Zielgruppe — Für wen? Eine konkrete typische Person + "Wenn ich ___, will ich ___, damit ___." [Archetyp/ICP, Jobs-to-be-Done]
 4. Nein-Liste — Was macht das Produkt bewusst NICHT? [Product Principles]
 5. Unterschied — Warum dieses Tool statt der Alternativen? Ein nachprüfbarer Satz. [Positioning]
-6. Strategie — Die 3-5 großen Wetten: was · warum · was man dafür bewusst nicht tut. [Strategy Pillars]
+6. Strategie — Die 3-5 großen Wetten: was · warum · was man dafür bewusst nicht tut. Pro Wette den Horizont benennen: 1 = Bestehendes optimieren · 2 = erweitern · 3 = Neues erschließen. [Strategy Pillars, Drei Horizonte/Ambidextrie]
 7. User Flows — Was tut die Zielperson Schritt für Schritt bis zum Wow-Moment? [User Stories, Aha-Moment]
-8. Priorisierung — Was zuerst (Phase 1 = kleinste Version, die den Wow-Moment enthält), was später, was nie? [MVP]
+8. Priorisierung — Was zuerst (Phase 1 = kleinste Version, die den Wow-Moment enthält), was später, was nie? Zweite Prüffrage: Feasibility — können wir das bauen UND dauerhaft betreiben? [MVP, Feasibility-Risiko]
 9. Go-to-Market — Wer erfährt zuerst davon, über welche Wege, zu welchem Preis, was muss vorher stehen? [Beachhead, GTM]
 10. Ökonomie — Kosten/Monat, Kosten pro Nutzer:in, ab wann trägt es sich? [Unit Economics]
-11. Nordstern — Die EINE Erfolgszahl + 2-3 heute schon messbare Hilfszahlen. [North Star Metric]
+11. Nordstern — Die EINE Erfolgszahl + 2-3 heute schon messbare Hilfszahlen. Der Nordstern muss VORLAUFEND sein (leading: steigt vor dem Umsatz), nicht nachlaufend (lagging). Hilfszahlen als benannte Stufen des Trichters Acquisition→Activation→Retention→Referral→Revenue. Jede Kennzahl gegen die sechs A prüfen: Aligned, Attainable, Acute (wenige), Accurate, Actionable, Alive. Bei technischen Zahlen den Moneypath zeigen (z. B. Ladezeit → Abbruch → Conversion → Umsatz). [North Star Metric, Leading/Lagging, AARRR]
 12. PMF-Stufe — 1 eine Person liebt es · 2 eine zahlt oder kehrt wöchentlich zurück · 3 mehrere · 4 es zieht von allein · 5 konstantes Wachstum — plus: der nächste beobachtbare Beweis. [Product-Market Fit]
-13. Validierungs-Loop — Wie wird laufend geprüft, und was würde einen RICHTUNGSwechsel auslösen (nicht nur Detail-Anpassung)? [Build-Measure-Learn, Pivot vs. Iterate]
+13. Validierungs-Loop — Wie wird laufend geprüft, und was würde einen RICHTUNGSwechsel auslösen (nicht nur Detail-Anpassung)? Zusätzlich Adaptability: Was von außen könnte die bisherigen Antworten ungültig machen (Technologie, Rechtslage, Plattform-Abhängigkeit, Wettbewerb)? [Build-Measure-Learn, Pivot vs. Iterate, Adaptability-Risiko]
 14. Snapshot-Regel — Bei welchem EREIGNIS wird dieses Dokument erneuert (kein Kalenderdatum)? [Review-Kadenz]
+
+EXPERIMENTE — für jede offene Frage einen billigen Test vorschlagen:
+
+Jedes ⭕ und jede Zahl, die auf einer Annahme beruht, ist ein Testkandidat. Eine Annahme ist implizit und ungeprüft ("die Zielgruppe zahlt 20 €"), eine Hypothese ist spezifisch und widerlegbar ("von 100 Besucher:innen klicken mindestens 8 auf Kaufen"). Der Übergang ist die Arbeit.
+
+Vier Regeln: Erfolgskriterium VOR dem Test festlegen · das billigste Verfahren wählen, das die Frage beantwortet ("bau den Cupcake, nicht die Hochzeitstorte") · gegen den eigenen Wunsch testen, nicht dafür · eine widerlegte Hypothese ist ein vollwertiges Ergebnis, kein Fehlschlag.
+
+Methode nach Validierungsfrage wählen — pro offener Frage 3-5 Vorschläge mit Begründung, NIE die ganze Liste:
+- PROBLEM (lohnt sich das Problem? Schritte 1, 3): Kundeninterviews im Mom-Test-Stil · Contextual Inquiry · Fake Door · Comprehension Test · App-Reviews und Foren lesen · Five People Who Are In · Find the Watering Hole
+- MARKT (will das jemand? Schritte 3, 5, 9): Spoof Landing Page · Testanzeigen schalten · Video Demo · Wizard of Oz · Concierge · Feature Stub · Trends- und Keyword-Analyse · Classified Posting
+- PRODUKT (löst es das Problem? Schritte 7, 8): Klickbarer Prototyp · Papier-Prototyp · Five-Second-Test · First-Click-Test · Guerilla- oder Remote-Usertest · Takeaway Test · Beta-Launch · Single-Feature-Produkt
+- ZAHLUNGSBEREITSCHAFT (zahlt jemand? Schritte 9, 10, 12): Dry Wallet (Kaufen anklickbar, Zahlung noch nicht möglich) · High Hurdle · Sell the Future · Collect Pre-orders · Contract · Crowdfunding · Conjoint Analysis · One Night Stand
+
+Reihenfolge beachten: Wer Zahlungsbereitschaft prüft, bevor Problem und Markt bestätigt sind, misst Rauschen. Und: Echtes Geld oder eine Unterschrift schlagen jeden Klick.
+
+Gib jedes Experiment als Datenblock direkt unter dem betroffenen Schritt aus:
+${FENCE}witty:experiment
+annahme: [die implizite Überzeugung]
+hypothese: Ich glaube, dass …
+test: [Verfahren] — Ich baue …
+messgroesse: Ich messe …
+erfolg_wenn: [Schwelle, vorab festgelegt]
+risiko: value | usability | feasibility | viability | adaptability
+aufwand: [Stunden oder Tage]
+ergebnis: offen
+${FENCE}
 
 ARBEITSWEISE — bevor du schreibst:
 - Belege sammeln: Repository, Commit-Historie inkl. Datum, README, Dokumente, Spikes, offene UND nicht gemergte Branches, frühere Gespräche. Nicht gemergte Branches sind oft der Ort, an dem die wichtigsten Entscheidungen liegen.
@@ -1098,19 +1124,45 @@ Produce a PM-STATUS as markdown. The audit checks 14 steps. Assign exactly one s
 
 The 14 steps (plain question · [textbook term as learning anchor]):
 1. Spark — Which concrete moment led to building this? [Problem Statement]
-2. Vision & Ambition — What should this become (1-2 sentences), and how big: hobby / should sustain itself / business? [Vision Statement]
+2. Vision & Ambition — What should this become (1-2 sentences), and how big: hobby / should sustain itself / business? Vision (what the world looks like when we are done — basis for strategic decisions) AND mission (why we exist, what we do — basis for operational goals). [Vision Statement, Mission]
 3. Audience — For whom? One concrete typical person + "When I ___, I want to ___, so that ___." [Archetype/ICP, Jobs-to-be-Done]
 4. No-list — What does the product deliberately NOT do? [Product Principles]
 5. Difference — Why this tool instead of the alternatives? One verifiable sentence. [Positioning]
-6. Strategy — The 3-5 big bets: what · why · what you deliberately don't do for each. [Strategy Pillars]
+6. Strategy — The 3-5 big bets: what · why · what you deliberately don't do for each. Name the horizon of each bet: 1 = optimise what exists · 2 = extend it · 3 = build something new. [Strategy Pillars, Three Horizons/Ambidexterity]
 7. User Flows — What does the target person do step by step until the wow moment? [User Stories, Aha Moment]
-8. Prioritization — What first (phase 1 = smallest version that still contains the wow moment), what later, what never? [MVP]
+8. Prioritization — What first (phase 1 = smallest version that still contains the wow moment), what later, what never? Second check: feasibility — can we build AND operate this? [MVP, feasibility risk]
 9. Go-to-Market — Who hears about it first, through which channels, at what price, and what must be ready beforehand? [Beachhead, GTM]
 10. Economics — Cost/month, cost per user, and when does it sustain itself? [Unit Economics]
-11. North Star — The ONE success number + 2-3 helper numbers measurable today. [North Star Metric]
+11. North Star — The ONE success number + 2-3 helper numbers measurable today. The north star must be LEADING (rises before revenue does), not lagging. Helper numbers should be named stages of the funnel Acquisition→Activation→Retention→Referral→Revenue. Check every metric against the six A: Aligned, Attainable, Acute (few), Accurate, Actionable, Alive. For technical numbers show the money path (e.g. load time → drop-off → conversion → revenue). [North Star Metric, Leading/Lagging, AARRR]
 12. PMF Stage — 1 one person loves it · 2 one pays or returns weekly · 3 several do · 4 it pulls on its own · 5 constant growth — plus: the next observable proof. [Product-Market Fit]
-13. Validation Loop — How is it continuously checked, and what would trigger a change of DIRECTION (not just detail)? [Build-Measure-Learn, Pivot vs. Iterate]
+13. Validation Loop — How is it continuously checked, and what would trigger a change of DIRECTION (not just detail)? Plus adaptability: what from the outside could invalidate the answers so far (technology, law, platform dependency, competition)? [Build-Measure-Learn, Pivot vs. Iterate, adaptability risk]
 14. Snapshot Rule — On which EVENT does this document get renewed (not a calendar date)? [Review cadence]
+
+EXPERIMENTS — propose a cheap test for every open question:
+
+Every ⭕ and every figure resting on an assumption is a test candidate. An assumption is implicit and unverified ("the target market will pay €20"); a hypothesis is specific and refutable ("at least 8 of 100 visitors click buy"). Making that transition is the work.
+
+Four rules: define the success threshold BEFORE the test · pick the cheapest method that answers the question ("build the cupcake, not the wedding cake") · test against your own wish, not for it · a refuted hypothesis is a full result, not a failure.
+
+Pick the method by validation question — 3-5 suggestions per open question with reasons, NEVER the whole list:
+- PROBLEM (is the problem worth solving? steps 1, 3): Mom-Test interviews · contextual inquiry · fake door · comprehension test · reading app reviews and forums · five people who are in · find the watering hole
+- MARKET (does anyone want it? steps 3, 5, 9): spoof landing page · run test ads · video demo · Wizard of Oz · concierge · feature stub · trends and keyword analysis · classified posting
+- PRODUCT (does it solve the problem? steps 7, 8): clickable prototype · paper prototype · five-second test · first-click test · guerilla or remote user test · takeaway test · beta launch · single-feature product
+- WILLINGNESS TO PAY (will anyone pay? steps 9, 10, 12): dry wallet (buy button live, payment not yet possible) · high hurdle · sell the future · collect pre-orders · contract · crowdfunding · conjoint analysis · one night stand
+
+Mind the order: testing willingness to pay before problem and market are confirmed measures noise. And real money or a signature beats any click.
+
+Output each experiment as a data block directly under the step it belongs to:
+${FENCE}witty:experiment
+assumption: [the implicit belief]
+hypothesis: I believe that …
+test: [method] — I build …
+metric: I measure …
+success_if: [threshold, defined in advance]
+risk: value | usability | feasibility | viability | adaptability
+effort: [hours or days]
+result: open
+${FENCE}
 
 HOW TO WORK — before you write:
 - Gather evidence: repository, commit history including dates, README, documents, spikes, open AND unmerged branches, prior conversations. Unmerged branches are often where the most important decisions live.
