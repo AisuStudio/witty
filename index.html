@@ -852,7 +852,7 @@ const I18N = {
     btnLinkFile: "Mit Datei verbinden", btnCreateFile: "Neue Datei anlegen", btnUnlinkFile: "Verbindung lösen",
     fileSaved: "in die Datei geschrieben", fileWriting: "wird geschrieben …",
     fileNone: "Noch mit keiner Datei verbunden — der Browser-Speicher ist nur Absturzsicherung.",
-    fileNoApi: "Dieser Browser kann keine Datei verbinden — herunterladen und im Projekt ablegen.",
+    fileNoApi: "Dieser Browser kann keine Datei verbinden (Chrome oder Edge können es; Brave nur mit aktivierter Datei-Schnittstelle) — bis dahin herunterladen und im Projekt ablegen.",
     leaveWarn: "Es gibt Änderungen, die in keiner Datei stehen.",
     logTitle: "Verlauf — was wann geändert wurde",
     conflictOlder: "Achtung: Der aktuelle Stand hat Änderungen von {mine}, die geladene Datei ist von {theirs}.\n\nDie ältere Datei würde den neueren Stand ersetzen. Trotzdem laden?",
@@ -1560,7 +1560,10 @@ function updateSaveBar() {
     label.innerHTML = `<b>${esc(fileHandle.name)}</b> — ` +
       esc(dirty ? t("fileWriting") : t("fileSaved") + (lastWrite ? " " + timeStr(lastWrite) : ""));
   } else {
-    label.textContent = dirty ? t("saveDirty") : (CAN_LINK ? t("fileNone") : t("fileNoApi"));
+    // Ohne Datei muss immer erkennbar sein, ob Verbinden überhaupt geht —
+    // sonst sucht man einen Knopf, den dieser Browser gar nicht anbietet.
+    const state = dirty ? t("saveDirty") : t("fileNone");
+    label.textContent = CAN_LINK ? state : state + " " + t("fileNoApi");
   }
   // Knöpfe je nach Zustand
   $("btn-link-file").classList.toggle("hidden", !CAN_LINK || !!fileHandle);
