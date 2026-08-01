@@ -243,6 +243,9 @@
   .grprange { font-family: "iA Writer Mono S", monospace; font-size: 11px; color: var(--color-muted); }
   .grpcount { font-size: 11px; letter-spacing: -.02em; margin-left: 2px; white-space: nowrap; }
   .groupnav .lens.active .grprange { color: var(--color-text); }
+  .groupnav .lens.isview { border-style: dashed; }
+  .grparrow { color: var(--color-muted); margin-right: 2px; }
+  .groupnav .lens.isview.active { border-style: solid; }
 
   /* Business Model Canvas — klassische Anordnung, auf Mobil einspaltig */
   .bmc-intro { font-size: 13.5px; color: var(--color-muted); margin-bottom: var(--sp-md); }
@@ -448,11 +451,6 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
         </table>
         <div class="stepbody" id="cover-extra"></div>
         <div class="legend" data-i18n="legend"></div>
-      </div>
-      <!-- Linsen: dieselben Antworten, andere Anordnung -->
-      <div class="lenses">
-        <button class="lens active" id="lens-steps" data-i18n="lensSteps"></button>
-        <button class="lens" id="lens-bmc" data-i18n="lensBmc"></button>
       </div>
       <nav class="groupnav" id="groupnav"></nav>
       <div class="card" id="sections"></div>
@@ -1874,8 +1872,8 @@ function renderMirror(md) {
 
   document.querySelectorAll("[data-jump]").forEach(el =>
     el.addEventListener("click", () => {
-      switchLens("steps");                       // aus der Canvas-Linse zurück in die Schritte
-      applyGroup("alle");                        // Filter lösen, sonst springt es ins Verborgene
+      applyGroup("alle");   // zurück in die Schritte-Ansicht und Filter lösen,
+                            // sonst springt es in eine ausgeblendete Sektion
       const target = $(el.dataset.jump);
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     }));
@@ -1896,12 +1894,13 @@ const GROUPS = [
   { id: "konzept",    from: 1,  to: 6,  label: "grpConcept" },
   { id: "produkt",    from: 7,  to: 8,  label: "grpProduct" },
   { id: "markt",      from: 9,  to: 10, label: "grpMarket" },
+  { id: "bmc",        from: -1, to: -1, label: "lensBmc", view: "bmc" },   // Ansicht, kein Filter
   { id: "messen",     from: 11, to: 14, label: "grpLearn" },
   { id: "auswertung", from: -1, to: -1, label: "grpSummary" }
 ];
 function groupOf(n) {
   if (!n) return "auswertung";
-  const g = GROUPS.find(g => g.id !== "alle" && n >= g.from && n <= g.to);
+  const g = GROUPS.find(g => !g.view && g.id !== "alle" && n >= g.from && n <= g.to);
   return g ? g.id : "auswertung";
 }
 let group = "alle";
@@ -1920,26 +1919,28 @@ function renderGroupNav(doc) {
             .filter(([k]) => c[k]).map(([k, e]) => e + c[k]).join(" ") + "</span>";
       }
     }
-    const span = g.id === "konzept" || g.id === "produkt" || g.id === "markt" || g.id === "messen"
-      ? ` <span class="grprange">${g.from}–${g.to}</span>` : "";
-    return `<button class="lens${g.id === group ? " active" : ""}" data-group="${g.id}">${esc(t(g.label))}${span}${extra}</button>`;
+    const span = !g.view && g.from > 0 ? ` <span class="grprange">${g.from}–${g.to}</span>` : "";
+    const pre = g.view ? '<span class="grparrow">↳</span> ' : "";
+    return `<button class="lens${g.id === group ? " active" : ""}${g.view ? " isview" : ""}" data-group="${g.id}">${pre}${esc(t(g.label))}${span}${extra}</button>`;
   }).join("");
   nav.querySelectorAll("[data-group]").forEach(b =>
     b.addEventListener("click", () => applyGroup(b.dataset.group)));
 }
 function applyGroup(id) {
+  const entry = GROUPS.find(g => g.id === id);
   group = id;
   $("groupnav").querySelectorAll("[data-group]").forEach(b =>
     b.classList.toggle("active", b.dataset.group === id));
+  // Ein Eintrag ist entweder eine andere Ansicht (Canvas) oder ein Filter über
+  // die Schritte — beides über dieselbe Leiste, damit es nur eine Navigation gibt.
+  switchLens(entry && entry.view ? entry.view : "steps");
+  if (entry && entry.view) return;
   document.querySelectorAll("#sections .step").forEach(el =>
     el.classList.toggle("hidden", id !== "alle" && el.dataset.group !== id));
 }
 function switchLens(which) {
   lens = which;
-  $("lens-steps").classList.toggle("active", which === "steps");
-  $("lens-bmc").classList.toggle("active", which === "bmc");
   $("sections").classList.toggle("hidden", which !== "steps");
-  $("groupnav").classList.toggle("hidden", which !== "steps");
   $("bmc").classList.toggle("hidden", which !== "bmc");
 }
 
@@ -2387,8 +2388,6 @@ $("btn-unlink-file").onclick = unlinkFile;
 window.addEventListener("beforeunload", e => {
   if (dirty && !fileHandle) { e.preventDefault(); e.returnValue = t("leaveWarn"); return e.returnValue; }
 });
-$("lens-steps").onclick = () => switchLens("steps");
-$("lens-bmc").onclick = () => switchLens("bmc");
 
 const drop = $("loader");
 drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("dragover"); });
