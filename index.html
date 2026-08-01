@@ -238,7 +238,14 @@
   .lens.active { color: var(--color-text); border-color: var(--color-accent); background: var(--color-surface); font-weight: 700; }
 
   /* Gruppen-Navigation über den Schritten */
-  .groupnav { display: flex; flex-wrap: wrap; gap: var(--sp-xs); margin: 0 0 var(--sp-md); }
+  /* Klebt oben, damit die Navigation nicht irgendwo im Dokument versinkt */
+  .groupnav {
+    display: flex; flex-wrap: wrap; gap: var(--sp-xs);
+    position: sticky; top: 0; z-index: 30;
+    margin: 0 0 var(--sp-md); padding: var(--sp-sm) 0;
+    background: var(--color-bg); border-bottom: 1px solid var(--color-border);
+  }
+  .prohead { margin-bottom: var(--sp-md); }
   .groupnav .lens { font-size: 12.5px; padding: 5px var(--sp-sm); }
   .grprange { font-family: "iA Writer Mono S", monospace; font-size: 11px; color: var(--color-muted); }
   .grpcount { font-size: 11px; letter-spacing: -.02em; margin-left: 2px; white-space: nowrap; }
@@ -460,13 +467,16 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
     </div>
 
     <div id="mirror" class="hidden">
-      <div class="card">
+      <div class="card prohead">
         <div class="projecthead">
           <h2 id="proj-title"></h2>
           <span class="sub" id="proj-sub"></span>
           <button class="btn secondary small" id="btn-reset-top" data-i18n="btnReset"></button>
         </div>
         <div class="counts" id="counts"></div>
+      </div>
+      <nav class="groupnav" id="groupnav"></nav>
+      <div class="card" id="summary">
         <table class="dash">
           <thead><tr>
             <th>#</th><th data-i18n="thStep"></th><th data-i18n="thStatus"></th><th data-i18n="thNote"></th>
@@ -476,8 +486,7 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
         <div class="stepbody" id="cover-extra"></div>
         <div class="legend" data-i18n="legend"></div>
       </div>
-      <nav class="groupnav" id="groupnav"></nav>
-      <div class="card" id="sections"></div>
+      <div class="card hidden" id="sections"></div>
       <div class="card hidden" id="bmc"></div>
       <div class="loadrow" style="margin-top:var(--sp-lg)">
         <button class="btn secondary" id="btn-reset" data-i18n="btnReset"></button>
@@ -914,7 +923,7 @@ const I18N = {
     conflictOlder: "Achtung: Der aktuelle Stand hat Änderungen von {mine}, die geladene Datei ist von {theirs}.\n\nDie ältere Datei würde den neueren Stand ersetzen. Trotzdem laden?",
     conflictNoLog: "ohne Verlauf",
     lensSteps: "Schritte", lensBmc: "Business Model Canvas",
-    grpAll: "Alle", grpShowAll: "Ganze Gruppe anzeigen", grpConcept: "Konzept & Strategie", grpProduct: "Produkt",
+    grpAll: "Alles lesen", grpSummaryView: "Zusammenfassung", grpShowAll: "Ganze Gruppe anzeigen", grpConcept: "Konzept & Strategie", grpProduct: "Produkt",
     grpMarket: "Markt & Geld", grpLearn: "Messen & Lernen", grpSummary: "Auswertung",
     bmcIntro: "Dieselben Antworten, anders angeordnet: Das Business Model Canvas ist ein Neun-Felder-Raster für ein Geschäftsmodell. Sieben Felder speisen sich aus deinen Schritten — gestrichelte Kästen sind Lücken.",
     bmcFrom: "aus Schritt ", bmcEmpty: "noch offen — kommt aus Schritt ",
@@ -996,7 +1005,7 @@ const I18N = {
     conflictOlder: "Careful: the current state has changes from {mine}, the file you are loading is from {theirs}.\n\nThe older file would replace the newer state. Load anyway?",
     conflictNoLog: "without history",
     lensSteps: "Steps", lensBmc: "Business Model Canvas",
-    grpAll: "All", grpShowAll: "Show whole group", grpConcept: "Concept & strategy", grpProduct: "Product",
+    grpAll: "Read everything", grpSummaryView: "Summary", grpShowAll: "Show whole group", grpConcept: "Concept & strategy", grpProduct: "Product",
     grpMarket: "Market & money", grpLearn: "Measure & learn", grpSummary: "Summary",
     bmcIntro: "The same answers, arranged differently: the Business Model Canvas is a nine-field grid for a business model. Seven fields are fed by your steps — dashed boxes are gaps.",
     bmcFrom: "from step ", bmcEmpty: "still open — comes from step ",
@@ -1889,7 +1898,7 @@ function renderMirror(md) {
      </div>`).join("");
 
   currentDoc = doc;
-  group = "alle";
+  group = "summary";
   renderGroupNav(doc);
   $("bmc").innerHTML = renderBmc(doc);
   mountBreakouts();
@@ -1898,7 +1907,7 @@ function renderMirror(md) {
   // bringen ihren eigenen Handler mit und würden hier sonst überschrieben.
   document.querySelectorAll("#dash-body [data-jump], #bmc [data-jump]").forEach(el =>
     el.addEventListener("click", () => {
-      applyGroup("alle");   // zurück in die Schritte-Ansicht und Filter lösen,
+      applyGroup("alle");   // in die Schritte-Ansicht wechseln und Filter lösen,
                             // sonst springt es in eine ausgeblendete Sektion
       const target = $(el.dataset.jump);
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1916,17 +1925,18 @@ let lens = "steps";
    vier inhaltliche Bündel geteilt, alles Unnummerierte (Sprachraum, Fazit,
    Spiegel-Lesart, Empfehlungen, Glossar, Verlauf) bildet ein fünftes. */
 const GROUPS = [
-  { id: "alle",       from: 0,  to: 99, label: "grpAll" },
+  { id: "summary",    from: -1, to: -1, label: "grpSummaryView", view: "summary" },
   { id: "konzept",    from: 1,  to: 6,  label: "grpConcept" },
   { id: "produkt",    from: 7,  to: 8,  label: "grpProduct" },
   { id: "markt",      from: 9,  to: 10, label: "grpMarket" },
-  { id: "bmc",        from: -1, to: -1, label: "lensBmc", view: "bmc" },   // Ansicht, kein Filter
+  { id: "bmc",        from: -1, to: -1, label: "lensBmc", view: "bmc", sub: true },  // Unterpunkt von Markt & Geld
   { id: "messen",     from: 11, to: 14, label: "grpLearn" },
-  { id: "auswertung", from: -1, to: -1, label: "grpSummary" }
+  { id: "auswertung", from: -1, to: -1, label: "grpSummary" },
+  { id: "alle",       from: 0,  to: 99, label: "grpAll" }
 ];
 function groupOf(n) {
   if (!n) return "auswertung";
-  const g = GROUPS.find(g => !g.view && g.id !== "alle" && n >= g.from && n <= g.to);
+  const g = GROUPS.find(g => !g.view && g.id !== "alle" && g.from > 0 && n >= g.from && n <= g.to);
   return g ? g.id : "auswertung";
 }
 let group = "alle";
@@ -1943,12 +1953,12 @@ function renderGroupNav(doc) {
   const nav = $("groupnav");
   if (!nav) return;
   nav.innerHTML = GROUPS.map(g => {
-    const rows = g.view || g.id === "alle" ? [] : doc.rows.filter(r => groupOf(r.n) === g.id);
+    const rows = g.view || g.id === "alle" || g.from < 0 ? [] : doc.rows.filter(r => groupOf(r.n) === g.id);
     const pct = groupProgress(rows);
     const range = !g.view && g.from > 0 ? `<span class="grprange">${g.from}–${g.to}</span>` : "";
     const bar = pct === null ? "" :
       `<span class="grpbar" title="${pct}%"><i style="width:${pct}%"></i></span>`;
-    const arrow = g.view ? '<span class="grparrow">↳</span> ' : "";
+    const arrow = g.sub ? '<span class="grparrow">↳</span> ' : "";
     const caret = rows.length ? '<span class="grpcaret">▾</span>' : "";
     const items = rows.map(r =>
       `<li><button class="grpitem" data-jump="step-${r.n}" data-group="${g.id}">
@@ -1960,11 +1970,19 @@ function renderGroupNav(doc) {
            ${items}
          </ul>` : "";
     return `<div class="grp">
-      <button class="lens${g.id === group ? " active" : ""}${g.view ? " isview" : ""}" data-group="${g.id}">
+      <button class="lens${g.id === group ? " active" : ""}${g.sub ? " isview" : ""}" data-group="${g.id}">
         ${arrow}${esc(t(g.label))} ${range}${bar}${caret}
       </button>${menu}</div>`;
   }).join("");
 
+  // Zeigegeräte: Untermenü bei Hover. Touch hat kein Hover, deshalb bleibt der
+  // Klick als zweiter Weg bestehen.
+  nav.querySelectorAll(".grp").forEach(grp => {
+    const menu = grp.querySelector(".grpmenu");
+    if (!menu) return;
+    grp.addEventListener("mouseenter", () => { closeMenus(); menu.classList.remove("hidden"); });
+    grp.addEventListener("mouseleave", () => menu.classList.add("hidden"));
+  });
   nav.querySelectorAll(".grp > .lens").forEach(btn => btn.addEventListener("click", e => {
     e.stopPropagation();
     const menu = btn.parentElement.querySelector(".grpmenu");
@@ -1994,14 +2012,16 @@ function applyGroup(id) {
     b.classList.toggle("active", b.dataset.group === id));
   // Ein Eintrag ist entweder eine andere Ansicht (Canvas) oder ein Filter über
   // die Schritte — beides über dieselbe Leiste, damit es nur eine Navigation gibt.
-  switchLens(entry && entry.view ? entry.view : "steps");
-  if (entry && entry.view) return;
+  const view = (entry && entry.view) || "steps";
+  switchLens(view);
+  if (view !== "steps") return;
   document.querySelectorAll("#sections .step").forEach(el =>
     el.classList.toggle("hidden", id !== "alle" && el.dataset.group !== id));
 }
 
 function switchLens(which) {
   lens = which;
+  $("summary").classList.toggle("hidden", which !== "summary");
   $("sections").classList.toggle("hidden", which !== "steps");
   $("bmc").classList.toggle("hidden", which !== "bmc");
 }
