@@ -571,6 +571,10 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
         <input type="text" class="projfield" id="proj-space" data-i18n-ph="qSpacePh">
         <label class="q qres" for="proj-resources" data-i18n="qRes"></label>
         <textarea class="projfield projdesc" id="proj-resources" rows="2" data-i18n-ph="qResPh"></textarea>
+        <label class="q" for="proj-cnsl-project" data-i18n="qCnslProject"></label>
+        <input type="text" class="projfield" id="proj-cnsl-project" data-i18n-ph="qCnslProjectPh">
+        <label class="q" for="proj-cnsl-skills" data-i18n="qCnslSkills"></label>
+        <input type="text" class="projfield" id="proj-cnsl-skills" data-i18n-ph="qCnslSkillsPh">
       </div>
       <p class="projhint" data-i18n="projHint"></p>
       <div class="loadrow" style="margin:0 0 var(--sp-md)">
@@ -946,6 +950,10 @@ const I18N = {
     qWhy: "Warum das Audit? (optional)", qWhyPh: "z. B. \"strategische Verortung\" oder \"entscheiden, ob ich Geld verlangen soll\"",
     qRes: "Ressourcen",
     qResPh: "GitHub-Link, Website, Dateipfade, Doku … — leer lassen, wenn die LLM schon im Projekt sitzt oder du Dateien anhängst",
+    qCnslProject: "CNSL-Projekt (Link, optional)",
+    qCnslProjectPh: "Der agentSlug-Link dieses Projekts — die LLM-Session liest darüber Notes & Tasks, bevor sie auditiert",
+    qCnslSkills: "CNSL-Skills (Link, optional)",
+    qCnslSkillsPh: "Link zur Skills-/Wissensbasis, die für dieses Projekt relevant ist",
     projHint: "Alles ist optional: leer lassen ist ok, wenn die LLM-Session dein Projekt schon kennt (z. B. Claude Code direkt im Repo) — der Prompt sagt ihr dann, den Kontext zu nutzen. Der Prompt unten aktualisiert sich live mit deinen Antworten.",
     btnCopy: "Prompt kopieren", btnDlPrompt: "Als Datei laden", copied: "✓ kopiert",
     cliTitle: "Lieber im Terminal? Ein Befehl statt Copy-Paste",
@@ -1036,6 +1044,10 @@ const I18N = {
     qWhy: "Why this audit? (optional)", qWhyPh: "e.g. \"strategic positioning\" or \"decide whether to charge money\"",
     qRes: "Resources",
     qResPh: "GitHub link, website, file paths, docs … — leave empty if the LLM already sits inside the project or you attach files",
+    qCnslProject: "CNSL project (link, optional)",
+    qCnslProjectPh: "This project's agentSlug link — the LLM session reads notes & tasks from it before auditing",
+    qCnslSkills: "CNSL skills (link, optional)",
+    qCnslSkillsPh: "Link to the skills/knowledge base relevant to this project",
     projHint: "Everything is optional: leaving it empty is fine if the LLM session already knows your project (e.g. Claude Code inside the repo) — the prompt tells it to use that context. The prompt below updates live with your answers.",
     btnCopy: "Copy prompt", btnDlPrompt: "Download as file", copied: "✓ copied",
     cliTitle: "Prefer the terminal? One command instead of copy-paste",
@@ -1397,7 +1409,9 @@ function projectBlock() {
   const focus = $("proj-focus").value.trim();
   const space = $("proj-space").value.trim();
   const res = $("proj-resources").value.trim();
-  if (!name && !desc && !goal && !stageSet && !money && !comp && !focus && !space && !res) return PROJECT_FALLBACK[lang];
+  const cnslProject = $("proj-cnsl-project").value.trim();
+  const cnslSkills = $("proj-cnsl-skills").value.trim();
+  if (!name && !desc && !goal && !stageSet && !money && !comp && !focus && !space && !res && !cnslProject && !cnslSkills) return PROJECT_FALLBACK[lang];
   const de = lang === "de";
   const lines = [(de ? "PROJEKT" : "PROJECT") + ": " + (name || "—")];
   if (desc)     lines.push((de ? "Was es ist: " : "What it is: ") + desc);
@@ -1408,13 +1422,15 @@ function projectBlock() {
   if (focus)    lines.push((de ? "Anlass für das Audit: " : "Reason for this audit: ") + focus);
   if (space)    lines.push((de ? "Themen/Nachbarmärkte zum Erkunden (erzeuge dafür die Sprachraum-Sektion): " : "Topics/adjacent markets to explore (produce the Language-Space section for these): ") + space);
   if (res)      lines.push((de ? "Ressourcen (nutze sie als Evidenzquellen): " : "Resources (use them as evidence sources): ") + res);
+  if (cnslProject) lines.push((de ? "CNSL-Projekt-Link (lies Notes & Tasks dieses Projekts über diesen Link, bevor du auditierst): " : "CNSL project link (read this project's notes & tasks via this link before auditing): ") + cnslProject);
+  if (cnslSkills)  lines.push((de ? "CNSL-Skills-Link (lies die relevante Skills-/Wissensbasis über diesen Link): " : "CNSL skills link (read the relevant skills/knowledge base via this link): ") + cnslSkills);
   return lines.join("\n");
 }
 function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
 
 /* ============ State ============ */
-const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pmoney: "witty.proj.money", pspace: "witty.proj.space", pcomp: "witty.proj.comp", pfocus: "witty.proj.focus", pres: "witty.proj.res" };
-const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-money","pmoney"],["proj-comp","pcomp"],["proj-focus","pfocus"],["proj-space","pspace"],["proj-resources","pres"]];
+const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pmoney: "witty.proj.money", pspace: "witty.proj.space", pcomp: "witty.proj.comp", pfocus: "witty.proj.focus", pres: "witty.proj.res", pcnslproj: "witty.proj.cnslproject", pcnslskills: "witty.proj.cnslskills" };
+const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-money","pmoney"],["proj-comp","pcomp"],["proj-focus","pfocus"],["proj-space","pspace"],["proj-resources","pres"],["proj-cnsl-project","pcnslproj"],["proj-cnsl-skills","pcnslskills"]];
 let lang = localStorage.getItem(LS.lang) || "de";
 
 const $ = (id) => document.getElementById(id);
