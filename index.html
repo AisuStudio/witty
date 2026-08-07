@@ -354,6 +354,17 @@
   .pnl-msg { font-size: 12px; color: var(--color-accent); align-self: center; }
   .pnl-note { margin-top: var(--sp-sm); font-size: 12px; color: var(--color-muted); }
 
+  /* Anmerkungen: witty:pending */
+  .annobox { margin-top: var(--sp-sm); font-size: 13px; }
+  .annobox summary { cursor: pointer; color: var(--color-muted); }
+  .anno-paste { margin-top: var(--sp-sm); min-height: 72px; width: 100%; }
+  .anno-pending {
+    border: 1px solid var(--color-mango-4); border-radius: var(--radius-sm);
+    padding: var(--sp-md); margin: var(--sp-sm) 0; background: color-mix(in srgb, var(--color-mango-1) 30%, transparent);
+  }
+  .anno-text { font-size: 13.5px; white-space: pre-line; }
+  #compare-suggest { border-color: var(--color-accent); }
+
   /* Roadmap Now / Next / Later */
   .rm-grid { display: grid; gap: var(--sp-sm); grid-template-columns: 1fr; }
   @media (min-width: 700px) { .rm-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -502,6 +513,13 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
         </div>
         <div class="counts" id="counts"></div>
       </div>
+      <div class="card hidden" id="compare-suggest">
+        <p data-i18n="suggestCompareText"></p>
+        <div class="loadrow">
+          <button class="btn secondary small cmpsuggest-btn" data-i18n="suggestCompareBtn"></button>
+          <button class="btn secondary small cmpsuggest-dismiss">✕</button>
+        </div>
+      </div>
       <nav class="groupnav" id="groupnav"></nav>
       <div class="card" id="summary">
         <table class="dash">
@@ -524,6 +542,16 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyy
         </div>
         <textarea class="paste hidden" id="cmp-area" data-i18n-ph="cmpPastePh"></textarea>
         <div id="cmp-out"></div>
+      </div>
+      <div class="card hidden" id="update-view">
+        <p class="cmp-intro" data-i18n="updateIntro"></p>
+        <p class="pnl-note" id="update-summary"></p>
+        <div class="loadrow" style="margin:0 0 var(--sp-md)">
+          <button class="btn" id="btn-copy-update" data-i18n="btnCopy"></button>
+          <button class="btn secondary" id="btn-dl-update" data-i18n="btnDlPrompt"></button>
+          <span class="copiedflash" id="copied-update" data-i18n="copied"></span>
+        </div>
+        <pre class="prompt" id="update-prompt-text"></pre>
       </div>
       <div class="loadrow" style="margin-top:var(--sp-lg)">
         <button class="btn secondary" id="btn-reset" data-i18n="btnReset"></button>
@@ -887,6 +915,14 @@ const I18N = {
     leaveWarn: "Es gibt Änderungen, die in keiner Datei stehen.",
     logTitle: "Verlauf — was wann geändert wurde",
     projMetaTitle: "Projekt-Formular wiederhergestellt",
+    annoAdd: "+ Anmerkung", annoSave: "Speichern", annoEdit: "Bearbeiten", annoRemove: "Entfernen",
+    annoPending: "Ausstehende Anmerkung — noch nicht eingearbeitet",
+    annoPh: "Was fehlt oder stimmt nicht mehr? Wird beim nächsten Update-Lauf eingearbeitet, nicht sofort.",
+    grpUpdate: "Update",
+    updateIntro: "Anmerkungen aus den Schritten werden hier zu einem Prompt, der eine neue Version erzeugt — kopiere ihn in eine LLM-Session, das Ergebnis ersetzt dieses Dokument.",
+    updateCount: "{n} Anmerkung(en) vorgemerkt:", updateNone: "Keine Anmerkungen vorgemerkt — im Spiegel bei einem Schritt auf „+ Anmerkung“ klicken.",
+    suggestCompareText: "Das sieht nach einem neueren Stand desselben Projekts aus.",
+    suggestCompareBtn: "Gegen vorherigen Stand vergleichen",
     conflictOlder: "Achtung: Der aktuelle Stand hat Änderungen von {mine}, die geladene Datei ist von {theirs}.\n\nDie ältere Datei würde den neueren Stand ersetzen. Trotzdem laden?",
     conflictNoLog: "ohne Verlauf",
     lensSteps: "Schritte", lensBmc: "Business Model Canvas",
@@ -982,6 +1018,14 @@ const I18N = {
     leaveWarn: "There are changes that are not in any file.",
     logTitle: "History — what changed when",
     projMetaTitle: "Project form restored",
+    annoAdd: "+ Note", annoSave: "Save", annoEdit: "Edit", annoRemove: "Remove",
+    annoPending: "Pending note — not yet incorporated",
+    annoPh: "What's missing or out of date? Gets incorporated on the next update run, not right away.",
+    grpUpdate: "Update",
+    updateIntro: "Notes from the steps turn into a prompt here that produces a new version — copy it into an LLM session, the result replaces this document.",
+    updateCount: "{n} note(s) queued:", updateNone: "No notes queued yet — click “+ Note” on a step in the Mirror.",
+    suggestCompareText: "This looks like a newer snapshot of the same project.",
+    suggestCompareBtn: "Compare against the previous one",
     conflictOlder: "Careful: the current state has changes from {mine}, the file you are loading is from {theirs}.\n\nThe older file would replace the newer state. Load anyway?",
     conflictNoLog: "without history",
     lensSteps: "Steps", lensBmc: "Business Model Canvas",
@@ -1476,6 +1520,40 @@ function projectBlock() {
 }
 function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
 
+/* ============ Update-Prompt: witty:pending einarbeiten ============
+   Anders als buildPrompt() kein Von-vorn-Audit — das komplette geladene
+   Dokument geht mit, samt witty:pending-Block; die LLM arbeitet die
+   Anmerkungen ein und liefert Snapshot v+1 zurück. */
+const UPDATE_PROMPTS = {
+  de: String.raw`Unten steht das VOLLSTÄNDIGE, aktuell geladene PM-STATUS-Dokument eines witty-Audits. Es enthält einen ${FENCE}witty:pending${FENCE}-Block mit einer oder mehreren rohen, unbearbeiteten Anmerkungen zu einzelnen Schritten (Format: "step: N" gefolgt vom Anmerkungstext).
+
+Deine Aufgabe: Arbeite JEDE Anmerkung in ihren Schritt ein — schreibe dort Kurzbefund, Befund, Belege, Lern-Anker und Nächster Handgriff neu, soweit die Anmerkung das nötig macht, und leite den Status (⭕/🔍/✅/🕊️) neu her. Behandle den Anmerkungstext als neue Evidenz, nicht als wörtlich zu übernehmenden Text. Halte dich an dieselben REGELN wie beim ursprünglichen Audit (Klartext vor Fachbegriff, auch innerhalb eines Schritts; kurze Sätze; menschlicher Ton).
+
+Gib JEDEN anderen Schritt, jede andere Sektion und jeden anderen Datenblock (${FENCE}witty:pnl${FENCE}, ${FENCE}witty:bmc${FENCE}, ${FENCE}witty:roadmap${FENCE}, ${FENCE}witty:log${FENCE}, ${FENCE}witty:project${FENCE}, ${FENCE}witty:experiment${FENCE}) unverändert wieder aus, Zeichen für Zeichen. Erhöhe "Snapshot v[N]" in der Kopfzeile um eins. Hänge im ${FENCE}witty:log${FENCE}-Block eine neue, datierte Zeile an, die die geänderten Schritte kurz benennt.
+
+Gib den ${FENCE}witty:pending${FENCE}-Block NICHT mehr aus — jede Anmerkung darin ist mit diesem Durchlauf eingearbeitet, der Block entfällt vollständig.
+
+Gib NUR das komplette aktualisierte Markdown-Dokument aus, keinen Kommentar davor oder danach.
+
+---
+
+`,
+  en: String.raw`Below is the FULL, currently loaded PM-STATUS document of a witty audit. It contains a ${FENCE}witty:pending${FENCE} block with one or more raw, unedited annotations about specific steps (format: "step: N" followed by the note text).
+
+Your job: incorporate EVERY annotation into its step — rewrite that step's short verdict, finding, evidence, learning anchor and next move as needed, and re-derive its status (⭕/🔍/✅/🕊️). Treat the annotation as new evidence, not as literal prose to copy. Follow the same RULES as the original audit (plain language before jargon, including within a step; short sentences; human tone).
+
+Reproduce every OTHER step, section, and data block (${FENCE}witty:pnl${FENCE}, ${FENCE}witty:bmc${FENCE}, ${FENCE}witty:roadmap${FENCE}, ${FENCE}witty:log${FENCE}, ${FENCE}witty:project${FENCE}, ${FENCE}witty:experiment${FENCE}) unchanged, character for character. Bump "Snapshot v[N]" in the header by one. Append one new dated line to the ${FENCE}witty:log${FENCE} block summarizing which steps changed.
+
+Do NOT output the ${FENCE}witty:pending${FENCE} block — every annotation in it has been incorporated in this pass, so the block is dropped entirely.
+
+Output ONLY the complete updated markdown document, no commentary before or after.
+
+---
+
+`
+};
+function buildUpdatePrompt() { return UPDATE_PROMPTS[lang] + currentMd; }
+
 /* ============ State ============ */
 const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pmoney: "witty.proj.money", pspace: "witty.proj.space", pcomp: "witty.proj.comp", pfocus: "witty.proj.focus", pres: "witty.proj.res", pcnslproj: "witty.proj.cnslproject", pcnslskills: "witty.proj.cnslskills" };
 const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-money","pmoney"],["proj-comp","pcomp"],["proj-focus","pfocus"],["proj-space","pspace"],["proj-resources","pres"],["proj-cnsl-project","pcnslproj"],["proj-cnsl-skills","pcnslskills"]];
@@ -1785,6 +1863,23 @@ function appendLog(md, entry) {
   // Noch kein Log im Dokument: einen anlegen, ganz am Ende.
   return md.replace(/\s*$/, "\n\n## Verlauf\n\n```witty:log\n" + line + "\n```\n");
 }
+/* ============ Anmerkungen: witty:pending ============
+   Ein Block fürs ganze Dokument, eine Strophe pro angemerktem Schritt,
+   leerzeilengetrennt (nicht der generische parseBlock, weil Notizen
+   mehrzeilig sind: "step: N" + freier Text). Wird per Update-Prompt in eine
+   echte neue Version eingearbeitet, s. buildUpdatePrompt(). */
+function pendingList(md) {
+  const m = (md || "").match(/```witty:pending[^\n]*\n([\s\S]*?)\n```/i);
+  if (!m) return [];
+  return m[1].split(/\n\s*\n/).map(block => {
+    const lines = block.split(/\r?\n/);
+    const head = lines[0].match(/^step:\s*(\d+)/i);
+    return head ? { step: +head[1], note: lines.slice(1).join("\n").trim() } : null;
+  }).filter(Boolean).filter(p => p.note);
+}
+function pendingWrite(list) {
+  return list.map(p => "step: " + p.step + "\n" + p.note).join("\n\n");
+}
 function commitBreakout(name, body, note, nth) {
   const next = nth === "upsert" ? upsertFence(currentMd, name, body) : replaceFence(currentMd, name, body, nth);
   if (next === null) return false;
@@ -1915,6 +2010,7 @@ function renderMirror(md) {
   if (!doc.rows.length && !doc.sections.length) { alert(lang === "de" ? "Kein PM-STATUS-Format erkannt." : "No PM-STATUS format recognized."); return; }
   restoreProjectMeta(md);   // witty:project kann vor der ersten ##-Section stehen,
                             // also unabhängig vom Section-Parsing direkt im Rohtext suchen
+  const pending = pendingList(md);   // dito: witty:pending kann irgendwo landen
 
   fenceSeq = {};   // Blocktyp-Zähler pro Renderdurchlauf zurücksetzen
   $("proj-title").textContent = doc.title.replace(/^PM-STATUS\s*[—-]\s*/i, "");
@@ -1941,11 +2037,13 @@ function renderMirror(md) {
        <h3>${s.status ? `<span class="chip">${s.status.emoji}</span>` : ""}
            ${s.n ? s.n + " · " : ""}${esc(s.name)}</h3>
        <div class="stepbody">${renderBody(s.body)}</div>
+       ${s.n ? annoBoxHtml(s.n, pending.find(p => p.step === s.n)?.note) : ""}
      </div>`).join("");
 
   currentDoc = doc;
   group = "summary";
   renderGroupNav(doc);
+  refreshUpdateTab();
   $("bmc").innerHTML = renderBmc(doc);
   mountBreakouts();
 
@@ -1979,6 +2077,7 @@ const GROUPS = [
   { id: "messen",     from: 11, to: 14, label: "grpLearn" },
   { id: "auswertung", from: -1, to: -1, label: "grpSummary" },
   { id: "compare",    from: -1, to: -1, label: "grpCompare", view: "compare" },
+  { id: "update",     from: -1, to: -1, label: "grpUpdate",  view: "update" },
   { id: "alle",       from: 0,  to: 99, label: "grpAll" }
 ];
 function groupOf(n) {
@@ -1995,6 +2094,13 @@ function groupProgress(rows) {
   const half = rows.filter(r => r.status.key === "mirror").length;
   const def  = rows.filter(r => r.status.key === "deferred").length;
   return Math.round(((done + half * 0.5 + def) / rows.length) * 100);
+}
+// Update-Reiter nur zeigen, wenn es etwas zum Einarbeiten gibt — separat von
+// renderGroupNav aufrufbar, damit pendingSave/pendingRemove nicht die ganze
+// Navigation neu aufbauen müssen, nur um diesen einen Reiter zu toggeln.
+function refreshUpdateTab() {
+  const updateBtn = document.querySelector('.grp > .lens[data-group="update"]');
+  if (updateBtn) updateBtn.closest(".grp").classList.toggle("hidden", pendingList(currentMd).length === 0);
 }
 function renderGroupNav(doc) {
   const nav = $("groupnav");
@@ -2072,6 +2178,15 @@ function switchLens(which) {
   $("compare").classList.toggle("hidden", which !== "compare");
   $("sections").classList.toggle("hidden", which !== "steps");
   $("bmc").classList.toggle("hidden", which !== "bmc");
+  $("update-view").classList.toggle("hidden", which !== "update");
+  if (which === "update") renderUpdateView();
+}
+function renderUpdateView() {
+  const pend = pendingList(currentMd);
+  $("update-summary").textContent = pend.length
+    ? t("updateCount").replace("{n}", pend.length) + " " + pend.map(p => "#" + p.step).join(", ")
+    : t("updateNone");
+  $("update-prompt-text").textContent = pend.length ? buildUpdatePrompt() : "";
 }
 
 /* ============ Breakout: Mini-P&L ============
@@ -2375,6 +2490,7 @@ function mountBreakouts() {
     el.addEventListener("change", bmcSave));
   document.querySelectorAll('[data-breakout="pnl"]').forEach(mountPnl);
   document.querySelectorAll('[data-breakout="roadmap"]').forEach(mountRoadmap);
+  document.querySelectorAll('[data-anno-step]').forEach(mountAnnoBox);
 }
 BREAKOUTS.pnl = renderPnl;
 BREAKOUTS.roadmap = renderRoadmap;
@@ -2403,6 +2519,62 @@ BREAKOUTS.project = renderProjectMeta;
 function restoreProjectMeta(md) {
   const m = md.match(/```witty:project\n([\s\S]*?)\n```/i);
   if (m) renderProjectMeta(parseBlock(m[1]));
+}
+
+// Reiner Datenblock — die eigentliche UI lebt pro Schritt (annoBoxHtml unten),
+// nicht als eigene sichtbare Karte an der Fundstelle des Blocks im Dokument.
+BREAKOUTS.pending = () => "";
+
+function pendingSave(step, text) {
+  const list = pendingList(currentMd).filter(p => p.step !== step);
+  const note = (text || "").trim();
+  if (note) list.push({ step, note });
+  list.sort((a, b) => a.step - b.step);
+  commitBreakout("pending", pendingWrite(list), null, "upsert");
+  repaintAnnoBox(step);
+  refreshUpdateTab();
+}
+function pendingRemove(step) { pendingSave(step, ""); }
+
+// note gesetzt → "wartet auf Einarbeitung"-Ansicht; sonst das Eingabeformular,
+// draft befüllt es beim Bearbeiten einer schon gespeicherten Anmerkung vor.
+function annoBoxHtml(step, note, draft) {
+  if (note) {
+    return `<div class="annobox anno-pending" data-anno-step="${step}">
+      <div class="bo-head"><span class="dblabel">🕓 ${esc(t("annoPending"))}</span></div>
+      <p class="anno-text">${esc(note).replace(/\n/g, "<br>")}</p>
+      <div class="loadrow">
+        <button class="btn secondary small anno-edit">${esc(t("annoEdit"))}</button>
+        <button class="btn secondary small anno-remove">${esc(t("annoRemove"))}</button>
+      </div>
+    </div>`;
+  }
+  return `<details class="annobox" data-anno-step="${step}"${draft ? " open" : ""}>
+    <summary>${esc(t("annoAdd"))}</summary>
+    <textarea class="paste anno-paste" rows="3" placeholder="${esc(t("annoPh"))}">${esc(draft || "")}</textarea>
+    <div class="loadrow"><button class="btn secondary small anno-save">${esc(t("annoSave"))}</button></div>
+  </details>`;
+}
+function repaintAnnoBox(step, draft) {
+  const el = document.querySelector(`[data-anno-step="${step}"]`);
+  if (!el) return;
+  const note = pendingList(currentMd).find(p => p.step === step)?.note;
+  el.outerHTML = annoBoxHtml(step, note, draft);
+  mountAnnoBox(document.querySelector(`[data-anno-step="${step}"]`));
+}
+function mountAnnoBox(el) {
+  if (!el) return;
+  const step = +el.dataset.annoStep;
+  const editBtn = el.querySelector(".anno-edit");
+  const removeBtn = el.querySelector(".anno-remove");
+  const saveBtn = el.querySelector(".anno-save");
+  if (editBtn) editBtn.addEventListener("click", () => {
+    const note = pendingList(currentMd).find(p => p.step === step)?.note || "";
+    el.outerHTML = annoBoxHtml(step, null, note);
+    mountAnnoBox(document.querySelector(`[data-anno-step="${step}"]`));
+  });
+  if (removeBtn) removeBtn.addEventListener("click", () => pendingRemove(step));
+  if (saveBtn) saveBtn.addEventListener("click", () => pendingSave(step, el.querySelector(".anno-paste").value));
 }
 
 /* ============ Vergleich zweier Snapshots ============
@@ -2547,6 +2719,7 @@ function renderBmc(doc) {
 function loadMd(md, opts) {
   // Konfliktschutz: Wer eine ältere Datei über einen neueren Stand lädt, hat
   // meist die falsche Kopie erwischt. Statt still zu überschreiben: fragen.
+  const prevMd = currentMd;
   if (!(opts && opts.force) && currentMd && currentMd !== md) {
     const mineAt = logLatest(currentMd), theirsAt = logLatest(md);
     if (mineAt && (!theirsAt || theirsAt < mineAt)) {
@@ -2559,7 +2732,29 @@ function loadMd(md, opts) {
   localStorage.setItem(LS.md, md);
   renderMirror(md);
   updateSaveBar();
+  maybeSuggestCompare(prevMd, md);
   return true;
+}
+// Lose Verknüpfung zum bestehenden Vergleich: wenn ein zweiter Snapshot
+// desselben Projekts geladen wird, den Diff gegen den vorherigen Stand
+// anbieten — Vergleich funktioniert weiterhin eigenständig über Datei/Paste.
+function maybeSuggestCompare(prevMd, md) {
+  const banner = $("compare-suggest");
+  if (!banner) return;
+  if (!prevMd || prevMd === md) { banner.classList.add("hidden"); return; }
+  let prevDoc, newDoc;
+  try { prevDoc = parseStatusMd(prevMd); newDoc = parseStatusMd(md); }
+  catch { banner.classList.add("hidden"); return; }
+  if (!prevDoc.rows.length || !newDoc.rows.length || prevDoc.title !== newDoc.title) {
+    banner.classList.add("hidden"); return;
+  }
+  banner.classList.remove("hidden");
+  banner.querySelector(".cmpsuggest-btn").onclick = () => {
+    banner.classList.add("hidden");
+    applyGroup("compare");
+    runCompare(prevMd);
+  };
+  banner.querySelector(".cmpsuggest-dismiss").onclick = () => banner.classList.add("hidden");
 }
 
 /* ============ Wiring ============ */
@@ -2645,6 +2840,24 @@ $("btn-copy").onclick = async () => {
   }
   const c = $("copied"); c.style.display = "inline";
   setTimeout(() => { c.style.display = "none"; }, 1600);
+};
+
+$("btn-copy-update").onclick = async () => {
+  const text = buildUpdatePrompt();
+  try { await navigator.clipboard.writeText(text); }
+  catch {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+  }
+  const c = $("copied-update"); c.style.display = "inline";
+  setTimeout(() => { c.style.display = "none"; }, 1600);
+};
+$("btn-dl-update").onclick = () => {
+  const url = URL.createObjectURL(new Blob([buildUpdatePrompt()], { type: "text/markdown;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = "witty-update-prompt-" + lang + ".md"; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 };
 
 PROJ_FIELDS.forEach(([id, key]) => ["input", "change"].forEach(ev =>
