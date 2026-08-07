@@ -257,7 +257,16 @@ gearbeitet wird:
 - **Klassische Methode(n):** RICE-Scoring oder MoSCoW pro Flow-Schritt,
   Kano-Modell zur Unterscheidung Basis- vs. Begeisterungs-Funktion;
   Prüffrage je Punkt: auf welches Strategie-Pillar (Schritt 6) zahlt er
-  ein — Punkte ohne Pillar sind Streich-Kandidaten. **Zweite Prüffrage:
+  ein — Punkte ohne Pillar sind Streich-Kandidaten. **RICE ist ein
+  Sense-Check, keine Strategie:** der Score rankt nur, was schon als
+  Kandidat auf der Liste steht, er beantwortet nicht, ob die Liste selbst
+  noch stimmt — das klärt Schritt 6. Deshalb RICE erst NACH der
+  Priorisierungsentscheidung als Gegencheck einsetzen, nie als Ersatz
+  davor (Ergänzung Aug 2026, externe Quelle: PM-Content-Account „Hustle
+  Badger"/„Midnight Marketer", gegen dieses Schema geprüft per
+  LLM-Council — von vier geprüften Punkten hatte nur dieser einen
+  Schema-Anker, die anderen drei wurden verworfen/zurückgestellt).
+  **Zweite Prüffrage:
   Feasibility** — können wir das bauen und dauerhaft betreiben? Das ist
   die Risikoart, die im BMC links liegt (Schlüsselpartner, -aktivitäten,
   -ressourcen) und im Rest des Schemas nirgends vorkommt; wo die Antwort

@@ -396,6 +396,16 @@
   .breakout.exp.res-bestaetigt { border-color: var(--color-accent); }
   .breakout.exp.res-widerlegt { border-color: var(--color-border); opacity: .85; }
 
+  /* Glossar-Tooltip: {{Begriff::Erklärung}} im Fließtext, s. inlineMd() */
+  .gloss { position: relative; border-bottom: 1px dotted var(--color-muted); cursor: help; }
+  .gloss .gloss-tip {
+    visibility: hidden; opacity: 0; position: absolute; left: 0; bottom: calc(100% + 6px);
+    width: max-content; max-width: 260px; background: var(--color-text); color: var(--color-bg);
+    padding: .45em .65em; border-radius: var(--radius-sm); font-size: 12.5px; line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18); z-index: 20; transition: opacity .12s ease;
+  }
+  .gloss:hover .gloss-tip, .gloss:focus .gloss-tip, .gloss:focus-visible .gloss-tip { visibility: visible; opacity: 1; }
+
   footer { margin-top: var(--sp-3xl); font-size: 12px; color: var(--color-muted); }
   footer em { font-style: italic; }
   .hidden { display: none !important; }
@@ -700,7 +710,7 @@ Das Muster: Das Produkt ist gebaut und rechnet sich, aber es fehlt der Satz, der
 
 > Kurzbefund: Die Phasen werden gelebt, aber der Schnitt für die bezahlte Version ist nie gezogen worden.
 
-**Lern-Anker: RICE und Kano.** RICE bewertet Kandidaten mit vier Zahlen: **R**each (wie viele betrifft es) · **I**mpact (wie stark) · **C**onfidence (wie sicher) · **E**ffort (Personentage). Score = R × I × C ÷ E. Der Sinn ist nicht die exakte Zahl, sondern dass **Aufwand im Nenner steht** — billige Dinge mit mittlerem Nutzen schlagen teure mit hohem. Das *Kano-Modell* unterscheidet Basis-, Leistungs- und Begeisterungs-Funktionen; der klassische Fehler ist, an Begeisterung zu arbeiten, während eine Basis-Funktion fehlt.
+**Lern-Anker: {{RICE::Reach × Impact × Confidence ÷ Effort. Aufwand steht bewusst im Nenner — billige Wetten mit mittlerem Nutzen schlagen teure mit hohem.}} und Kano.** RICE bewertet Kandidaten mit vier Zahlen: **R**each (wie viele betrifft es) · **I**mpact (wie stark) · **C**onfidence (wie sicher) · **E**ffort (Personentage). Score = R × I × C ÷ E. Der Sinn ist nicht die exakte Zahl, sondern dass **Aufwand im Nenner steht** — billige Dinge mit mittlerem Nutzen schlagen teure mit hohem. **Aber: RICE ist ein Sense-Check, keine Strategie** — der Score rankt nur, was schon als Kandidat auf der Liste steht, er beantwortet nicht, ob die Liste selbst noch stimmt (das klärt Schritt 6 Strategie). Deshalb RICE NACH der Priorisierungsentscheidung als Gegencheck nutzen, nie als Ersatz davor. Das *Kano-Modell* unterscheidet Basis-, Leistungs- und Begeisterungs-Funktionen; der klassische Fehler ist, an Begeisterung zu arbeiten, während eine Basis-Funktion fehlt.
 
 | Kandidat | R | I | C | E | Score |
 |---|---|---|---|---|---|
@@ -1131,13 +1141,13 @@ Danach pro Schritt eine Sektion in genau dieser Gliederung:
 
 **Belege.** [Aufzählung, jeder Beleg in Klartext: was passiert ist, wann, und warum es zählt — Beispiel: "30.07. — Erstnutzer:innen landeten vorher im leeren Editor; seither kein Gate, ein Startpunkt und eine geführte Tour (Commit 1e0d4a7)." NIEMALS ein nackter Hash oder Dateipfad ohne Klartext daneben.]
 
-**Lern-Anker: [Fachbegriff(e)].** [2-5 Sätze: was der Begriff bedeutet, in Alltagssprache erklärt, und wie er auf dieses Projekt zutrifft. Wo möglich ein ausgefülltes Beispiel aus den echten Projektdaten — ein Vision-Statement, eine User Story mit Akzeptanzkriterien, ein RICE-Score.]
+**Lern-Anker: [Fachbegriff(e)].** [2-5 Sätze: was der Begriff bedeutet, in Alltagssprache erklärt, und wie er auf dieses Projekt zutrifft. Wo möglich ein ausgefülltes Beispiel aus den echten Projektdaten — ein Vision-Statement, eine User Story mit Akzeptanzkriterien, ein RICE-Score. Den Kernbegriff optional als Tooltip auszeichnen: {{Begriff::Ein-Satz-Erklärung}} — der Viewer macht daraus eine Hover-Erklärung, nutze es sparsam, nur beim ersten Auftreten eines neuen Begriffs.]
 
 **Nächster Handgriff.** [1-3 Sätze, konkret und heute machbar.]
 
 Tabellen nutzen, wo es etwas zu vergleichen gibt. Insbesondere:
 - Schritt 5: Vergleichstabelle gegen die genannten Alternativen (Achsen als Zeilen).
-- Schritt 8: RICE-Durchlauf über die offenen Kandidaten (Reach · Impact · Confidence · Effort · Score) plus eine Now/Next/Later-Tabelle. Dazu denselben Inhalt als Datenblock, damit er im Werkzeug sortierbar wird — eine Zeile je Karte, Reihenfolge = Priorität:
+- Schritt 8: RICE-Durchlauf über die offenen Kandidaten (Reach · Impact · Confidence · Effort · Score) plus eine Now/Next/Later-Tabelle. Weise dabei explizit darauf hin, dass RICE ein Sense-Check NACH der Priorisierung ist, keine Strategie — der Score rankt nur, was schon als Kandidat gilt, er ersetzt nicht die Entscheidung aus Schritt 6, welche Kandidaten überhaupt auf der Liste stehen. Dazu denselben Inhalt als Datenblock, damit er im Werkzeug sortierbar wird — eine Zeile je Karte, Reihenfolge = Priorität:
 ${FENCE}witty:roadmap
 now: [Kandidat]
 next: [Kandidat]
@@ -1293,13 +1303,13 @@ Then one section per step, in exactly this structure:
 
 **Evidence.** [A list, each item in plain language: what happened, when, and why it counts — example: "30 Jul — first-time users used to land in an empty editor; since then there is no gate, a starting point and a guided tour (commit 1e0d4a7)." NEVER a bare hash or file path without plain language next to it.]
 
-**Learning anchor: [textbook term(s)].** [2-5 sentences: what the term means in everyday language, and how it applies to this project. Where possible include a filled-in example built from the real project data — a vision statement, a user story with acceptance criteria, a RICE score.]
+**Learning anchor: [textbook term(s)].** [2-5 sentences: what the term means in everyday language, and how it applies to this project. Where possible include a filled-in example built from the real project data — a vision statement, a user story with acceptance criteria, a RICE score. Optionally mark the core term as a tooltip: {{Term::One-sentence explanation}} — the viewer turns it into a hover explanation; use sparingly, only on a term's first occurrence.]
 
 **Next move.** [1-3 sentences, concrete and doable today.]
 
 Use tables wherever something is being compared. In particular:
 - Step 5: comparison table against the named alternatives (axes as rows).
-- Step 8: a RICE pass over the open candidates (Reach · Impact · Confidence · Effort · Score) plus a Now/Next/Later table. Add the same content as a data block so it becomes sortable in the tool — one line per card, order = priority:
+- Step 8: a RICE pass over the open candidates (Reach · Impact · Confidence · Effort · Score) plus a Now/Next/Later table. Explicitly note that RICE is a sense-check AFTER prioritization, not a strategy — the score only ranks what's already a candidate, it doesn't replace the Step 6 decision of which candidates belong on the list at all. Add the same content as a data block so it becomes sortable in the tool — one line per card, order = priority:
 ${FENCE}witty:roadmap
 now: [candidate]
 next: [candidate]
@@ -1503,6 +1513,8 @@ function parseStatusMd(md) {
 function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function inlineMd(s) {
   return s
+    .replace(/\{\{([^:{}]+)::([^{}]+)\}\}/g,
+      (_, term, tip) => '<span class="gloss" tabindex="0">' + term + '<span class="gloss-tip" role="tooltip">' + tip + '</span></span>')
     .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
