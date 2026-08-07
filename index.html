@@ -886,6 +886,7 @@ const I18N = {
     fileNoApi: "Dieser Browser kann keine Datei verbinden (Chrome oder Edge können es; Brave nur mit aktivierter Datei-Schnittstelle) — bis dahin herunterladen und im Projekt ablegen.",
     leaveWarn: "Es gibt Änderungen, die in keiner Datei stehen.",
     logTitle: "Verlauf — was wann geändert wurde",
+    projMetaTitle: "Projekt-Formular wiederhergestellt",
     conflictOlder: "Achtung: Der aktuelle Stand hat Änderungen von {mine}, die geladene Datei ist von {theirs}.\n\nDie ältere Datei würde den neueren Stand ersetzen. Trotzdem laden?",
     conflictNoLog: "ohne Verlauf",
     lensSteps: "Schritte", lensBmc: "Business Model Canvas",
@@ -980,6 +981,7 @@ const I18N = {
     fileNoApi: "This browser cannot link a file — download it and keep it with your project.",
     leaveWarn: "There are changes that are not in any file.",
     logTitle: "History — what changed when",
+    projMetaTitle: "Project form restored",
     conflictOlder: "Careful: the current state has changes from {mine}, the file you are loading is from {theirs}.\n\nThe older file would replace the newer state. Load anyway?",
     conflictNoLog: "without history",
     lensSteps: "Steps", lensBmc: "Business Model Canvas",
@@ -1127,6 +1129,8 @@ AUSGABEFORMAT — diese Markdown-Struktur (der witty-Viewer parst sie):
 # PM-STATUS — [Projektname]
 
 > Stand: [Monat Jahr] · Snapshot v[N] · witty-Audit v0.4
+
+[Falls unter PROJEKT ein ${FENCE}witty:project${FENCE}-Datenblock mitgegeben wurde: gib ihn hier unverändert wieder aus, Zeichen für Zeichen, direkt nach der Stand-Zeile. Wurde keiner mitgegeben, überspringe diesen Schritt ersatzlos.]
 
 [Ein kurzer Absatz: wie dieses Dokument zu lesen ist.]
 
@@ -1290,6 +1294,8 @@ OUTPUT FORMAT — this markdown structure (the witty viewer parses it):
 
 > As of: [month year] · Snapshot v[N] · witty audit v0.4
 
+[If a ${FENCE}witty:project${FENCE} data block was given under PROJECT: reproduce it unchanged, character for character, right after the "as of" line. If none was given, skip this step entirely.]
+
 [One short paragraph: how to read this document.]
 
 ## Coverage at a glance
@@ -1437,6 +1443,26 @@ function projectBlock() {
       ? "Auch hier: ohne eigenen HTTP-Zugriff um Einfügen bitten, und den Link nie im Output wiederholen."
       : "Same here: without HTTP access of your own, ask for a paste, and never repeat the link in your output.");
   }
+  const nl = s => s.replace(/\r?\n/g, " ");
+  const meta = {};
+  if (name)        meta.name = nl(name);
+  if (desc)        meta.desc = nl(desc);
+  if (goal)        meta.goal = nl(goal);
+  if (stageSet)    meta.stage = $("proj-stage").value;
+  if (money)       meta.money = nl(money);
+  if (comp)        meta.comp = nl(comp);
+  if (focus)       meta.focus = nl(focus);
+  if (space)       meta.space = nl(space);
+  if (res)         meta.res = nl(res);
+  if (cnslProject) meta.cnslproj = cnslProject;
+  if (cnslSkills)  meta.cnslskills = cnslSkills;
+  lines.push("");
+  lines.push(de
+    ? "Gib den folgenden Datenblock unverändert in deinem PM-STATUS-Ergebnis aus (siehe AUSGABEFORMAT) — witty liest ihn beim nächsten Laden automatisch ein und stellt dieses Formular wieder her:"
+    : "Reproduce the following data block unchanged in your PM-STATUS result (see OUTPUT FORMAT) — witty reads it back automatically on next load and restores this form:");
+  lines.push(FENCE + "witty:project");
+  lines.push(serializeBlock(meta));
+  lines.push(FENCE);
   return lines.join("\n");
 }
 function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
@@ -1878,6 +1904,8 @@ function renderMirror(md) {
   let doc;
   try { doc = parseStatusMd(md); } catch (e) { alert("Parse error: " + e.message); return; }
   if (!doc.rows.length && !doc.sections.length) { alert(lang === "de" ? "Kein PM-STATUS-Format erkannt." : "No PM-STATUS format recognized."); return; }
+  restoreProjectMeta(md);   // witty:project kann vor der ersten ##-Section stehen,
+                            // also unabhängig vom Section-Parsing direkt im Rohtext suchen
 
   fenceSeq = {};   // Blocktyp-Zähler pro Renderdurchlauf zurücksetzen
   $("proj-title").textContent = doc.title.replace(/^PM-STATUS\s*[—-]\s*/i, "");
@@ -2342,6 +2370,31 @@ function mountBreakouts() {
 BREAKOUTS.pnl = renderPnl;
 BREAKOUTS.roadmap = renderRoadmap;
 BREAKOUTS.experiment = renderExperiment;
+
+// witty:project — trägt das Formular aus dem Prompt-Tab zurück ins geladene
+// Dokument ein, damit ein gespeichertes PM-STATUS.md die Formularwerte beim
+// nächsten Laden von selbst wiederherstellt (statt nur im Browser zu leben).
+const PROJECT_META_MAP = { name: "pname", desc: "pdesc", goal: "pgoal", stage: "pstage", money: "pmoney", comp: "pcomp", focus: "pfocus", space: "pspace", res: "pres", cnslproj: "pcnslproj", cnslskills: "pcnslskills" };
+function renderProjectMeta(data) {
+  Object.entries(PROJECT_META_MAP).forEach(([k, lsKey]) => {
+    if (data[k] !== undefined) localStorage.setItem(LS[lsKey], data[k]);
+  });
+  applyProjectFields();
+  if (["0","1","2","3","4","5"].includes(data.stage)) {
+    $("proj-stage").value = data.stage; stageSet = true;
+  }
+  updateStageLabel();
+  return '<div class="breakout"><div class="bo-head"><span class="dblabel">' + esc(t("projMetaTitle")) +
+    '</span></div><p class="pnl-note">' + esc(data.name || "—") + "</p></div>";
+}
+BREAKOUTS.project = renderProjectMeta;
+// Der Block steht meist VOR der ersten ##-Section (direkt nach der Stand-Zeile)
+// und landet dort nie im Section-Parsing — deshalb hier direkt im Rohtext suchen,
+// unabhängig davon, wo der Block im Dokument tatsächlich steht.
+function restoreProjectMeta(md) {
+  const m = md.match(/```witty:project\n([\s\S]*?)\n```/i);
+  if (m) renderProjectMeta(parseBlock(m[1]));
+}
 
 /* ============ Vergleich zweier Snapshots ============
    Der Kern ist nicht der Fortschritt, sondern der RÜCKSCHRITT: Ein Schritt,
