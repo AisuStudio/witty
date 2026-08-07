@@ -1436,6 +1436,9 @@ function projectBlock() {
     lines.push(de
       ? "Schreibe nach Abschluss des Audits das vollständige PM-STATUS-Ergebnis als neue Note über denselben Link zurück (POST an den Link mit { title, body }; title z. B. \"witty — PM-STATUS Snapshot vN (Datum)\", body = das komplette Markdown) — das wird der Projekt-Speicher für künftige Vergleiche (Coach-Diff)."
       : "When the audit is done, write the complete PM-STATUS result back as a new note via the same link (POST to the link with { title, body }; title e.g. \"witty — PM-STATUS snapshot vN (date)\", body = the full markdown) — this becomes the project's memory for future comparisons (coach-diff).");
+    lines.push(de
+      ? "Die Notes über diesen Link sind die aktuellere Quelle als die Felder oben — sind Beschreibung, Ziel, Kosten/Einnahmen, Konkurrenz o. Ä. hier leer oder wirken veraltet, übernimm sie stattdessen aus den CNSL-Notes, statt danach zu fragen."
+      : "The notes behind this link are the more current source than the fields above — if description, goal, costs/revenue, competitors etc. are empty or outdated here, take them from the CNSL notes instead of asking.");
   }
   if (cnslSkills) {
     lines.push((de ? "CNSL-Skills-Link (lies die relevante Skills-/Wissensbasis über diesen Link): " : "CNSL skills link (read the relevant skills/knowledge base via this link): ") + cnslSkills);
