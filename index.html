@@ -1422,8 +1422,21 @@ function projectBlock() {
   if (focus)    lines.push((de ? "Anlass für das Audit: " : "Reason for this audit: ") + focus);
   if (space)    lines.push((de ? "Themen/Nachbarmärkte zum Erkunden (erzeuge dafür die Sprachraum-Sektion): " : "Topics/adjacent markets to explore (produce the Language-Space section for these): ") + space);
   if (res)      lines.push((de ? "Ressourcen (nutze sie als Evidenzquellen): " : "Resources (use them as evidence sources): ") + res);
-  if (cnslProject) lines.push((de ? "CNSL-Projekt-Link (lies Notes & Tasks dieses Projekts über diesen Link, bevor du auditierst): " : "CNSL project link (read this project's notes & tasks via this link before auditing): ") + cnslProject);
-  if (cnslSkills)  lines.push((de ? "CNSL-Skills-Link (lies die relevante Skills-/Wissensbasis über diesen Link): " : "CNSL skills link (read the relevant skills/knowledge base via this link): ") + cnslSkills);
+  if (cnslProject) {
+    lines.push((de ? "CNSL-Projekt-Link (lies Notes & Tasks dieses Projekts über diesen Link, bevor du auditierst): " : "CNSL project link (read this project's notes & tasks via this link before auditing): ") + cnslProject);
+    lines.push(de
+      ? "Hast du keinen eigenen HTTP-Zugriff, bitte darum, den Inhalt dieses Links einzufügen, statt zu raten. Wiederhole den Link nirgends im Output — er ist der Zugangsschlüssel zum Projekt."
+      : "If you have no HTTP access of your own, ask for this link's content to be pasted instead of guessing. Never repeat the link itself in your output — it's the project's access key.");
+    lines.push(de
+      ? "Schreibe nach Abschluss des Audits das vollständige PM-STATUS-Ergebnis als neue Note über denselben Link zurück (POST an den Link mit { title, body }; title z. B. \"witty — PM-STATUS Snapshot vN (Datum)\", body = das komplette Markdown) — das wird der Projekt-Speicher für künftige Vergleiche (Coach-Diff)."
+      : "When the audit is done, write the complete PM-STATUS result back as a new note via the same link (POST to the link with { title, body }; title e.g. \"witty — PM-STATUS snapshot vN (date)\", body = the full markdown) — this becomes the project's memory for future comparisons (coach-diff).");
+  }
+  if (cnslSkills) {
+    lines.push((de ? "CNSL-Skills-Link (lies die relevante Skills-/Wissensbasis über diesen Link): " : "CNSL skills link (read the relevant skills/knowledge base via this link): ") + cnslSkills);
+    lines.push(de
+      ? "Auch hier: ohne eigenen HTTP-Zugriff um Einfügen bitten, und den Link nie im Output wiederholen."
+      : "Same here: without HTTP access of your own, ask for a paste, and never repeat the link in your output.");
+  }
   return lines.join("\n");
 }
 function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
