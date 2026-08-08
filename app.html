@@ -19,74 +19,34 @@
 
   .wrap { max-width: 1000px; margin: 0 auto; padding: var(--sp-lg) var(--gutter) var(--sp-4xl); }
 
-  /* Hero — Wittgenstein aus witty!-Lettern, fix Vanilla auf Blueberry (theme-unabhängig) */
-  header.hero {
-    position: relative; overflow: hidden;
-    background: var(--color-blueberry);
-    border-radius: var(--radius-md);
-    margin-top: var(--sp-lg);
-    box-shadow: var(--shadow-md);
+  /* Sitebar — volle Breite als Fläche, Inhalt auf die Grid-/Seitenbreite ausgerichtet */
+  .sitebar {
+    background: var(--color-grape);
+    padding: 14px 0;
   }
-  .hero-ascii {
-    margin: 0; display: block;
-    font-family: "iA Writer Mono S", ui-monospace, monospace; font-weight: 700;
-    font-size: min(11.18px, calc((100vw - 48px) / 74.4));
-    line-height: 1; letter-spacing: 0;
+  .sitebar-inner {
+    max-width: 1000px; margin: 0 auto; padding: 0 var(--gutter);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--sp-lg);
+    flex-wrap: wrap;
+  }
+  .sitebar-brand { display: flex; align-items: flex-start; gap: var(--sp-lg); text-decoration: none; }
+  .wordmark { font-family: var(--font-primary); font-weight: 700; font-size: 32px; color: var(--color-highlight); }
+  .sitebar-tagline { font-family: var(--font-primary); font-size: 12px; line-height: 11px; color: var(--color-vanilla); }
+
+  .sitebar-links { display: flex; gap: var(--sp-2xl); }
+  .sitebar-links button, .sitebar-link {
+    border: 0; background: transparent; cursor: pointer; text-decoration: none; padding: 0;
+    font-family: var(--font-primary); font-weight: 700; font-size: 18px;
     color: var(--color-vanilla);
-    user-select: none; pointer-events: none;
   }
-  .hero-top {
-    position: absolute; top: 0; left: 0; right: 0;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: var(--sp-md) var(--sp-lg);
-    background: linear-gradient(rgba(31,25,52,.85), transparent);
-  }
-  .hero-tag {
-    position: absolute; left: 0; right: 0; bottom: 0;
-    padding: var(--sp-xl) var(--sp-lg) var(--sp-md);
-    background: linear-gradient(transparent, rgba(31,25,52,.94) 55%);
-    color: var(--color-vanilla); font-size: 14px;
-  }
-  .wordmark { font-family: "iA Writer Mono S", monospace; font-size: 28px; font-weight: 700; color: var(--color-vanilla); }
-  .wordmark span { color: var(--color-lemon); }
-  .tagline { color: var(--color-muted); font-size: 13px; margin-top: 2px; }
+  .sitebar-links button.active, .sitebar-links button:hover, .sitebar-link:hover { color: var(--color-highlight); }
 
-  .hero-top-right { display: flex; align-items: center; gap: var(--sp-md); }
-  .hiw-link {
-    font-family: "iA Writer Mono S", monospace; font-size: 12px;
-    color: var(--color-vanilla); text-decoration: none;
-    background: rgba(31,25,52,.75); border: 1px solid var(--color-border);
-    border-radius: var(--radius-full); padding: 5px 14px;
-  }
-  .hiw-link:hover { background: var(--color-blueberry); border-color: var(--color-vanilla); }
-
-  .langtoggle { display: flex; gap: 2px; border: 1px solid var(--color-border); border-radius: var(--radius-full); padding: 2px; background: var(--color-surface); }
+  .langtoggle { display: flex; align-items: baseline; gap: var(--sp-xs); }
   .langtoggle button {
-    border: 0; background: transparent; border-radius: var(--radius-full);
-    font-family: "iA Writer Mono S", monospace; font-size: 12px; padding: 4px 12px; cursor: pointer; color: var(--color-muted);
+    border: 0; background: transparent; padding: 0; cursor: pointer;
+    font-family: var(--font-primary); font-size: 18px; font-weight: 400; color: var(--color-vanilla);
   }
-  .langtoggle button.active { background: var(--color-highlight); color: var(--color-on-accent); font-weight: 700; }
-
-  .about { margin: var(--sp-xl) 0 var(--sp-md); max-width: 68ch; }
-  .about-eyebrow {
-    font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
-    letter-spacing: .08em; color: var(--color-accent);
-    display: flex; align-items: center; gap: 8px; margin-bottom: var(--sp-sm);
-  }
-  .about-eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--color-accent); }
-  .about h3 {
-    font-family: var(--font-primary); font-weight: 700; font-style: italic;
-    font-size: 20px; line-height: 1.35; margin-bottom: var(--sp-sm);
-  }
-  .about p { font-size: 14px; margin-bottom: var(--sp-sm); }
-
-  nav.tabs { display: flex; gap: var(--sp-sm); margin: var(--sp-md) 0 var(--sp-lg); border-bottom: 1px solid var(--color-border); }
-  nav.tabs button {
-    border: 0; background: transparent; cursor: pointer;
-    font-family: var(--font-primary); font-weight: 500; font-size: 14px; color: var(--color-muted);
-    padding: var(--sp-sm) var(--sp-md); border-bottom: 3px solid transparent; margin-bottom: -1px;
-  }
-  nav.tabs button.active { color: var(--color-text); border-bottom-color: var(--color-accent); font-weight: 700; }
+  .langtoggle button.active { color: var(--color-highlight); font-weight: 700; }
 
   .card { background: var(--color-surface); border-radius: var(--radius-md); padding: var(--sp-lg); box-shadow: var(--shadow-sm); }
   .card + .card { margin-top: var(--sp-lg); }
@@ -446,75 +406,24 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="hero">
-    <pre class="hero-ascii" aria-hidden="true">wwwwwwwwwwwy!           !!itttttyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyyyyt!                !twwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwt!          iitttttyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwywyyyyyyyyyyyyyti                 twwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwy!         !ittttyyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyyt!                twwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwt         ittttyyyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyyyi!               !ywwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwyi        !ittyyyyyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyyti               !ywwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwi        !ittyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyti!             !ywwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwt        !ittyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyti!             iwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwi        !ittyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyytt!             twwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwt         !ittyyyyyyyyywwwwwwwwwwwwwwwwwwyywwwyywwyyyyyyyyyyyyyyyyyyyyti!           !ywwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwt         !ittttyyyywwwwwwwwwyywyyyyyyyyyyyyyyyyyyyyyttttyttyyyyyyyyyyyti           !ywwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwi          itttyyyyyyyyyyyyyyyyyyyyyyyyyyyytttttiiiiii!!!!!iiiityyyyyyyyyi          !ywwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwy           itttyyyyyytttttttiiiittttttttytttii!!        !!!!!iiittyyyyyyyyt!        !twwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwy!          iittyyytiii!!          !!itttyyyti!         !!!iii!!itttyyyyyyyyt!       !ywwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwt          itttyyi!!!!!             ityyyyyyt!!     !i!!!!!!ii!!iittyyyyyyyt!       twwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwt        !ittttii!!! !!ii!!        !tyywwwyi!!!!!!iti! !i!it!!!!ittyyyyyyyyi      !ywwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwww!       itttttii!! !i!!  !!!!      iywwwwyt!!iiiiitti!!!itttiiiiityyyyyyyyt!     twwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwt      !ttyyyti!! !!!! ! !i!ti! !!!tywwwwyyiiitiiittyttttttttttiitttyyyyyyyt!   !wwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwi     ityyyytii!   !!!!  !ittiiiiitywwwwyytiiiiiittttttttttyyyytttyyyyyyyyytiiitywwttwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwy!    ityyyyyi!!!!iiitiittyttiiiityyywwwyyytttttttttttyyyyyyyyyyyyyyyyyyyyyyyyyyyyi !ywwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwt    iyyyyytiiiiitiitiittttiiitttyyywwwyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyytt!!!ywwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwww!   iyyyyytttttytttiiitttttttttyyyywwwwyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyttttyytiiywwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwy!  !yyyyyyyyytyyyyyyyyyyyyyyyyyyywwwwwwyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyttttyyyttwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwyi !yyyyyyyyyyyyyyyyyyyyyyyyyyyywwwwwwwyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyti!ityyyywwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwt!ityyyiiyyyyyyyyywwyyyyyyyyyyyyyyyyyywwwwwwyyyyyyyyywyyyyyyyyyyyyyyyyyyyyyyyyyi !iyyywwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwt  !itttyyyyyyyyyyyyyyyyyyyyyyyyytyyyttyyyyyyyyyyyyyyyywwyyyyyyyyyyyytyytttyyyyytiityywwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwt!!!iiiityyyyyyyyyyyyyyyyyyyyyyytttiiiiiiiitti! !ityyyyyyyyyyyyyyyyyttttttyyyyyytttyyywwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwyi!ittttityyyyyyyyytyyyyyyyyyyyytt!    !!!!!!!  !!tyyyyyyyyyyyyyyyytttttttyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwtiiyyt! iyyyyytttttyyyyyyyyyyyttt!  !!!    !ittttyyyyyyyyyyyyyyyyyyttttttyyyyyyyyywyywwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwyttyt!  iyyytttttttyyyyyyyyyyyyyytiiii!!  !!ittyyyyyyyyyyyyyyyyyyyytttttyyyyyyyywyyywwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwyytyti!!tytytttttttyyyyyyyyyytyyyyytttiiiiiitttyyyyyyyyyyyyyyyyyyyyyttttyyyyyttyyyyywwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwyyyyttttytttttttttyyyyyyyyytyyyyyyyttttttttttyyyyyyyyyyyyyyyyyyyyyttttyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwyyyyyyyytttttttttyyyyyyyyyyyyyyyttttyyytyyyyyyyyyyyyyyyyyyyyyyyytttyyyyytityyywwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwyyyyyyyyttttttttttyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyttyyyyytiitywwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwwyyyyyyyytttttttttyyyyyyyyyyyyyyyttiitti!!ittyyyyyyyyyyyyyyyyyytttyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwwyyyytitytttttttttttttyyyyyyyyyti!           !!ittyyyyyyyyyyyyytttyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwwwyyyttytttttttttttttttyyyytti!          !!!!!   !!ittttyyyyyyyyytyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwwwwwyyytitttttttttttttttttti!    !ittttttyyyytttttiiiittyyyyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwwwwwwyti!ttttttttttttyttti!!!!iittyyyttttttttyyyyyyyttttyyyyytyttyyyytywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwyttttttttttyyttiiitttttttii!!!!!iiittttyyyyttttyyytttyytyyttywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwytttttttttyyttttttttttiiiiiiiii!iiitttyyytttttttttytttyttttwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttitttttiiiiiiiiiiittttttyyyttttttyttttttttttwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyyyttttttttwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww</pre>
-    <div class="hero-top">
-      <div class="wordmark">witty<span>!</span></div>
-      <div class="hero-top-right">
-        <a class="hiw-link" href="index.html" data-i18n="howItWorksLink"></a>
-        <div class="langtoggle">
-          <button id="lang-de">DE</button>
-          <button id="lang-en">EN</button>
-        </div>
-      </div>
+<nav class="sitebar">
+  <div class="sitebar-inner">
+    <a class="sitebar-brand" href="index.html">
+      <div class="wordmark">witty!</div>
+      <div class="sitebar-tagline">A witty<br>Product Management<br>Companion</div>
+    </a>
+    <div class="sitebar-links">
+      <button id="tab-spiegel" class="active" data-i18n="tabSpiegel"></button>
+      <button id="tab-prompt" data-i18n="tabPrompt"></button>
+      <button class="sitebar-link" id="nav-upload" data-i18n="navUpload"></button>
     </div>
-    <div class="hero-tag" data-i18n="tagline"></div>
-  </header>
-
-  <section class="about">
-    <div class="about-eyebrow" data-i18n="aboutTitle"></div>
-    <h3 data-i18n="about1"></h3>
-    <p data-i18n="about2"></p>
-    <p data-i18n="about3"></p>
-  </section>
-
-  <nav class="tabs">
-    <button id="tab-spiegel" class="active" data-i18n="tabSpiegel"></button>
-    <button id="tab-prompt" data-i18n="tabPrompt"></button>
-  </nav>
-
+    <div class="langtoggle">
+      <button id="lang-de">DE</button>
+      <button id="lang-en">EN</button>
+    </div>
+  </div>
+</nav>
+<div class="wrap">
   <!-- ===== Spiegel view ===== -->
   <section id="view-spiegel">
     <div id="loader" class="card loader droptarget">
@@ -927,8 +836,7 @@ Dazu die **Adaptability**-Frage: Was von außen könnte die bisherigen Antworten
 /* ============ i18n ============ */
 const I18N = {
   de: {
-    tagline: "Der PM-Spiegel — sieh, was du längst machst, und wie es heißt.",
-    tabSpiegel: "Spiegel", tabPrompt: "Audit-Prompt",
+    tabSpiegel: "Review", tabPrompt: "Edit",
     loadTitle: "Audit-Ergebnis laden",
     loadExpl: "Lade einen PM-STATUS als Markdown-Datei (per Datei, Drag & Drop oder Einfügen) — witty rendert daraus dein Dashboard und deinen Spiegel. Noch kein Audit-MD? Hol dir den Prompt.",
     btnFile: "MD-Datei laden", btnDemo: "Demo ansehen (Beispielprojekt)", btnNoMd: "→ Ich brauche erst den Prompt",
@@ -1027,18 +935,13 @@ const I18N = {
     btnCopy: "Prompt kopieren", btnDlPrompt: "Als Datei laden", copied: "✓ kopiert",
     cliTitle: "Lieber im Terminal? Ein Befehl statt Copy-Paste",
     cliExpl: "Prompt herunterladen, im Projektordner ausführen — das Modell liest Repository und Historie direkt und schreibt den PM-STATUS als Datei. Danach hier wieder laden.",
-    howItWorksLink: "← Start",
-    aboutTitle: "Warum witty",
-    about1: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Ludwig Wittgenstein",
-    about2: "Im LLM-Zeitalter gilt das wörtlich: Man kann nur in die Richtungen prompten — und bauen —, für die man die Sprache hat. Wer ohne PM-Vokabular baut, wendet viele Methoden längst an — nur unbenannt.",
-    about3: "Der Audit ist ein Spiegel, kein Examen: Er benennt, was du längst machst, und macht Offenes als Frage sichtbar. Methoden sind dabei Optionen, nie Pflicht.",
+    navUpload: "Upload MD",
     footer1: "witty · Markdown bleibt Source of Truth · Methoden sind Optionen, nie Pflicht.",
     footer2: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Wittgenstein",
     subLoaded: "geladen · bleibt lokal (localStorage)",
   },
   en: {
-    tagline: "The PM mirror — see what you already do, and what it's called.",
-    tabSpiegel: "Mirror", tabPrompt: "Audit prompt",
+    tabSpiegel: "Review", tabPrompt: "Edit",
     loadTitle: "Load an audit result",
     loadExpl: "Load a PM-STATUS markdown file (file picker, drag & drop, or paste) — witty renders your dashboard and your mirror. No audit MD yet? Grab the prompt.",
     btnFile: "Load MD file", btnDemo: "View demo (example project)", btnNoMd: "→ I need the prompt first",
@@ -1137,11 +1040,7 @@ const I18N = {
     btnCopy: "Copy prompt", btnDlPrompt: "Download as file", copied: "✓ copied",
     cliTitle: "Prefer the terminal? One command instead of copy-paste",
     cliExpl: "Download the prompt, run it inside your project folder — the model reads the repository and its history directly and writes the PM-STATUS as a file. Then load it back here.",
-    howItWorksLink: "← Home",
-    aboutTitle: "Why witty",
-    about1: "“The limits of my language mean the limits of my world.” — Ludwig Wittgenstein",
-    about2: "In the LLM era that is literal: you can only prompt — and build — in the directions you have language for. Builders without PM vocabulary already practice many of the methods — just unnamed.",
-    about3: "The audit is a mirror, not an exam: it names what you already do and turns what's open into questions. Methods are options, never mandatory.",
+    navUpload: "Upload MD",
     footer1: "witty · markdown stays the source of truth · methods are options, never mandatory.",
     footer2: "“The limits of my language mean the limits of my world.” — Wittgenstein",
     subLoaded: "loaded · stays local (localStorage)",
@@ -2950,6 +2849,7 @@ function switchTab(which) {
 }
 
 $("btn-file").onclick = () => $("file-input").click();
+$("nav-upload").onclick = () => $("file-input").click();
 $("file-input").onchange = (e) => {
   const f = e.target.files[0]; if (!f) return;
   f.text().then(loadMd);
