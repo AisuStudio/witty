@@ -378,15 +378,23 @@
   .rm-card {
     background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm);
     padding: 6px 8px; font-size: 13px; cursor: grab;
-    display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-xs);
+    display: flex; align-items: flex-start; gap: var(--sp-xs);
   }
   .rm-card.dragging { opacity: .45; }
+  .rm-grip { flex-shrink: 0; color: var(--color-muted); cursor: grab; line-height: 0; padding-top: 3px; }
+  .rm-text { flex: 1; min-width: 0; }
   .rm-btns { display: flex; gap: 2px; flex-shrink: 0; }
-  .rm-move {
+  .rm-act {
     border: 0; background: transparent; cursor: pointer; color: var(--color-muted);
-    font-size: 12px; line-height: 1; padding: 2px 3px; border-radius: 3px;
+    line-height: 0; padding: 3px; border-radius: 3px;
   }
-  .rm-move:hover { background: var(--color-surface-2); color: var(--color-text); }
+  .rm-act:hover { background: var(--color-surface-2); color: var(--color-text); }
+  .rm-editfield {
+    flex: 1; min-width: 0; font: inherit; color: var(--color-text);
+    background: var(--color-surface); border: 1px solid var(--color-accent);
+    border-radius: 3px; padding: 1px 4px;
+  }
+  .rm-editfield:focus { outline: none; }
   .rm-empty { color: var(--color-muted); font-size: 13px; margin: 0; }
 
   /* Experiment-Breakout */
@@ -919,7 +927,7 @@ const I18N = {
     annoPending: "Ausstehende Anmerkung — noch nicht eingearbeitet",
     annoPh: "Was fehlt oder stimmt nicht mehr? Wird beim nächsten Update-Lauf eingearbeitet, nicht sofort.",
     grpUpdate: "Update",
-    updateIntro: "Anmerkungen aus den Schritten werden hier zu einem Prompt, der eine neue Version erzeugt — kopiere ihn in eine LLM-Session, das Ergebnis ersetzt dieses Dokument.",
+    updateIntro: "Anmerkungen aus den Schritten und Bearbeitungen aus Canvas & Roadmap werden hier zu einem Prompt, der eine neue Version erzeugt — kopiere ihn in eine LLM-Session, das Ergebnis ersetzt dieses Dokument.",
     updateCount: "{n} Anmerkung(en) vorgemerkt:", updateNone: "Keine Anmerkungen vorgemerkt — im Spiegel bei einem Schritt auf „+ Anmerkung“ klicken.",
     suggestCompareText: "Das sieht nach einem neueren Stand desselben Projekts aus.",
     suggestCompareBtn: "Gegen vorherigen Stand vergleichen",
@@ -934,8 +942,10 @@ const I18N = {
     cmpDownNote: "Ein Rückschritt ist kein Fehler im Dokument, sondern eine Annahme, die gekippt ist — meist die ehrlichste Zeile im ganzen Vergleich.",
     cmpLog: "Neu im Verlauf", cmpNoFormat: "Kein PM-STATUS-Format erkannt.", grpShowAll: "Ganze Gruppe anzeigen", grpConcept: "Konzept & Strategie", grpProduct: "Produkt",
     grpMarket: "Markt & Geld", grpLearn: "Messen & Lernen", grpSummary: "Auswertung",
-    bmcIntro: "Dieselben Antworten, anders angeordnet: Das Business Model Canvas ist ein Neun-Felder-Raster für ein Geschäftsmodell. Sieben Felder speisen sich aus deinen Schritten — gestrichelte Kästen sind Lücken.",
+    bmcIntro: "Dieselben Antworten, anders angeordnet: Das Business Model Canvas ist ein Neun-Felder-Raster für ein Geschäftsmodell. Sieben Felder speisen sich aus deinen Schritten, alle neun sind direkt bearbeitbar — gestrichelte Kästen sind Lücken. Änderungen landen als Anmerkung im Update-Prompt; ein überschriebenes Feld (✎) leeren stellt die Ableitung wieder her.",
     bmcFrom: "aus Schritt ", bmcEmpty: "noch offen — kommt aus Schritt ",
+    bmcOverride: "überschrieben", bmcOverrideHint: "Feld leeren stellt den aus dem Schritt abgeleiteten Text wieder her.",
+    bmcPendSet: "BMC · {f}: {v}", bmcPendClear: "BMC · {f}: geleert",
     bmcNoSchema: "Im 14-Schritte-Schema nicht vorgesehen — eine Lücke des Schemas, nicht deines Projekts.",
     bmcNoSchemaShort: "keine Quelle im Schema — hier selbst ausfüllen",
     bmcFillPh: "z. B. Zahlungsdienstleister, Hosting, fremde Software, auf die du angewiesen bist",
@@ -956,7 +966,9 @@ const I18N = {
     pnlNote: "Änderungen wandern zurück ins Dokument — unten herunterladen, damit sie erhalten bleiben.",
     rmTitle: "Roadmap — nur „Jetzt“ ist verbindlich",
     rmNow: "Jetzt", rmNext: "Danach", rmLater: "Später",
-    rmNote: "Karten ziehen oder mit den Pfeilen verschieben — die Reihenfolge ist die Priorität und wandert zurück ins Dokument.",
+    rmNote: "Karten am Griff ziehen; ✎ bearbeitet, × streicht — die Reihenfolge ist die Priorität und wandert zurück ins Dokument. Bearbeitungen und Streichungen landen zusätzlich als Anmerkung im Update-Prompt.",
+    rmEdit: "Bearbeiten", rmDelete: "Streichen",
+    rmPendEdit: "Roadmap: „{a}“ geändert zu „{b}“", rmPendDel: "Roadmap: „{a}“ gestrichen",
     expTitle: "Experiment — billig prüfen, bevor gebaut wird",
     expAssumption: "Annahme (implizit, ungeprüft)", expHypothesis: "Hypothese (spezifisch, widerlegbar)",
     expTest: "Verfahren", expMetric: "Messgröße", expSuccess: "Erfolg, wenn …",
@@ -1022,7 +1034,7 @@ const I18N = {
     annoPending: "Pending note — not yet incorporated",
     annoPh: "What's missing or out of date? Gets incorporated on the next update run, not right away.",
     grpUpdate: "Update",
-    updateIntro: "Notes from the steps turn into a prompt here that produces a new version — copy it into an LLM session, the result replaces this document.",
+    updateIntro: "Notes from the steps and edits from the canvas & roadmap turn into a prompt here that produces a new version — copy it into an LLM session, the result replaces this document.",
     updateCount: "{n} note(s) queued:", updateNone: "No notes queued yet — click “+ Note” on a step in the Mirror.",
     suggestCompareText: "This looks like a newer snapshot of the same project.",
     suggestCompareBtn: "Compare against the previous one",
@@ -1037,8 +1049,10 @@ const I18N = {
     cmpDownNote: "A step falling back is not a mistake in the document but an assumption that collapsed — usually the most honest line in the whole comparison.",
     cmpLog: "New in the history", cmpNoFormat: "No PM-STATUS format recognized.", grpShowAll: "Show whole group", grpConcept: "Concept & strategy", grpProduct: "Product",
     grpMarket: "Market & money", grpLearn: "Measure & learn", grpSummary: "Summary",
-    bmcIntro: "The same answers, arranged differently: the Business Model Canvas is a nine-field grid for a business model. Seven fields are fed by your steps — dashed boxes are gaps.",
+    bmcIntro: "The same answers, arranged differently: the Business Model Canvas is a nine-field grid for a business model. Seven fields are fed by your steps, all nine can be edited directly — dashed boxes are gaps. Changes land as a note in the update prompt; clearing an overridden field (✎) restores the derived text.",
     bmcFrom: "from step ", bmcEmpty: "still open — comes from step ",
+    bmcOverride: "overridden", bmcOverrideHint: "Clearing the field restores the text derived from the step.",
+    bmcPendSet: "BMC · {f}: {v}", bmcPendClear: "BMC · {f}: cleared",
     bmcNoSchema: "Not covered by the 14-step schema — a gap in the schema, not in your project.",
     bmcNoSchemaShort: "no source in the schema — fill in here",
     bmcFillPh: "e.g. payment provider, hosting, third-party software you depend on",
@@ -1059,7 +1073,9 @@ const I18N = {
     pnlNote: "Changes are written back into the document — download it below to keep them.",
     rmTitle: "Roadmap — only “Now” is committed",
     rmNow: "Now", rmNext: "Next", rmLater: "Later",
-    rmNote: "Drag the cards or move them with the arrows — the order is the priority and is written back into the document.",
+    rmNote: "Drag cards by the grip; ✎ edits, × removes — the order is the priority and is written back into the document. Edits and removals also land as a note in the update prompt.",
+    rmEdit: "Edit", rmDelete: "Remove",
+    rmPendEdit: "Roadmap: “{a}” changed to “{b}”", rmPendDel: "Roadmap: “{a}” removed",
     expTitle: "Experiment — test cheaply before building",
     expAssumption: "Assumption (implicit, unverified)", expHypothesis: "Hypothesis (specific, refutable)",
     expTest: "Method", expMetric: "Metric", expSuccess: "Success if …",
@@ -1527,9 +1543,11 @@ function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
 const UPDATE_PROMPTS = {
   de: String.raw`Unten steht das VOLLSTÄNDIGE, aktuell geladene PM-STATUS-Dokument eines witty-Audits. Es enthält einen ${FENCE}witty:pending${FENCE}-Block mit einer oder mehreren rohen, unbearbeiteten Anmerkungen zu einzelnen Schritten (Format: "step: N" gefolgt vom Anmerkungstext).
 
+Manche Anmerkungen sind automatisch entstanden, weil der Nutzer direkt im Business Model Canvas oder in der Roadmap editiert hat (Zeilen, die mit "BMC ·" oder "Roadmap:" beginnen). Die Blöcke ${FENCE}witty:bmc${FENCE} und ${FENCE}witty:roadmap${FENCE} tragen dann bereits den gewünschten Endstand — dreh sie nicht zurück, sondern richte die betroffenen Schritte inhaltlich daran aus.
+
 Deine Aufgabe: Arbeite JEDE Anmerkung in ihren Schritt ein — schreibe dort Kurzbefund, Befund, Belege, Lern-Anker und Nächster Handgriff neu, soweit die Anmerkung das nötig macht, und leite den Status (⭕/🔍/✅/🕊️) neu her. Behandle den Anmerkungstext als neue Evidenz, nicht als wörtlich zu übernehmenden Text. Halte dich an dieselben REGELN wie beim ursprünglichen Audit (Klartext vor Fachbegriff, auch innerhalb eines Schritts; kurze Sätze; menschlicher Ton).
 
-Gib JEDEN anderen Schritt, jede andere Sektion und jeden anderen Datenblock (${FENCE}witty:pnl${FENCE}, ${FENCE}witty:bmc${FENCE}, ${FENCE}witty:roadmap${FENCE}, ${FENCE}witty:log${FENCE}, ${FENCE}witty:project${FENCE}, ${FENCE}witty:experiment${FENCE}) unverändert wieder aus, Zeichen für Zeichen. Erhöhe "Snapshot v[N]" in der Kopfzeile um eins. Hänge im ${FENCE}witty:log${FENCE}-Block eine neue, datierte Zeile an, die die geänderten Schritte kurz benennt.
+Gib JEDEN anderen Schritt, jede andere Sektion und jeden anderen Datenblock (${FENCE}witty:pnl${FENCE}, ${FENCE}witty:bmc${FENCE}, ${FENCE}witty:roadmap${FENCE}, ${FENCE}witty:log${FENCE}, ${FENCE}witty:project${FENCE}, ${FENCE}witty:experiment${FENCE}) unverändert wieder aus, Zeichen für Zeichen. Einzige Ausnahme: Hast du eine "BMC ·"-Anmerkung zu einem Feld MIT Schema-Quelle in ihren Schritt eingearbeitet, entferne genau diesen Schlüssel aus dem ${FENCE}witty:bmc${FENCE}-Block — das Feld wird danach wieder aus dem Schritt abgeleitet. partner/ressourcen (bzw. key_partners/key_resources) bleiben immer stehen. Erhöhe "Snapshot v[N]" in der Kopfzeile um eins. Hänge im ${FENCE}witty:log${FENCE}-Block eine neue, datierte Zeile an, die die geänderten Schritte kurz benennt.
 
 Gib den ${FENCE}witty:pending${FENCE}-Block NICHT mehr aus — jede Anmerkung darin ist mit diesem Durchlauf eingearbeitet, der Block entfällt vollständig.
 
@@ -1540,9 +1558,11 @@ Gib NUR das komplette aktualisierte Markdown-Dokument aus, keinen Kommentar davo
 `,
   en: String.raw`Below is the FULL, currently loaded PM-STATUS document of a witty audit. It contains a ${FENCE}witty:pending${FENCE} block with one or more raw, unedited annotations about specific steps (format: "step: N" followed by the note text).
 
+Some annotations were generated automatically because the user edited the Business Model Canvas or the roadmap directly (lines starting with "BMC ·" or "Roadmap:"). In that case the ${FENCE}witty:bmc${FENCE} and ${FENCE}witty:roadmap${FENCE} blocks already carry the intended end state — do not roll them back; align the affected steps with them instead.
+
 Your job: incorporate EVERY annotation into its step — rewrite that step's short verdict, finding, evidence, learning anchor and next move as needed, and re-derive its status (⭕/🔍/✅/🕊️). Treat the annotation as new evidence, not as literal prose to copy. Follow the same RULES as the original audit (plain language before jargon, including within a step; short sentences; human tone).
 
-Reproduce every OTHER step, section, and data block (${FENCE}witty:pnl${FENCE}, ${FENCE}witty:bmc${FENCE}, ${FENCE}witty:roadmap${FENCE}, ${FENCE}witty:log${FENCE}, ${FENCE}witty:project${FENCE}, ${FENCE}witty:experiment${FENCE}) unchanged, character for character. Bump "Snapshot v[N]" in the header by one. Append one new dated line to the ${FENCE}witty:log${FENCE} block summarizing which steps changed.
+Reproduce every OTHER step, section, and data block (${FENCE}witty:pnl${FENCE}, ${FENCE}witty:bmc${FENCE}, ${FENCE}witty:roadmap${FENCE}, ${FENCE}witty:log${FENCE}, ${FENCE}witty:project${FENCE}, ${FENCE}witty:experiment${FENCE}) unchanged, character for character. Single exception: once you have incorporated a "BMC ·" annotation for a field WITH a schema source into its step, remove exactly that key from the ${FENCE}witty:bmc${FENCE} block — the field is then derived from the step again. partner/ressourcen (or key_partners/key_resources) always stay. Bump "Snapshot v[N]" in the header by one. Append one new dated line to the ${FENCE}witty:log${FENCE} block summarizing which steps changed.
 
 Do NOT output the ${FENCE}witty:pending${FENCE} block — every annotation in it has been incorporated in this pass, so the block is dropped entirely.
 
@@ -1653,6 +1673,15 @@ function parseStatusMd(md) {
 }
 
 function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+// Für HTML-Attributwerte in doppelten Anführungszeichen.
+function escAttr(s) { return esc(s).replace(/"/g, "&quot;"); }
+// Inline-Icons (lucide.dev, ISC-Lizenz): Griff zum Ziehen, Stift, Kreuz.
+const ICON_ATTRS = 'xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+const ICONS = {
+  grip: `<svg ${ICON_ATTRS}><circle cx="12" cy="5" r="1"/><circle cx="19" cy="5" r="1"/><circle cx="5" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="19" cy="19" r="1"/><circle cx="5" cy="19" r="1"/></svg>`,
+  pencil: `<svg ${ICON_ATTRS}><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>`,
+  x: `<svg ${ICON_ATTRS}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`
+};
 function inlineMd(s) {
   return s
     .replace(/\{\{([^:{}]+)::([^{}]+)\}\}/g,
@@ -2329,16 +2358,17 @@ function rmWrite(cols) {
 }
 function renderRoadmap(_data, raw, nth) {
   const cols = rmParse(raw);
+  // data-raw trägt den unformatierten Kartentext — Umsortieren und Bearbeiten
+  // lesen ihn von dort, damit Markdown im Text (z. B. **fett**) erhalten bleibt.
   const col = c => `<div class="rm-col" data-col="${c.id}">
       <h4>${esc(t(c.label))}</h4>
-      <div class="rm-cards">${cols[c.id].map((item, i) => `
-        <div class="rm-card" draggable="true" data-i="${i}">
+      <div class="rm-cards">${cols[c.id].map(item => `
+        <div class="rm-card" draggable="true" data-raw="${escAttr(item)}">
+          <span class="rm-grip">${ICONS.grip}</span>
           <span class="rm-text">${inlineMd(esc(item))}</span>
           <span class="rm-btns">
-            <button class="rm-move" data-dir="left"  title="←">←</button>
-            <button class="rm-move" data-dir="up"    title="↑">↑</button>
-            <button class="rm-move" data-dir="down"  title="↓">↓</button>
-            <button class="rm-move" data-dir="right" title="→">→</button>
+            <button class="rm-act rm-edit" title="${escAttr(t("rmEdit"))}">${ICONS.pencil}</button>
+            <button class="rm-act rm-del" title="${escAttr(t("rmDelete"))}">${ICONS.x}</button>
           </span>
         </div>`).join("") || `<p class="rm-empty">—</p>`}</div>
     </div>`;
@@ -2352,7 +2382,7 @@ function mountRoadmap(root) {
   const state = () => {
     const cols = { now: [], next: [], later: [] };
     root.querySelectorAll(".rm-col").forEach(c =>
-      c.querySelectorAll(".rm-card .rm-text").forEach(tx => cols[c.dataset.col].push(tx.textContent)));
+      c.querySelectorAll(".rm-card").forEach(card => cols[c.dataset.col].push(card.dataset.raw)));
     return cols;
   };
   const rmNth = +(root.dataset.nth || 0);
@@ -2363,29 +2393,55 @@ function mountRoadmap(root) {
     const fresh = wrap.querySelector('[data-breakout="roadmap"]');
     if (fresh) mountRoadmap(fresh);
   };
-  // Knöpfe: funktionieren auch auf Touch, wo Drag & Drop unzuverlässig ist
-  root.querySelectorAll(".rm-move").forEach(btn => btn.addEventListener("click", e => {
-    const card = e.target.closest(".rm-card");
-    const colEl = e.target.closest(".rm-col");
+  const short = s => s.length > 40 ? s.slice(0, 38) + "…" : s;
+  const at = btn => {
+    const card = btn.closest(".rm-card"), colEl = btn.closest(".rm-col");
+    return { card, colEl, idx: [...colEl.querySelectorAll(".rm-card")].indexOf(card) };
+  };
+  // Karte streichen
+  root.querySelectorAll(".rm-del").forEach(btn => btn.addEventListener("click", () => {
+    const { colEl, idx } = at(btn);
     const cols = state();
-    const from = colEl.dataset.col;
-    const idx = [...colEl.querySelectorAll(".rm-card")].indexOf(card);
-    const item = cols[from][idx];
-    const order = RM_COLS.map(c => c.id);
-    const dir = e.target.dataset.dir;
-    if (dir === "up" && idx > 0) { cols[from].splice(idx, 1); cols[from].splice(idx - 1, 0, item); }
-    else if (dir === "down" && idx < cols[from].length - 1) { cols[from].splice(idx, 1); cols[from].splice(idx + 1, 0, item); }
-    else if (dir === "left" || dir === "right") {
-      const to = order[order.indexOf(from) + (dir === "left" ? -1 : 1)];
-      if (!to) return;
-      cols[from].splice(idx, 1); cols[to].push(item);
-    } else return;
-    const short = item.length > 40 ? item.slice(0, 38) + "…" : item;
-    const target = dir === "up" || dir === "down" ? from : order[order.indexOf(from) + (dir === "left" ? -1 : 1)];
+    const item = cols[colEl.dataset.col][idx];
+    cols[colEl.dataset.col].splice(idx, 1);
     repaint(cols);
-    commitBreakout("roadmap", rmWrite(cols), `8 | Roadmap | ${short}: ${from} → ${target}`, rmNth);
+    commitBreakout("roadmap", rmWrite(cols), `8 | Roadmap | gestrichen: ${short(item)}`, rmNth);
+    pendingAppendLine(8, t("rmPendDel").replace("{a}", item));
   }));
-  // Drag & Drop für Zeigegeräte
+  // Karte an Ort und Stelle bearbeiten
+  root.querySelectorAll(".rm-edit").forEach(btn => btn.addEventListener("click", () => {
+    const { card, colEl, idx } = at(btn);
+    if (card.querySelector(".rm-editfield")) return;
+    const old = card.dataset.raw;
+    card.draggable = false;
+    const input = document.createElement("input");
+    input.className = "rm-editfield";
+    input.value = old;
+    card.querySelector(".rm-text").replaceWith(input);
+    input.focus();
+    input.select();
+    let done = false;
+    const finish = commit => {
+      if (done) return;
+      done = true;
+      const val = input.value.trim();
+      const cols = state();
+      if (commit && val && val !== old) {
+        cols[colEl.dataset.col][idx] = val;
+        repaint(cols);
+        commitBreakout("roadmap", rmWrite(cols), `8 | Roadmap | ${short(old)} → ${short(val)}`, rmNth);
+        pendingAppendLine(8, t("rmPendEdit").replace("{a}", old).replace("{b}", val));
+      } else {
+        repaint(cols);          // Ansicht zurücksetzen, nichts geändert
+      }
+    };
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") finish(true);
+      else if (e.key === "Escape") finish(false);
+    });
+    input.addEventListener("blur", () => finish(true));
+  }));
+  // Drag & Drop — der Griff links ist die sichtbare Einladung dazu
   let dragged = null;
   root.querySelectorAll(".rm-card").forEach(card => {
     card.addEventListener("dragstart", () => { dragged = card; card.classList.add("dragging"); });
@@ -2487,7 +2543,7 @@ function mountExperiment(root) {
 function mountBreakouts() {
   document.querySelectorAll('[data-breakout="experiment"]').forEach(mountExperiment);
   document.querySelectorAll("[data-bmc]").forEach(el =>
-    el.addEventListener("change", bmcSave));
+    el.addEventListener("change", () => bmcSave(el.dataset.bmc)));
   document.querySelectorAll('[data-breakout="pnl"]').forEach(mountPnl);
   document.querySelectorAll('[data-breakout="roadmap"]').forEach(mountRoadmap);
   document.querySelectorAll('[data-anno-step]').forEach(mountAnnoBox);
@@ -2535,6 +2591,29 @@ function pendingSave(step, text) {
   refreshUpdateTab();
 }
 function pendingRemove(step) { pendingSave(step, ""); }
+
+// Automatische Anmerkung aus einem Breakout-Edit (BMC-Feld, Roadmap-Karte):
+// hängt eine Zeile an die Strophe des Schritts an, statt sie zu ersetzen.
+// dedupPrefix ersetzt eine frühere Zeile desselben Felds — nur die letzte gilt.
+function pendingAppendLine(step, line, dedupPrefix) {
+  const list = pendingList(currentMd);
+  const cur = list.find(p => p.step === step);
+  // Ein offener, noch ungespeicherter Anmerkungsentwurf zum selben Schritt
+  // würde beim Neuzeichnen verloren gehen — er wird deshalb mit übernommen.
+  const box = document.querySelector(`[data-anno-step="${step}"] .anno-paste`);
+  const draft = box ? box.value.trim() : "";
+  let base = cur ? cur.note : "";
+  if (draft && draft !== base) base = draft;
+  let lines = base ? base.split(/\r?\n/).filter(l => l.trim()) : [];
+  if (dedupPrefix) lines = lines.filter(l => !l.startsWith(dedupPrefix));
+  lines.push(line);
+  const rest = list.filter(p => p.step !== step);
+  rest.push({ step, note: lines.join("\n") });
+  rest.sort((a, b) => a.step - b.step);
+  commitBreakout("pending", pendingWrite(rest), null, "upsert");
+  repaintAnnoBox(step);
+  refreshUpdateTab();
+}
 
 // note gesetzt → "wartet auf Einarbeitung"-Ansicht; sonst das Eingabeformular,
 // draft befüllt es beim Bearbeiten einer schon gespeicherten Anmerkung vor.
@@ -2641,37 +2720,61 @@ function runCompare(otherMd) {
    beantworteten Schritten zusammengesetzt. Zwei Felder haben im
    14-Schritte-Schema keine Quelle; genau das macht die Linse sichtbar. */
 const BMC_FIELDS = [
-  { key: "kp",   cls: "bmc-kp",   steps: [], slot: "partner" },
-  { key: "ka",   cls: "bmc-ka",   steps: [6, 8] },
-  { key: "kr",   cls: "bmc-kr",   steps: [], slot: "ressourcen" },
-  { key: "vp",   cls: "bmc-vp",   steps: [5, 2] },
-  { key: "cr",   cls: "bmc-cr",   steps: [13, 12] },
-  { key: "ch",   cls: "bmc-ch",   steps: [9] },
-  { key: "seg",  cls: "bmc-seg",  steps: [3] },
-  { key: "cost", cls: "bmc-cost", steps: [10] },
-  { key: "rev",  cls: "bmc-rev",  steps: [9, 10] }
+  { key: "kp",   cls: "bmc-kp",   steps: [],       slot: "partner",           enKey: "key_partners" },
+  { key: "ka",   cls: "bmc-ka",   steps: [6, 8],   slot: "aktivitaeten",      enKey: "key_activities" },
+  { key: "kr",   cls: "bmc-kr",   steps: [],       slot: "ressourcen",        enKey: "key_resources" },
+  { key: "vp",   cls: "bmc-vp",   steps: [5, 2],   slot: "wertversprechen",   enKey: "value_proposition" },
+  { key: "cr",   cls: "bmc-cr",   steps: [13, 12], slot: "kundenbeziehungen", enKey: "customer_relationships" },
+  { key: "ch",   cls: "bmc-ch",   steps: [9],      slot: "kanaele",           enKey: "channels" },
+  { key: "seg",  cls: "bmc-seg",  steps: [3],      slot: "segmente",          enKey: "customer_segments" },
+  { key: "cost", cls: "bmc-cost", steps: [10],     slot: "kosten",            enKey: "cost_structure" },
+  { key: "rev",  cls: "bmc-rev",  steps: [9, 10],  slot: "einnahmen",         enKey: "revenue_streams" }
 ];
-// Inhalte der Felder, die das 14-Schritte-Schema nicht liefert. Sie leben in
-// einem witty:bmc-Block und sind das einzige, was in der Canvas-Ansicht
-// direkt bearbeitet wird — alles andere bleibt abgeleitet.
+const bmcLabel = f => t("bmc" + f.key.charAt(0).toUpperCase() + f.key.slice(1));
+// Feldinhalte im witty:bmc-Block. partner/ressourcen sind Pflicht (das Schema
+// liefert sie nicht), alle anderen Schlüssel sind Überschreibungen: Sie
+// verdecken den aus den Schritten abgeleiteten Text, bis sie geleert werden.
 function bmcSlots() {
   const m = currentMd.match(/```witty:bmc[^\n]*\n([\s\S]*?)\n```/i);
   const d = m ? parseBlock(m[1]) : {};
-  return {
-    partner: d.partner || d.key_partners || "",
-    ressourcen: d.ressourcen || d.key_resources || "",
-    _en: d.key_partners !== undefined || d.key_resources !== undefined
-  };
+  const out = { _en: BMC_FIELDS.some(f => d[f.enKey] !== undefined) };
+  BMC_FIELDS.forEach(f => { out[f.slot] = d[f.slot] !== undefined ? d[f.slot] : (d[f.enKey] || ""); });
+  return out;
 }
-function bmcSave() {
-  const el = k => document.querySelector('[data-bmc="' + k + '"]');
+function bmcSave(changedSlot) {
   const cur = bmcSlots();
-  const body = cur._en
-    ? "key_partners: " + (el("partner") ? el("partner").value.trim() : cur.partner) +
-      "\nkey_resources: " + (el("ressourcen") ? el("ressourcen").value.trim() : cur.ressourcen)
-    : "partner: " + (el("partner") ? el("partner").value.trim() : cur.partner) +
-      "\nressourcen: " + (el("ressourcen") ? el("ressourcen").value.trim() : cur.ressourcen);
-  commitBreakout("bmc", body, "9 | BMC | Feld ohne Schema-Quelle ergänzt", "upsert");
+  const el = k => document.querySelector('[data-bmc="' + k + '"]');
+  // Blockzeilen sind einzeilig ("schlüssel: wert") — Umbrüche werden zu " · ".
+  const oneLine = s => s.trim().replace(/\s*\r?\n+\s*/g, " · ");
+  const lines = [];
+  BMC_FIELDS.forEach(f => {
+    const box = el(f.slot);
+    const val = box ? oneLine(box.value) : (cur[f.slot] || "");
+    const derived = box ? (box.dataset.derived || "").trim() : "";
+    const noSchema = !f.steps.length;
+    if (noSchema || (val && val !== derived)) lines.push((cur._en ? f.enKey : f.slot) + ": " + val);
+  });
+  const f = BMC_FIELDS.find(x => x.slot === changedSlot);
+  commitBreakout("bmc", lines.join("\n"), f ? `9 | BMC | ${bmcLabel(f)} bearbeitet` : null, "upsert");
+  if (!f) return;
+  // Die Änderung wandert zusätzlich als Anmerkung in den Update-Prompt —
+  // zugeordnet zum Quell-Schritt des Felds, damit sie dort eingearbeitet wird.
+  const box = el(f.slot);
+  const val = oneLine(box.value);
+  const derived = (box.dataset.derived || "").trim();
+  const noSchema = !f.steps.length;
+  const isOverride = !noSchema && val && val !== derived;
+  const hadValue = !!(cur[f.slot] || "").trim();
+  const jump = box.closest(".bmc-box").querySelector("[data-jump]");
+  const step = jump ? +jump.dataset.jump.replace("step-", "") : 9;
+  let line = null;
+  if (val && (noSchema || isOverride)) line = t("bmcPendSet").replace("{f}", bmcLabel(f)).replace("{v}", val);
+  else if (hadValue && (noSchema ? !val : !isOverride)) line = t("bmcPendClear").replace("{f}", bmcLabel(f));
+  if (line) pendingAppendLine(step, line, "BMC · " + bmcLabel(f) + ":");
+  // Ansicht des Felds nachziehen, ohne die ganze Canvas neu zu zeichnen
+  if (!noSchema && !val) box.value = derived;   // geleert → Ableitung kehrt zurück
+  const ov = box.closest(".bmc-box").querySelector(".ov");
+  if (ov) ov.toggleAttribute("hidden", !isOverride);
 }
 // Kurzbefund einer Sektion: die erste Blockquote-Zeile, ohne das Präfix.
 function shortVerdict(section) {
@@ -2694,24 +2797,26 @@ function renderBmc(doc) {
   };
   const slots = bmcSlots();
   const boxes = BMC_FIELDS.map(f => {
-    const title = esc(t("bmc" + f.key.charAt(0).toUpperCase() + f.key.slice(1)));
+    const title = esc(bmcLabel(f));
     if (!f.steps.length) {
       const val = slots[f.slot] || "";
       return `<div class="bmc-box noschema ${f.cls}"><h4>${title}</h4>
-        <textarea class="bmc-input" data-bmc="${f.slot}" rows="3"
-          placeholder="${esc(t("bmcFillPh"))}">${esc(val)}</textarea>
+        <textarea class="bmc-input" data-bmc="${f.slot}" data-derived="" rows="3"
+          placeholder="${escAttr(t("bmcFillPh"))}">${esc(val)}</textarea>
         <span class="bmc-src">${esc(t("bmcNoSchemaShort"))}</span></div>`;
     }
     const src = f.steps.find(n => noteOf(n)) || f.steps[0];
-    const text = noteOf(src);
+    const derived = noteOf(src);
+    const override = (slots[f.slot] || "").trim();
+    const val = override || derived;
     const st = statusOf(src);
-    const isGap = !text || (st && st.key === "open");
-    const body = text
-      ? `<p>${inlineMd(esc(text))}</p>`
-      : `<p>${esc(t("bmcEmpty"))}${f.steps.join(", ")}</p>`;
+    const isGap = !val || (st && st.key === "open");
+    const rows = Math.min(7, Math.max(3, Math.ceil((val.length || 1) / 55)));
     const chip = st ? st.emoji + " " : "";
-    return `<div class="bmc-box ${isGap ? "gap" : ""} ${f.cls}"><h4>${title}</h4>${body}
-      <span class="bmc-src" data-jump="step-${src}">${chip}${esc(t("bmcFrom"))}${f.steps.join(" · ")}</span></div>`;
+    return `<div class="bmc-box ${isGap ? "gap" : ""} ${f.cls}"><h4>${title}</h4>
+      <textarea class="bmc-input" data-bmc="${f.slot}" data-derived="${escAttr(derived)}" rows="${rows}"
+        placeholder="${escAttr(t("bmcEmpty") + f.steps.join(", "))}">${esc(val)}</textarea>
+      <span class="bmc-src" data-jump="step-${src}"><b class="ov"${override ? "" : " hidden"} title="${escAttr(t("bmcOverrideHint"))}">✎ ${esc(t("bmcOverride"))} · </b>${chip}${esc(t("bmcFrom"))}${f.steps.join(" · ")}</span></div>`;
   }).join("");
   return `<div class="bmc-intro">${esc(t("bmcIntro"))}</div><div class="bmc-grid">${boxes}</div>`;
 }
