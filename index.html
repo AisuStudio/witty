@@ -395,6 +395,12 @@
     border-radius: 3px; padding: 1px 4px;
   }
   .rm-editfield:focus { outline: none; }
+  .rm-add {
+    margin-top: 6px; border: 0; background: transparent; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; color: var(--color-muted); padding: 3px 4px; border-radius: 3px;
+  }
+  .rm-add:hover { background: var(--color-surface-2); color: var(--color-text); }
   .rm-empty { color: var(--color-muted); font-size: 13px; margin: 0; }
 
   /* Experiment-Breakout */
@@ -966,9 +972,10 @@ const I18N = {
     pnlNote: "Änderungen wandern zurück ins Dokument — unten herunterladen, damit sie erhalten bleiben.",
     rmTitle: "Roadmap — nur „Jetzt“ ist verbindlich",
     rmNow: "Jetzt", rmNext: "Danach", rmLater: "Später",
-    rmNote: "Karten am Griff ziehen; ✎ bearbeitet, × streicht — die Reihenfolge ist die Priorität und wandert zurück ins Dokument. Bearbeitungen und Streichungen landen zusätzlich als Anmerkung im Update-Prompt.",
-    rmEdit: "Bearbeiten", rmDelete: "Streichen",
+    rmNote: "Karten am Griff ziehen; ✎ bearbeitet, × streicht, + legt eine neue an — die Reihenfolge ist die Priorität und wandert zurück ins Dokument. Änderungen landen zusätzlich als Anmerkung im Update-Prompt.",
+    rmEdit: "Bearbeiten", rmDelete: "Streichen", rmAdd: "Neue Karte",
     rmPendEdit: "Roadmap: „{a}“ geändert zu „{b}“", rmPendDel: "Roadmap: „{a}“ gestrichen",
+    rmPendAdd: "Roadmap: „{a}“ neu unter „{c}“",
     expTitle: "Experiment — billig prüfen, bevor gebaut wird",
     expAssumption: "Annahme (implizit, ungeprüft)", expHypothesis: "Hypothese (spezifisch, widerlegbar)",
     expTest: "Verfahren", expMetric: "Messgröße", expSuccess: "Erfolg, wenn …",
@@ -1073,9 +1080,10 @@ const I18N = {
     pnlNote: "Changes are written back into the document — download it below to keep them.",
     rmTitle: "Roadmap — only “Now” is committed",
     rmNow: "Now", rmNext: "Next", rmLater: "Later",
-    rmNote: "Drag cards by the grip; ✎ edits, × removes — the order is the priority and is written back into the document. Edits and removals also land as a note in the update prompt.",
-    rmEdit: "Edit", rmDelete: "Remove",
+    rmNote: "Drag cards by the grip; ✎ edits, × removes, + adds a new one — the order is the priority and is written back into the document. Changes also land as a note in the update prompt.",
+    rmEdit: "Edit", rmDelete: "Remove", rmAdd: "New card",
     rmPendEdit: "Roadmap: “{a}” changed to “{b}”", rmPendDel: "Roadmap: “{a}” removed",
+    rmPendAdd: "Roadmap: “{a}” added under “{c}”",
     expTitle: "Experiment — test cheaply before building",
     expAssumption: "Assumption (implicit, unverified)", expHypothesis: "Hypothesis (specific, refutable)",
     expTest: "Method", expMetric: "Metric", expSuccess: "Success if …",
@@ -1680,7 +1688,8 @@ const ICON_ATTRS = 'xmlns="http://www.w3.org/2000/svg" width="14" height="14" vi
 const ICONS = {
   grip: `<svg ${ICON_ATTRS}><circle cx="12" cy="5" r="1"/><circle cx="19" cy="5" r="1"/><circle cx="5" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="19" cy="19" r="1"/><circle cx="5" cy="19" r="1"/></svg>`,
   pencil: `<svg ${ICON_ATTRS}><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>`,
-  x: `<svg ${ICON_ATTRS}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`
+  x: `<svg ${ICON_ATTRS}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+  plus: `<svg ${ICON_ATTRS}><path d="M5 12h14"/><path d="M12 5v14"/></svg>`
 };
 function inlineMd(s) {
   return s
@@ -2371,6 +2380,7 @@ function renderRoadmap(_data, raw, nth) {
             <button class="rm-act rm-del" title="${escAttr(t("rmDelete"))}">${ICONS.x}</button>
           </span>
         </div>`).join("") || `<p class="rm-empty">—</p>`}</div>
+      <button class="rm-add" title="${escAttr(t("rmAdd"))}">${ICONS.plus}<span>${esc(t("rmAdd"))}</span></button>
     </div>`;
   return `<div class="breakout" data-breakout="roadmap" data-nth="${nth || 0}">
     <div class="bo-head"><span class="dblabel">${esc(t("rmTitle"))}</span></div>
@@ -2433,6 +2443,38 @@ function mountRoadmap(root) {
         pendingAppendLine(8, t("rmPendEdit").replace("{a}", old).replace("{b}", val));
       } else {
         repaint(cols);          // Ansicht zurücksetzen, nichts geändert
+      }
+    };
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") finish(true);
+      else if (e.key === "Escape") finish(false);
+    });
+    input.addEventListener("blur", () => finish(true));
+  }));
+  // Neue Karte ans Ende einer Spalte
+  root.querySelectorAll(".rm-add").forEach(btn => btn.addEventListener("click", () => {
+    const colEl = btn.closest(".rm-col");
+    const open = colEl.querySelector(".rm-cards .rm-editfield");
+    if (open) { open.focus(); return; }
+    const input = document.createElement("input");
+    input.className = "rm-editfield";
+    colEl.querySelector(".rm-cards").appendChild(input);
+    input.focus();
+    let done = false;
+    const finish = commit => {
+      if (done) return;
+      done = true;
+      const val = input.value.trim();
+      const cols = state();
+      if (commit && val) {
+        const colId = colEl.dataset.col;
+        cols[colId].push(val);
+        repaint(cols);
+        commitBreakout("roadmap", rmWrite(cols), `8 | Roadmap | neu (${colId}): ${short(val)}`, rmNth);
+        const colName = t(RM_COLS.find(c => c.id === colId).label);
+        pendingAppendLine(8, t("rmPendAdd").replace("{a}", val).replace("{c}", colName));
+      } else {
+        repaint(cols);          // Eingabe verworfen, Ansicht zurücksetzen
       }
     };
     input.addEventListener("keydown", e => {
