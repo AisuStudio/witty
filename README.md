@@ -15,20 +15,22 @@ Wittgenstein: *"The limits of my language mean the limits of my world"*
 
 ## Status
 
-Live auf [witty.aisu.studio](https://witty.aisu.studio) — Spiegel-Ansicht,
+Live auf [witty.aisu.studio](https://witty.aisu.studio) — `index.html` ist
+die Landingpage (Claim + CTAs), `app.html` das eigentliche Tool: Spiegel-Ansicht,
 Audit-Prompt und drei Breakouts (BMC, Mini-P&L, Roadmap). Siehe
-[PM-STATUS.md](./PM-STATUS.md) (witty is its own first use case).
+[PM-STATUS.md](./PM-STATUS.md) (witty is its own first use case), sowie
+[`docs/ecosystem.md`](./docs/ecosystem.md) für das Zusammenspiel mit CNSL.
 
 **DE** — Das methodische Fundament liegt in
 [`docs/pm-flow-concept.md`](./docs/pm-flow-concept.md): die 14 Schritte
 mit Leitfrage, Methode, Output-Format und Fertig-Kriterium, dazu der
 Experiment-Layer (Validierung) und der optionale AI-Layer. Der
-Audit-Prompt in `index.html` ist die Übersetzung dieses Schemas — ändert
+Audit-Prompt in `app.html` ist die Übersetzung dieses Schemas — ändert
 sich das Schema, gehört der Prompt nachgezogen.
 
 **EN** — The methodological source of truth lives in
 [`docs/pm-flow-concept.md`](./docs/pm-flow-concept.md): the 14 steps plus
-the experiment layer. The audit prompt in `index.html` is a translation
+the experiment layer. The audit prompt in `app.html` is a translation
 of that schema; when the schema changes, the prompt follows.
 
 ## Prinzipien / Principles

@@ -1,0 +1,3117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>witty — PM Spiegel</title>
+<link rel="stylesheet" href="design/tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: "Public Sans", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+  .mono { font-family: "iA Writer Mono S", ui-monospace, "SF Mono", monospace; }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: var(--sp-lg) var(--gutter) var(--sp-4xl); }
+
+  /* Hero — Wittgenstein aus witty!-Lettern, fix Vanilla auf Blueberry (theme-unabhängig) */
+  header.hero {
+    position: relative; overflow: hidden;
+    background: var(--color-blueberry);
+    border-radius: var(--radius-md);
+    margin-top: var(--sp-lg);
+    box-shadow: var(--shadow-md);
+  }
+  .hero-ascii {
+    margin: 0; display: block;
+    font-family: "iA Writer Mono S", ui-monospace, monospace; font-weight: 700;
+    font-size: min(11.18px, calc((100vw - 48px) / 74.4));
+    line-height: 1; letter-spacing: 0;
+    color: var(--color-vanilla);
+    user-select: none; pointer-events: none;
+  }
+  .hero-top {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--sp-md) var(--sp-lg);
+    background: linear-gradient(rgba(31,25,52,.85), transparent);
+  }
+  .hero-tag {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: var(--sp-xl) var(--sp-lg) var(--sp-md);
+    background: linear-gradient(transparent, rgba(31,25,52,.94) 55%);
+    color: var(--color-vanilla); font-size: 14px;
+  }
+  .wordmark { font-family: "iA Writer Mono S", monospace; font-size: 28px; font-weight: 700; color: var(--color-vanilla); }
+  .wordmark span { color: var(--color-lemon); }
+  .tagline { color: var(--color-muted); font-size: 13px; margin-top: 2px; }
+
+  .hero-top-right { display: flex; align-items: center; gap: var(--sp-md); }
+  .hiw-link {
+    font-family: "iA Writer Mono S", monospace; font-size: 12px;
+    color: var(--color-vanilla); text-decoration: none;
+    background: rgba(31,25,52,.75); border: 1px solid var(--color-border);
+    border-radius: var(--radius-full); padding: 5px 14px;
+  }
+  .hiw-link:hover { background: var(--color-blueberry); border-color: var(--color-vanilla); }
+
+  .langtoggle { display: flex; gap: 2px; border: 1px solid var(--color-border); border-radius: var(--radius-full); padding: 2px; background: var(--color-surface); }
+  .langtoggle button {
+    border: 0; background: transparent; border-radius: var(--radius-full);
+    font-family: "iA Writer Mono S", monospace; font-size: 12px; padding: 4px 12px; cursor: pointer; color: var(--color-muted);
+  }
+  .langtoggle button.active { background: var(--color-highlight); color: var(--color-on-accent); font-weight: 700; }
+
+  .about { margin: var(--sp-xl) 0 var(--sp-md); max-width: 68ch; }
+  .about-eyebrow {
+    font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--color-accent);
+    display: flex; align-items: center; gap: 8px; margin-bottom: var(--sp-sm);
+  }
+  .about-eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--color-accent); }
+  .about h3 {
+    font-family: var(--font-primary); font-weight: 700; font-style: italic;
+    font-size: 20px; line-height: 1.35; margin-bottom: var(--sp-sm);
+  }
+  .about p { font-size: 14px; margin-bottom: var(--sp-sm); }
+
+  nav.tabs { display: flex; gap: var(--sp-sm); margin: var(--sp-md) 0 var(--sp-lg); border-bottom: 1px solid var(--color-border); }
+  nav.tabs button {
+    border: 0; background: transparent; cursor: pointer;
+    font-family: var(--font-primary); font-weight: 500; font-size: 14px; color: var(--color-muted);
+    padding: var(--sp-sm) var(--sp-md); border-bottom: 3px solid transparent; margin-bottom: -1px;
+  }
+  nav.tabs button.active { color: var(--color-text); border-bottom-color: var(--color-accent); font-weight: 700; }
+
+  .card { background: var(--color-surface); border-radius: var(--radius-md); padding: var(--sp-lg); box-shadow: var(--shadow-sm); }
+  .card + .card { margin-top: var(--sp-lg); }
+
+  /* Empty state / loader */
+  .loader h2 { font-family: var(--font-primary); font-weight: 700; font-size: 18px; margin-bottom: var(--sp-sm); }
+  .loader p { color: var(--color-muted); font-size: 14px; max-width: 60ch; }
+  .loadrow { display: flex; flex-wrap: wrap; gap: var(--sp-sm); margin-top: var(--sp-md); }
+  .btn {
+    display: inline-block; border: 0; cursor: pointer; text-decoration: none;
+    font-family: var(--font-primary); font-size: 14px; font-weight: 700;
+    padding: 10px 18px; border-radius: var(--radius-sm);
+    background: var(--color-accent); color: var(--color-vanilla);
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.secondary { background: var(--color-surface-2); color: var(--color-text); border: 1px solid var(--color-border); }
+  .btn.small { padding: 5px 12px; font-size: 12px; font-weight: 500; }
+  .btn.lemon { background: var(--color-highlight); color: var(--color-on-accent); }
+  textarea.paste {
+    width: 100%; min-height: 140px; margin-top: var(--sp-md);
+    border: 1px dashed var(--color-border); border-radius: var(--radius-sm);
+    background: var(--color-surface-2); padding: var(--sp-md);
+    font-family: "iA Writer Mono S", monospace; font-size: 12px; color: var(--color-text);
+    resize: vertical;
+  }
+  .droptarget.dragover { outline: 3px dashed var(--color-accent); outline-offset: 4px; }
+
+  /* Spiegel view */
+  .projecthead { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-sm); margin-bottom: var(--sp-md); }
+  .projecthead h2 { font-family: var(--font-primary); font-weight: 700; font-size: 22px; }
+  .projecthead .sub { color: var(--color-muted); font-size: 13px; }
+  .counts { display: flex; flex-wrap: wrap; gap: var(--sp-sm); margin-bottom: var(--sp-lg); }
+  .count {
+    font-family: "iA Writer Mono S", monospace; font-size: 13px;
+    padding: 4px 12px; border-radius: var(--radius-full); background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+  .count b { font-size: 15px; }
+  .count.mirror { background: var(--color-highlight); color: var(--color-on-accent); border-color: transparent; }
+
+  table.dash { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.dash th {
+    font-family: "iA Writer Mono S", monospace; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--color-muted); text-align: left;
+    padding: 6px 10px; border-bottom: 2px solid var(--color-border);
+  }
+  table.dash td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  table.dash tr { cursor: pointer; }
+  table.dash tr:hover td { background: var(--color-surface-2); }
+  table.dash tr.st-mirror td { background: color-mix(in srgb, var(--color-lemon) 28%, transparent); }
+  table.dash tr.st-mirror:hover td { background: color-mix(in srgb, var(--color-lemon) 45%, transparent); }
+  td.num, td.chip { font-family: "iA Writer Mono S", monospace; white-space: nowrap; }
+  td.num { color: var(--color-muted); }
+  td.note { color: var(--color-muted); }
+
+  .legend { margin-top: var(--sp-md); font-size: 12px; color: var(--color-muted); }
+
+  /* Sections */
+  .step { margin-top: var(--sp-lg); }
+  .step h3 { font-family: var(--font-primary); font-weight: 700; font-size: 15px; display: flex; gap: var(--sp-sm); align-items: baseline; }
+  .step h3 .chip { font-size: 14px; }
+  .stepbody { margin-top: var(--sp-sm); font-size: 14.5px; }
+  .stepbody blockquote {
+    border-left: 3px solid var(--color-accent); background: var(--color-surface-2);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: var(--sp-sm) var(--sp-md); margin: var(--sp-xs) 0;
+  }
+  .step.st-mirror .stepbody blockquote { border-left-color: var(--color-lemon); }
+  .stepbody ul, .stepbody ol { padding-left: 1.3em; margin: var(--sp-xs) 0; }
+  .stepbody li { margin: 2px 0; }
+  .stepbody code { font-family: "iA Writer Mono S", monospace; font-size: .9em; background: var(--color-surface-2); padding: 1px 5px; border-radius: 3px; }
+  .stepbody em { color: var(--color-muted); }
+  .stepbody p { margin: var(--sp-xs) 0; }
+  .stepbody h4 {
+    font-family: var(--font-primary); font-weight: 700; font-size: 14px;
+    margin: var(--sp-md) 0 var(--sp-xs); letter-spacing: .01em;
+  }
+  .stepbody hr { border: 0; border-top: 1px solid var(--color-border); margin: var(--sp-md) 0; }
+  /* Tabellen im Fließtext (v0.2-Format: BMC, RICE, P&L, Now/Next/Later, Glossar) */
+  .tablewrap { overflow-x: auto; margin: var(--sp-sm) 0; -webkit-overflow-scrolling: touch; }
+  table.md { border-collapse: collapse; font-size: 13.5px; min-width: 100%; }
+  table.md th {
+    text-align: left; font-family: var(--font-primary); font-weight: 700; font-size: 12px;
+    text-transform: uppercase; letter-spacing: .04em; color: var(--color-muted);
+    padding: 6px 10px; border-bottom: 1px solid var(--color-border); white-space: nowrap;
+  }
+  table.md td { padding: 6px 10px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  table.md tr:last-child td { border-bottom: 0; }
+  table.md td:first-child { white-space: nowrap; }
+  table.md td b { font-weight: 700; }
+  /* Datenblöcke (```witty:pnl etc.) — Platzhalter, bis die Breakouts sie rendern */
+  .databox {
+    border: 1px dashed var(--color-border); border-radius: var(--radius-sm);
+    padding: var(--sp-sm) var(--sp-md); margin: var(--sp-sm) 0; background: var(--color-surface-2);
+  }
+  .databox .dblabel {
+    display: inline-block; font-family: "iA Writer Mono S", monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted); margin-bottom: 4px;
+  }
+  .databox pre, pre.code {
+    font-family: "iA Writer Mono S", monospace; font-size: 12.5px;
+    white-space: pre-wrap; word-break: break-word; margin: 0;
+  }
+  pre.code {
+    background: var(--color-surface-2); border-radius: var(--radius-sm);
+    padding: var(--sp-sm) var(--sp-md); margin: var(--sp-sm) 0; overflow-x: auto;
+  }
+
+  /* Prompt view */
+  .promptcard h2 { font-family: var(--font-primary); font-weight: 700; font-size: 18px; margin-bottom: var(--sp-sm); }
+  .clihint { margin: 0 0 var(--sp-lg); font-size: 13px; }
+  .clihint summary { cursor: pointer; color: var(--color-muted); }
+  .clihint p { color: var(--color-muted); margin: var(--sp-sm) 0; max-width: 62ch; }
+  .promptcard p.expl { color: var(--color-muted); font-size: 14px; max-width: 62ch; margin-bottom: var(--sp-md); }
+  .projlabel { display: block; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--color-accent); margin-bottom: 4px; }
+  .projform { max-width: 560px; margin-bottom: var(--sp-sm); }
+  .projform .q { display: block; font-size: 16px; font-weight: 500; margin: var(--sp-xl) 0 6px; }
+  .projform .qres { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--color-muted); margin-top: var(--sp-2xl); }
+  .stagewrap { display: flex; align-items: center; gap: var(--sp-md); margin-bottom: var(--sp-sm); }
+  .stageslider { flex: 1; accent-color: var(--color-accent); }
+  .stagelabel { font-family: var(--font-mono); font-size: 12px; min-width: 11ch; color: var(--color-accent); white-space: nowrap; }
+  .stagelabel.unset { color: var(--color-muted); }
+  .projfield {
+    width: 100%; max-width: 560px; display: block;
+    border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    background: var(--color-surface-2); color: var(--color-text);
+    font-family: var(--font-primary); font-size: 14px; padding: 8px 12px; margin-bottom: var(--sp-sm);
+  }
+  .projdesc { resize: vertical; }
+  .projhint { color: var(--color-muted); font-size: 12px; max-width: 62ch; margin-bottom: var(--sp-md); }
+  pre.prompt {
+    background: var(--color-blueberry); color: var(--color-vanilla);
+    border-radius: var(--radius-sm); padding: var(--sp-lg);
+    font-family: "iA Writer Mono S", monospace; font-size: 12px; line-height: 1.6;
+    white-space: pre-wrap; max-height: 480px; overflow: auto;
+  }
+  .copiedflash { display: none; margin-left: var(--sp-sm); font-family: "iA Writer Mono S", monospace; font-size: 13px; color: var(--color-accent); }
+  .copiedflash.show { display: inline; }
+
+  /* Speicherleiste — erscheint, sobald ein Breakout das Dokument verändert hat */
+  .savebar {
+    position: sticky; bottom: var(--sp-md); z-index: 5;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: var(--sp-sm); margin-top: var(--sp-md);
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); padding: var(--sp-sm) var(--sp-md);
+    box-shadow: var(--shadow-sm); font-size: 13.5px;
+  }
+  /* Nur alarmierend, wenn Änderungen wirklich in keiner Datei stehen */
+  .savebar.warn { border-color: var(--color-lemon); }
+  .savebar-actions { display: flex; align-items: center; gap: var(--sp-sm); flex-wrap: wrap; }
+
+  /* Linsen-Umschalter: dieselben Antworten, andere Anordnung */
+  .lenses { display: flex; gap: var(--sp-xs); margin: var(--sp-lg) 0 var(--sp-sm); flex-wrap: wrap; }
+  .lens {
+    border: 1px solid var(--color-border); background: transparent; cursor: pointer;
+    font-family: var(--font-primary); font-weight: 500; font-size: 13px; color: var(--color-muted);
+    padding: 6px var(--sp-md); border-radius: 999px;
+  }
+  .lens.active { color: var(--color-text); border-color: var(--color-accent); background: var(--color-surface); font-weight: 700; }
+
+  /* Gruppen-Navigation über den Schritten */
+  /* Klebt oben, damit die Navigation nicht irgendwo im Dokument versinkt */
+  .groupnav {
+    display: flex; flex-wrap: wrap; gap: var(--sp-xs);
+    position: sticky; top: 0; z-index: 30;
+    margin: 0 0 var(--sp-md); padding: var(--sp-sm) 0;
+    background: var(--color-bg); border-bottom: 1px solid var(--color-border);
+  }
+  .prohead { margin-bottom: var(--sp-md); }
+  .groupnav .lens { font-size: 12.5px; padding: 5px var(--sp-sm); }
+  .grprange { font-family: "iA Writer Mono S", monospace; font-size: 11px; color: var(--color-muted); }
+  .grpcount { font-size: 11px; letter-spacing: -.02em; margin-left: 2px; white-space: nowrap; }
+  .groupnav .lens.active .grprange { color: var(--color-text); }
+  .groupnav .lens.isview { border-style: dashed; }
+  .grparrow { color: var(--color-muted); margin-right: 2px; }
+  .groupnav .lens.isview.active { border-style: solid; }
+  .groupnav .lens { display: inline-flex; align-items: center; gap: 6px; }
+  .grp { position: relative; }
+  .grpcaret { color: var(--color-muted); font-size: 9px; }
+  /* Fortschritt je Gruppe: ✅ voll, 🔍 halb — sichtbar ohne Zahlenlesen */
+  .grpbar {
+    display: inline-block; width: 34px; height: 4px; border-radius: 2px;
+    background: var(--color-surface-2); overflow: hidden; vertical-align: middle;
+  }
+  .grpbar i { display: block; height: 100%; background: var(--color-accent); }
+  .grpmenu {
+    position: absolute; top: calc(100% + 4px); left: 0; z-index: 20; min-width: 260px;
+    list-style: none; margin: 0; padding: 4px;
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+  }
+  .grpitem {
+    display: flex; align-items: baseline; gap: 6px; width: 100%; text-align: left;
+    border: 0; background: transparent; cursor: pointer; color: var(--color-text);
+    font-family: var(--font-body); font-size: 13px; padding: 6px 8px; border-radius: var(--radius-sm);
+  }
+  .grpitem:hover { background: var(--color-surface-2); }
+  .grpitem.all { color: var(--color-muted); font-size: 12px; border-bottom: 1px solid var(--color-border); border-radius: 0; margin-bottom: 2px; }
+  .grpnum { font-family: "iA Writer Mono S", monospace; font-size: 11px; color: var(--color-muted); }
+  @media (max-width: 600px) { .grpmenu { min-width: 220px; } }
+
+  /* Business Model Canvas — klassische Anordnung, auf Mobil einspaltig */
+  .bmc-intro { font-size: 13.5px; color: var(--color-muted); margin-bottom: var(--sp-md); }
+  .bmc-grid { display: grid; gap: var(--sp-sm); grid-template-columns: 1fr; }
+  @media (min-width: 800px) {
+    .bmc-grid {
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-areas:
+        "kp ka vp cr seg"
+        "kp kr vp ch seg"
+        "cost cost cost rev rev";
+    }
+    .bmc-kp{grid-area:kp} .bmc-ka{grid-area:ka} .bmc-kr{grid-area:kr} .bmc-vp{grid-area:vp}
+    .bmc-cr{grid-area:cr} .bmc-ch{grid-area:ch} .bmc-seg{grid-area:seg}
+    .bmc-cost{grid-area:cost} .bmc-rev{grid-area:rev}
+  }
+  .bmc-box {
+    border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    padding: var(--sp-sm) var(--sp-md); min-height: 96px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .bmc-box h4 {
+    font-family: var(--font-primary); font-size: 11px; font-weight: 700; margin: 0;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted);
+  }
+  .bmc-box p { margin: 0; font-size: 13.5px; }
+  .bmc-src { margin-top: auto; font-family: "iA Writer Mono S", monospace; font-size: 11px; color: var(--color-muted); }
+  .bmc-src[data-jump] { cursor: pointer; text-decoration: underline dotted; }
+  .bmc-box.gap { border-style: dashed; }
+  .bmc-box.gap p { color: var(--color-muted); font-style: italic; }
+  .bmc-box.noschema { border-style: dashed; border-color: color-mix(in srgb, var(--color-lemon) 60%, var(--color-border)); }
+  .bmc-box.noschema h4 { color: var(--color-text); }
+  .bmc-input {
+    font-family: var(--font-body); font-size: 13px; color: var(--color-text);
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm); padding: 6px 8px; width: 100%; resize: vertical;
+  }
+  .bmc-input:focus { outline: 2px solid var(--color-accent); outline-offset: -1px; }
+
+  /* Snapshot-Vergleich */
+  .cmp-intro { color: var(--color-muted); font-size: 13.5px; max-width: 68ch; margin-bottom: var(--sp-md); }
+  .cmp-head { font-family: "iA Writer Mono S", monospace; font-size: 12px; color: var(--color-muted); margin: var(--sp-md) 0 var(--sp-xs); }
+  .cmp-summary { font-size: 14px; margin: 0 0 var(--sp-sm); }
+  .cmp-summary b.up { color: var(--color-accent); }
+  .cmp-summary b.down { color: var(--color-text); }
+  .cmp-note {
+    font-size: 13px; color: var(--color-text); margin: 0 0 var(--sp-md);
+    border-left: 3px solid var(--color-lemon); padding-left: var(--sp-sm);
+  }
+  tr.cmp-down td { background: color-mix(in srgb, var(--color-lemon) 22%, transparent); }
+  tr.cmp-up td, tr.cmp-new td { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
+  #compare h4 { font-family: var(--font-primary); font-size: 13px; margin: var(--sp-lg) 0 var(--sp-xs); }
+
+  /* Breakout: Rechner statt Datenblock */
+  .breakout {
+    border: 1px solid var(--color-lemon); border-radius: var(--radius-sm);
+    padding: var(--sp-md); margin: var(--sp-sm) 0; background: var(--color-surface-2);
+  }
+  .bo-head { margin-bottom: var(--sp-sm); }
+  .pnl-grid { display: grid; gap: var(--sp-sm); grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .pnl-field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--color-muted); }
+  .pnl-field input {
+    font-family: "iA Writer Mono S", monospace; font-size: 14px;
+    background: var(--color-surface); color: var(--color-text);
+    border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 8px; width: 100%;
+  }
+  .pnl-field input:focus { outline: 2px solid var(--color-accent); outline-offset: -1px; }
+  .pnl-out { margin-top: var(--sp-md); }
+  .pnl-out tr.pnl-key td { background: color-mix(in srgb, var(--color-lemon) 22%, transparent); }
+  .pnl-import { margin-top: var(--sp-sm); font-size: 13px; }
+  .pnl-import summary { cursor: pointer; color: var(--color-muted); }
+  .pnl-paste { margin-top: var(--sp-sm); min-height: 88px; }
+  .pnl-msg { font-size: 12px; color: var(--color-accent); align-self: center; }
+  .pnl-note { margin-top: var(--sp-sm); font-size: 12px; color: var(--color-muted); }
+
+  /* Anmerkungen: witty:pending */
+  .annobox { margin-top: var(--sp-sm); font-size: 13px; }
+  .annobox summary { cursor: pointer; color: var(--color-muted); }
+  .anno-paste { margin-top: var(--sp-sm); min-height: 72px; width: 100%; }
+  .anno-pending {
+    border: 1px solid var(--color-mango-4); border-radius: var(--radius-sm);
+    padding: var(--sp-md); margin: var(--sp-sm) 0; background: color-mix(in srgb, var(--color-mango-1) 30%, transparent);
+  }
+  .anno-text { font-size: 13.5px; white-space: pre-line; }
+  #compare-suggest { border-color: var(--color-accent); }
+
+  /* Roadmap Now / Next / Later */
+  .rm-grid { display: grid; gap: var(--sp-sm); grid-template-columns: 1fr; }
+  @media (min-width: 700px) { .rm-grid { grid-template-columns: repeat(3, 1fr); } }
+  .rm-col { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--sp-sm); }
+  .rm-col h4 {
+    font-family: var(--font-primary); font-size: 11px; font-weight: 700; margin: 0 0 var(--sp-sm);
+    text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted);
+  }
+  .rm-col[data-col="now"] h4 { color: var(--color-text); }
+  .rm-cards { display: flex; flex-direction: column; gap: 6px; min-height: 48px; }
+  .rm-card {
+    background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    padding: 6px 8px; font-size: 13px; cursor: grab;
+    display: flex; align-items: flex-start; gap: var(--sp-xs);
+  }
+  .rm-card.dragging { opacity: .45; }
+  .rm-grip { flex-shrink: 0; color: var(--color-muted); cursor: grab; line-height: 0; padding-top: 3px; }
+  .rm-text { flex: 1; min-width: 0; }
+  .rm-btns { display: flex; gap: 2px; flex-shrink: 0; }
+  .rm-act {
+    border: 0; background: transparent; cursor: pointer; color: var(--color-muted);
+    line-height: 0; padding: 3px; border-radius: 3px;
+  }
+  .rm-act:hover { background: var(--color-surface-2); color: var(--color-text); }
+  .rm-editfield {
+    flex: 1; min-width: 0; font: inherit; color: var(--color-text);
+    background: var(--color-surface); border: 1px solid var(--color-accent);
+    border-radius: 3px; padding: 1px 4px;
+  }
+  .rm-editfield:focus { outline: none; }
+  .rm-add {
+    margin-top: 6px; border: 0; background: transparent; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; color: var(--color-muted); padding: 3px 4px; border-radius: 3px;
+  }
+  .rm-add:hover { background: var(--color-surface-2); color: var(--color-text); }
+  .rm-empty { color: var(--color-muted); font-size: 13px; margin: 0; }
+
+  /* Experiment-Breakout */
+  .breakout.exp .bo-head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-sm); flex-wrap: wrap; }
+  .exp-grid { display: grid; gap: var(--sp-sm); grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .exp-grid { grid-template-columns: 1fr 1fr; } }
+  .exp-meta { display: grid; gap: var(--sp-sm); grid-template-columns: 1fr 1fr; margin-top: var(--sp-sm); }
+  .exp-field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--color-muted); }
+  .exp-field textarea, .exp-field input, .exp-field select, .exp-result {
+    font-family: var(--font-body); font-size: 13.5px; color: var(--color-text);
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm); padding: 6px 8px; width: 100%; resize: vertical;
+  }
+  .exp-result { width: auto; font-size: 12px; }
+  .exp-field textarea:focus, .exp-field input:focus, .exp-field select:focus, .exp-result:focus {
+    outline: 2px solid var(--color-accent); outline-offset: -1px;
+  }
+  .breakout.exp.res-bestaetigt { border-color: var(--color-accent); }
+  .breakout.exp.res-widerlegt { border-color: var(--color-border); opacity: .85; }
+
+  /* Glossar-Tooltip: {{Begriff::Erklärung}} im Fließtext, s. inlineMd() */
+  .gloss { position: relative; border-bottom: 1px dotted var(--color-muted); cursor: help; }
+  .gloss .gloss-tip {
+    visibility: hidden; opacity: 0; position: absolute; left: 0; bottom: calc(100% + 6px);
+    width: max-content; max-width: 260px; background: var(--color-text); color: var(--color-bg);
+    padding: .45em .65em; border-radius: var(--radius-sm); font-size: 12.5px; line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18); z-index: 20; transition: opacity .12s ease;
+  }
+  .gloss:hover .gloss-tip, .gloss:focus .gloss-tip, .gloss:focus-visible .gloss-tip { visibility: visible; opacity: 1; }
+
+  footer { margin-top: var(--sp-3xl); font-size: 12px; color: var(--color-muted); }
+  footer em { font-style: italic; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <pre class="hero-ascii" aria-hidden="true">wwwwwwwwwwwy!           !!itttttyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyyyyt!                !twwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwt!          iitttttyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwywyyyyyyyyyyyyyti                 twwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwy!         !ittttyyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyyt!                twwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwt         ittttyyyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyyyi!               !ywwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwyi        !ittyyyyyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyyti               !ywwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwi        !ittyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyti!             !ywwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwt        !ittyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyyyti!             iwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwi        !ittyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwyyyyyyyyytt!             twwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwt         !ittyyyyyyyyywwwwwwwwwwwwwwwwwwyywwwyywwyyyyyyyyyyyyyyyyyyyyti!           !ywwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwt         !ittttyyyywwwwwwwwwyywyyyyyyyyyyyyyyyyyyyyyttttyttyyyyyyyyyyyti           !ywwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwi          itttyyyyyyyyyyyyyyyyyyyyyyyyyyyytttttiiiiii!!!!!iiiityyyyyyyyyi          !ywwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwy           itttyyyyyytttttttiiiittttttttytttii!!        !!!!!iiittyyyyyyyyt!        !twwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwy!          iittyyytiii!!          !!itttyyyti!         !!!iii!!itttyyyyyyyyt!       !ywwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwt          itttyyi!!!!!             ityyyyyyt!!     !i!!!!!!ii!!iittyyyyyyyt!       twwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwt        !ittttii!!! !!ii!!        !tyywwwyi!!!!!!iti! !i!it!!!!ittyyyyyyyyi      !ywwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwww!       itttttii!! !i!!  !!!!      iywwwwyt!!iiiiitti!!!itttiiiiityyyyyyyyt!     twwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwt      !ttyyyti!! !!!! ! !i!ti! !!!tywwwwyyiiitiiittyttttttttttiitttyyyyyyyt!   !wwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwi     ityyyytii!   !!!!  !ittiiiiitywwwwyytiiiiiittttttttttyyyytttyyyyyyyyytiiitywwttwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwy!    ityyyyyi!!!!iiitiittyttiiiityyywwwyyytttttttttttyyyyyyyyyyyyyyyyyyyyyyyyyyyyi !ywwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwt    iyyyyytiiiiitiitiittttiiitttyyywwwyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyytt!!!ywwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwww!   iyyyyytttttytttiiitttttttttyyyywwwwyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyttttyytiiywwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwy!  !yyyyyyyyytyyyyyyyyyyyyyyyyyyywwwwwwyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyttttyyyttwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwyi !yyyyyyyyyyyyyyyyyyyyyyyyyyyywwwwwwwyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyti!ityyyywwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwt!ityyyiiyyyyyyyyywwyyyyyyyyyyyyyyyyyywwwwwwyyyyyyyyywyyyyyyyyyyyyyyyyyyyyyyyyyi !iyyywwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwt  !itttyyyyyyyyyyyyyyyyyyyyyyyyytyyyttyyyyyyyyyyyyyyyywwyyyyyyyyyyyytyytttyyyyytiityywwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwt!!!iiiityyyyyyyyyyyyyyyyyyyyyyytttiiiiiiiitti! !ityyyyyyyyyyyyyyyyyttttttyyyyyytttyyywwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwyi!ittttityyyyyyyyytyyyyyyyyyyyytt!    !!!!!!!  !!tyyyyyyyyyyyyyyyytttttttyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwtiiyyt! iyyyyytttttyyyyyyyyyyyttt!  !!!    !ittttyyyyyyyyyyyyyyyyyyttttttyyyyyyyyywyywwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwyttyt!  iyyytttttttyyyyyyyyyyyyyytiiii!!  !!ittyyyyyyyyyyyyyyyyyyyytttttyyyyyyyywyyywwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwyytyti!!tytytttttttyyyyyyyyyytyyyyytttiiiiiitttyyyyyyyyyyyyyyyyyyyyyttttyyyyyttyyyyywwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwyyyyttttytttttttttyyyyyyyyytyyyyyyyttttttttttyyyyyyyyyyyyyyyyyyyyyttttyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwyyyyyyyytttttttttyyyyyyyyyyyyyyyttttyyytyyyyyyyyyyyyyyyyyyyyyyyytttyyyyytityyywwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwyyyyyyyyttttttttttyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyttyyyyytiitywwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwyyyyyyyytttttttttyyyyyyyyyyyyyyyttiitti!!ittyyyyyyyyyyyyyyyyyytttyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwyyyytitytttttttttttttyyyyyyyyyti!           !!ittyyyyyyyyyyyyytttyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwyyyttytttttttttttttttyyyytti!          !!!!!   !!ittttyyyyyyyyytyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwyyytitttttttttttttttttti!    !ittttttyyyytttttiiiittyyyyyyyyyyyyyyywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwyti!ttttttttttttyttti!!!!iittyyyttttttttyyyyyyyttttyyyyytyttyyyytywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwyttttttttttyyttiiitttttttii!!!!!iiittttyyyyttttyyytttyytyyttywwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwytttttttttyyttttttttttiiiiiiiii!iiitttyyytttttttttytttyttttwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttitttttiiiiiiiiiiittttttyyyttttttyttttttttttwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwtttttttttttttttttttttiiiiitttttttyyyyyyyyyytttyyyyttttttttwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww</pre>
+    <div class="hero-top">
+      <div class="wordmark">witty<span>!</span></div>
+      <div class="hero-top-right">
+        <a class="hiw-link" href="index.html" data-i18n="howItWorksLink"></a>
+        <div class="langtoggle">
+          <button id="lang-de">DE</button>
+          <button id="lang-en">EN</button>
+        </div>
+      </div>
+    </div>
+    <div class="hero-tag" data-i18n="tagline"></div>
+  </header>
+
+  <section class="about">
+    <div class="about-eyebrow" data-i18n="aboutTitle"></div>
+    <h3 data-i18n="about1"></h3>
+    <p data-i18n="about2"></p>
+    <p data-i18n="about3"></p>
+  </section>
+
+  <nav class="tabs">
+    <button id="tab-spiegel" class="active" data-i18n="tabSpiegel"></button>
+    <button id="tab-prompt" data-i18n="tabPrompt"></button>
+  </nav>
+
+  <!-- ===== Spiegel view ===== -->
+  <section id="view-spiegel">
+    <div id="loader" class="card loader droptarget">
+      <h2 data-i18n="loadTitle"></h2>
+      <p data-i18n="loadExpl"></p>
+      <div class="loadrow">
+        <button class="btn" id="btn-file" data-i18n="btnFile"></button>
+        <input type="file" id="file-input" accept=".md,.markdown,.txt" class="hidden">
+        <button class="btn secondary" id="btn-demo" data-i18n="btnDemo"></button>
+        <button class="btn lemon" id="btn-to-prompt" data-i18n="btnNoMd"></button>
+      </div>
+      <textarea class="paste" id="paste-area" data-i18n-ph="pastePh"></textarea>
+      <div class="loadrow"><button class="btn secondary" id="btn-paste" data-i18n="btnPaste"></button></div>
+    </div>
+
+    <div id="mirror" class="hidden">
+      <div class="card prohead">
+        <div class="projecthead">
+          <h2 id="proj-title"></h2>
+          <span class="sub" id="proj-sub"></span>
+          <button class="btn secondary small" id="btn-reset-top" data-i18n="btnReset"></button>
+        </div>
+        <div class="counts" id="counts"></div>
+      </div>
+      <div class="card hidden" id="compare-suggest">
+        <p data-i18n="suggestCompareText"></p>
+        <div class="loadrow">
+          <button class="btn secondary small cmpsuggest-btn" data-i18n="suggestCompareBtn"></button>
+          <button class="btn secondary small cmpsuggest-dismiss">✕</button>
+        </div>
+      </div>
+      <nav class="groupnav" id="groupnav"></nav>
+      <div class="card" id="summary">
+        <table class="dash">
+          <thead><tr>
+            <th>#</th><th data-i18n="thStep"></th><th data-i18n="thStatus"></th><th data-i18n="thNote"></th>
+          </tr></thead>
+          <tbody id="dash-body"></tbody>
+        </table>
+        <div class="stepbody" id="cover-extra"></div>
+        <div class="legend" data-i18n="legend"></div>
+      </div>
+      <div class="card hidden" id="sections"></div>
+      <div class="card hidden" id="bmc"></div>
+      <div class="card hidden" id="compare">
+        <p class="cmp-intro" data-i18n="cmpIntro"></p>
+        <div class="loadrow">
+          <button class="btn" id="btn-cmp-file" data-i18n="cmpPick"></button>
+          <input type="file" id="cmp-input" accept=".md,.markdown,.txt" class="hidden">
+          <button class="btn secondary" id="btn-cmp-paste" data-i18n="cmpPaste"></button>
+        </div>
+        <textarea class="paste hidden" id="cmp-area" data-i18n-ph="cmpPastePh"></textarea>
+        <div id="cmp-out"></div>
+      </div>
+      <div class="card hidden" id="update-view">
+        <p class="cmp-intro" data-i18n="updateIntro"></p>
+        <p class="pnl-note" id="update-summary"></p>
+        <div class="loadrow" style="margin:0 0 var(--sp-md)">
+          <button class="btn" id="btn-copy-update" data-i18n="btnCopy"></button>
+          <button class="btn secondary" id="btn-dl-update" data-i18n="btnDlPrompt"></button>
+          <span class="copiedflash" id="copied-update" data-i18n="copied"></span>
+        </div>
+        <pre class="prompt" id="update-prompt-text"></pre>
+      </div>
+      <div class="loadrow" style="margin-top:var(--sp-lg)">
+        <button class="btn secondary" id="btn-reset" data-i18n="btnReset"></button>
+      </div>
+      <!-- Erscheint, sobald ein Breakout das Dokument verändert hat -->
+      <div class="savebar hidden" id="savebar">
+        <span id="savebar-text"></span>
+        <span class="savebar-actions">
+          <button class="btn lemon small hidden" id="btn-link-file" data-i18n="btnLinkFile"></button>
+          <button class="btn secondary small hidden" id="btn-create-file" data-i18n="btnCreateFile"></button>
+          <button class="btn secondary small hidden" id="btn-unlink-file" data-i18n="btnUnlinkFile"></button>
+          <button class="btn lemon small" id="btn-download-md" data-i18n="btnDownloadMd"></button>
+          <button class="btn secondary small" id="btn-copy-md" data-i18n="btnCopyMd"></button>
+          <span class="copiedflash" id="copied-md" data-i18n="copied"></span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Prompt view ===== -->
+  <section id="view-prompt" class="hidden">
+    <div class="card promptcard">
+      <h2 data-i18n="promptTitle"></h2>
+      <p class="expl" data-i18n="promptExpl"></p>
+      <label class="projlabel" data-i18n="projLabel"></label>
+      <div class="projform">
+        <label class="q" for="proj-name" data-i18n="q1"></label>
+        <input type="text" class="projfield" id="proj-name" data-i18n-ph="q1ph">
+        <label class="q" for="proj-desc" data-i18n="q2"></label>
+        <textarea class="projfield projdesc" id="proj-desc" rows="2" data-i18n-ph="q2ph"></textarea>
+        <label class="q" for="proj-goal" data-i18n="qGoal"></label>
+        <input type="text" class="projfield" id="proj-goal" data-i18n-ph="qGoalPh">
+        <label class="q" for="proj-stage" data-i18n="qStage"></label>
+        <div class="stagewrap">
+          <input type="range" class="stageslider" id="proj-stage" min="0" max="5" step="1" value="2">
+          <div class="stagelabel" id="stage-label"></div>
+        </div>
+        <label class="q" for="proj-money" data-i18n="qMoney"></label>
+        <input type="text" class="projfield" id="proj-money" data-i18n-ph="qMoneyPh">
+        <label class="q" for="proj-comp" data-i18n="qComp"></label>
+        <input type="text" class="projfield" id="proj-comp" data-i18n-ph="qCompPh">
+        <label class="q" for="proj-focus" data-i18n="qWhy"></label>
+        <input type="text" class="projfield" id="proj-focus" data-i18n-ph="qWhyPh">
+        <label class="q" for="proj-space" data-i18n="qSpace"></label>
+        <input type="text" class="projfield" id="proj-space" data-i18n-ph="qSpacePh">
+        <label class="q qres" for="proj-resources" data-i18n="qRes"></label>
+        <textarea class="projfield projdesc" id="proj-resources" rows="2" data-i18n-ph="qResPh"></textarea>
+        <label class="q" for="proj-cnsl-project" data-i18n="qCnslProject"></label>
+        <input type="text" class="projfield" id="proj-cnsl-project" data-i18n-ph="qCnslProjectPh">
+        <label class="q" for="proj-cnsl-skills" data-i18n="qCnslSkills"></label>
+        <input type="text" class="projfield" id="proj-cnsl-skills" data-i18n-ph="qCnslSkillsPh">
+      </div>
+      <p class="projhint" data-i18n="projHint"></p>
+      <div class="loadrow" style="margin:0 0 var(--sp-md)">
+        <button class="btn" id="btn-copy" data-i18n="btnCopy"></button>
+        <button class="btn secondary" id="btn-dl-prompt" data-i18n="btnDlPrompt"></button>
+        <span class="copiedflash" id="copied" data-i18n="copied"></span>
+      </div>
+      <!-- Für alle, die ohnehin in einer Shell mit ihrem Repo sitzen -->
+      <details class="clihint">
+        <summary data-i18n="cliTitle"></summary>
+        <p data-i18n="cliExpl"></p>
+        <pre class="code" id="cli-cmd"></pre>
+      </details>
+      <pre class="prompt" id="prompt-text"></pre>
+    </div>
+  </section>
+
+  <footer>
+    <span data-i18n="footer1"></span><br>
+    <em data-i18n="footer2"></em>
+  </footer>
+</div>
+
+<script type="text/markdown" id="demo-md">
+# PM-STATUS — Beetplan
+
+> Stand: August 2026 · Snapshot v2 · witty-Audit v0.4
+
+Beispiel-Audit eines erfundenen Projekts — ein Web-Tool, mit dem Schrebergärtner:innen ihre Beete über die Saison planen. Es zeigt, wie ein Durchlauf aussieht: pro Schritt ein Kurzbefund, der Befund in Klartext, Belege, ein Lern-Anker mit dem klassischen PM-Begriff und ein nächster Handgriff. Rechner, Roadmap und Experimente sind bedienbar.
+
+## Abdeckung auf einen Blick
+
+| # | Schritt | Status | Stand in einem Satz |
+|---|---|---|---|
+| 1 | Spark | ✅ | Zwei Saisons Fruchtfolge auf Papier verplant und im Frühjahr nicht mehr lesen können. |
+| 2 | Vision & Ambition | 🔍 | Soll sich tragen, aber die Ambitionsstufe steht nirgends ausgeschrieben. |
+| 3 | Zielgruppe | ✅ | Vereinsgärtner:innen mit mehreren Beeten, JTBD ausformuliert. |
+| 4 | Nein-Liste | 🔍 | Vier Neins sind gelebte Praxis, aber über Chatverläufe verstreut. |
+| 5 | Unterschied | ✅ | Fruchtfolge-Warnung statt reiner Notizliste — nachprüfbar gegen die drei Alternativen. |
+| 6 | Strategie | ⭕ | Es gibt Pläne, aber keine benannten Wetten und keine Horizonte. |
+| 7 | User Flows | ✅ | Wow-Moment ist die erste automatische Warnung; Weg dorthin gebaut und gemessen. |
+| 8 | Priorisierung | 🔍 | Phasen sind gelebt, der Schnitt für die bezahlte Version fehlt. |
+| 9 | Go-to-Market | 🔍 | Beachhead klar (ein Verein), Preis entschieden, Kanäle offen. |
+| 10 | Ökonomie | ✅ | Kosten und Netto-Erlös gerechnet, Deckungspunkt bei 9 Verkäufen. |
+| 11 | Nordstern | 🔍 | Proxy-Zahlen vorhanden, die eine Zahl noch nicht entschieden. |
+| 12 | PMF-Stufe | ✅ | Stufe 2 erreicht, nächster Beweis definiert. |
+| 13 | Validierungs-Loop | ⭕ | Es wird gemessen, aber kein Auslöser für einen Richtungswechsel benannt. |
+| 14 | Snapshot-Regel | 🕊️ | Bewusst vertagt bis nach der ersten Saison. |
+
+**Bilanz:** 6× ✅ · 5× 🔍 · 2× ⭕ · 1× 🕊️
+
+### Wo die Lücken liegen — nach Double-Diamond-Phase
+
+Der Double Diamond ist das Standardmodell für Produktarbeit: zwei Rauten. In der ersten öffnest du den Problemraum (Discover) und grenzt ihn ein (Define), in der zweiten öffnest du den Lösungsraum (Develop) und lieferst aus (Deliver).
+
+| Phase | Modus | Schritte | Bilanz |
+|---|---|---|---|
+| **Discover** | Problemraum öffnen | 1–3 | 2× ✅, 1× 🔍 — solide |
+| **Define** | Problem eingrenzen | 4–6 | 1× ✅, 1× 🔍, 1× ⭕ — die Strategie fehlt |
+| **Develop** | Lösungsraum öffnen | 7 | 1× ✅ |
+| **Deliver** | ausliefern & tragen | 8–14 | 3× ✅, 2× 🔍, 1× ⭕, 1× 🕊️ |
+
+Das Muster: Das Produkt ist gebaut und rechnet sich, aber es fehlt der Satz, der sagt, worauf gewettet wird — und die Regel, wann man umsteuert.
+
+## 1 · Spark — ✅
+
+> Kurzbefund: Zwei Saisons Fruchtfolge auf Papier geplant und im Frühjahr die eigene Schrift nicht mehr entziffert.
+
+**Befund.** Der Auslöser ist konkret festgehalten: *„Im März stand ich mit einem durchgeweichten Zettel vor dem Beet und wusste nicht mehr, wo letztes Jahr die Kartoffeln waren. Vier Jahre Fruchtfolge im Kopf zu behalten, funktioniert nicht."*
+
+**Lern-Anker: Problem Statement.** Der Ein-Satz-Kern eines Produkts, formuliert als erlebtes Problem statt als Lösung. Faustregel: ein konkretes Erlebnis, keine Abstraktion wie „Gartenplanung ist schwierig". Die Technik dahinter sind die *5 Whys* — fünfmal „warum", bis man von der Beobachtung bei der Ursache landet.
+
+**Nächster Handgriff.** Der Satz gehört auf die Startseite; er verkauft besser als jede Funktionsliste.
+
+## 2 · Vision & Ambition — 🔍
+
+> Kurzbefund: Faktisch entschieden, dass es sich tragen soll — aber es steht nirgends, und ohne Zahl ist es keine Entscheidung.
+
+**Befund.** Aus dem Verhalten ablesbar: Es gibt einen Preis, eine Zahlungsanbindung und keine Investorengespräche. Damit ist die Stufe „soll sich tragen" — nur wurde sie nie ausgeschrieben, und deshalb fehlt auch die Zahl, an der man das misst.
+
+**Lern-Anker: Vision und Mission sind zwei Dinge.** Die Vision sagt, wie die Welt aussieht, wenn wir fertig sind — sie trägt strategische Entscheidungen. Die Mission sagt, warum es das Produkt gibt und was es tut — sie trägt operative Ziele.
+
+> **Vision:** Niemand soll eine Gartensaison verlieren, weil er vergessen hat, was letztes Jahr wo stand.
+> **Mission:** Beetplan merkt sich die Fruchtfolge und warnt, bevor gepflanzt wird.
+
+**Nächster Handgriff.** Eine Zahl dazuschreiben, an der „trägt sich" scheitern kann — sonst ist es ein Gefühl.
+
+## 3 · Zielgruppe — ✅
+
+> Kurzbefund: Vereinsgärtner:innen mit mehreren Beeten, JTBD ausformuliert, Zugang über den eigenen Verein.
+
+**Lern-Anker: Jobs-to-be-Done und ICP.** JTBD betrachtet ein Produkt als etwas, das man „einstellt", um eine Aufgabe zu erledigen — Format: „Wenn [Situation], will ich [Motivation], damit [Ergebnis]". Der Vorteil gegenüber Personas: Du beschreibst einen Auslöser statt eines Menschentyps, und Auslöser kann man beobachten. Das *ICP* ist die eine typische Person, auf die optimiert wird — bewusst eine, nicht fünf.
+
+> *„Wenn ich im Winter die neue Saison plane, will ich sehen, was die letzten drei Jahre wo stand, damit ich keine Nachtschattengewächse hintereinander setze."*
+
+## 4 · Nein-Liste — 🔍
+
+> Kurzbefund: Vier Neins werden gelebt, stehen aber in keinem Dokument.
+
+1. **Keine Social-Funktionen** — kein Feed, keine Likes, keine Freundeslisten.
+2. **Keine Sortendatenbank pflegen** — die Auswahl bleibt klein und handverlesen.
+3. **Kein Wetterdienst** — dafür gibt es bessere Apps, Verlinkung genügt.
+4. **Keine App-Stores** — Web reicht, Installation ist eine Hürde ohne Gegenwert.
+
+**Lern-Anker: Product Principles und MoSCoW-„Won't have".** Product Principles sind Entscheidungsregeln, die einmal getroffen werden, damit sie nicht bei jeder Feature-Frage neu verhandelt werden — ihr Wert liegt darin, dass sie wehtun. MoSCoW sortiert Anforderungen in Must / Should / Could / **Won't have this time**; die vierte Kategorie überspringen alle, und sie ist die einzige, die Zeit spart.
+
+## 5 · Unterschied — ✅
+
+> Kurzbefund: Die Fruchtfolge-Warnung ist die eine Sache, die keine Notiz-App kann.
+
+| | Beetplan | Notiz-App | Tabelle | Garten-Community |
+|---|---|---|---|---|
+| Fruchtfolge-Warnung | automatisch | nein | von Hand | nein |
+| Mehrjährige Historie | ja | mühsam | ja | nein |
+| Aufwand pro Saison | Minuten | Stunden | Stunden | — |
+
+**Lern-Anker: Positioning nach April Dunford.** Positionierung ist kein Slogan, sondern die Entscheidung, in welchem Wettbewerbsumfeld man bewertet werden will. Der Test einer guten Positionierung: Sie schickt jemanden weg. Hier: Wer nur Notizen will, braucht das hier nicht.
+
+## 6 · Strategie — ⭕
+
+> Kurzbefund: Es gibt Pläne und eine Reihenfolge, aber keine benannten Wetten — und damit auch keinen ausgesprochenen Verzicht.
+
+**Die offene Frage.** Auf welche drei bis fünf Dinge wird gewettet, warum, und was lässt man dafür bewusst liegen?
+
+**Lern-Anker: Strategy Blocks und die drei Horizonte.** Eine brauchbare Solo-Strategie besteht aus 3–5 Blöcken mit je drei Angaben: **was** (die Wette), **warum** (die Annahme, die wahr sein muss) und **wofür nicht** (was liegen bleibt). Der Test ist der dritte Teil — fällt nichts weg, ist es keine Strategie, sondern eine Wunschliste. Dazu die Horizonte: **1** Bestehendes optimieren · **2** erweitern · **3** Neues erschließen. Trägt man Arbeitszeit gegen Horizonte auf, sieht man schnell, ob das Reizvolle das Nötige verdrängt.
+
+## 7 · User Flows — ✅
+
+> Kurzbefund: Der Wow-Moment ist die erste automatische Warnung — und der Weg dorthin ist gebaut und gemessen.
+
+**Lern-Anker: User Story, Akzeptanzkriterien, Definition of Done.** Eine User Story ist eine Anforderung aus Nutzersicht: „**Als** [Rolle] möchte ich [Handlung], **damit** [Nutzen]" — sie beschreibt das Ziel, nicht die Umsetzung. Akzeptanzkriterien machen sie prüfbar, meist als Gegeben/Wenn/Dann. Die Definition of Done ist die Checkliste, die für alle Stories gilt, damit „fertig" immer dasselbe heißt.
+
+> **Als** Vereinsgärtnerin **möchte ich** beim Eintragen gewarnt werden, **damit** ich keine Fruchtfolge verletze.
+> **Akzeptanz:** kein Konto vor dem ersten Beet · nach spätestens drei Einträgen erscheint die erste Warnung · die Warnung nennt das Jahr und die Vorfrucht.
+
+## 8 · Priorisierung — 🔍
+
+> Kurzbefund: Die Phasen werden gelebt, aber der Schnitt für die bezahlte Version ist nie gezogen worden.
+
+**Lern-Anker: {{RICE::Reach × Impact × Confidence ÷ Effort. Aufwand steht bewusst im Nenner — billige Wetten mit mittlerem Nutzen schlagen teure mit hohem.}} und Kano.** RICE bewertet Kandidaten mit vier Zahlen: **R**each (wie viele betrifft es) · **I**mpact (wie stark) · **C**onfidence (wie sicher) · **E**ffort (Personentage). Score = R × I × C ÷ E. Der Sinn ist nicht die exakte Zahl, sondern dass **Aufwand im Nenner steht** — billige Dinge mit mittlerem Nutzen schlagen teure mit hohem. **Aber: RICE ist ein Sense-Check, keine Strategie** — der Score rankt nur, was schon als Kandidat auf der Liste steht, er beantwortet nicht, ob die Liste selbst noch stimmt (das klärt Schritt 6 Strategie). Deshalb RICE NACH der Priorisierungsentscheidung als Gegencheck nutzen, nie als Ersatz davor. Das *Kano-Modell* unterscheidet Basis-, Leistungs- und Begeisterungs-Funktionen; der klassische Fehler ist, an Begeisterung zu arbeiten, während eine Basis-Funktion fehlt.
+
+| Kandidat | R | I | C | E | Score |
+|---|---|---|---|---|---|
+| Saison-Export als PDF | 300 | 2 | 90 % | 1 | **540** |
+| Warnung erklären statt nur zeigen | 300 | 1 | 90 % | 0,5 | **540** |
+| Mehrere Gärten pro Konto | 80 | 2 | 70 % | 3 | **37** |
+| Mobile Ansicht überarbeiten | 300 | 2 | 60 % | 6 | **60** |
+
+```witty:roadmap
+now: Saison-Export als PDF
+now: Warnung erklären statt nur zeigen
+next: Mobile Ansicht überarbeiten
+next: Zahlungsanbindung härten
+later: Mehrere Gärten pro Konto
+later: Beete aus Fotos erkennen
+```
+
+## 9 · Go-to-Market — 🔍
+
+> Kurzbefund: Der Beachhead ist der eigene Verein, der Preis steht — die Kanäle darüber hinaus sind offen.
+
+**Lern-Anker: Beachhead und Value Metric.** *Beachhead* (Geoffrey Moore) ist der bewusst winzige Erstmarkt, den man vollständig gewinnen kann — die Landungszone, nicht das ganze Land. Die *Value Metric* ist die Einheit, an der der Preis hängt; gut ist sie, wenn sie mit dem wahrgenommenen Wert wächst. Hier: pro Saison, nicht pro Beet.
+
+## 10 · Ökonomie — ✅
+
+> Kurzbefund: Gerechnet statt geschätzt — der Deckungspunkt liegt bei neun Verkäufen im Jahr.
+
+**Lern-Anker: Unit Economics, CAC und CLV.** Unit Economics zoomt auf die einzelne Einheit: Was kostet eine aktive Nutzerin, was bringt sie? **CAC** (Customer Acquisition Cost) ist, was es kostet, eine Kundin zu gewinnen, **CLV** (Customer Lifetime Value), was sie über die gesamte Beziehung einbringt. Ihr Verhältnis entscheidet, ob Wachstum sich selbst trägt. Bei einer Einmalzahlung ist der CLV praktisch der Kaufpreis — dann muss der CAC sehr klein sein, und bezahlte Werbung scheidet meist aus.
+
+| Position | Anteil |
+|---|---|
+| Bruttopreis | 100 % |
+| − Umsatzsteuer | ~16 % |
+| − Gebühren | ~8 % |
+| **= Netto** | **~76 %** |
+
+```witty:pnl
+kosten_monat: 8
+brutto: 12
+ust_prozent: 19
+gebuehr_prozent: 5
+gebuehr_fix: 0.35
+ziel_stueck: 120
+```
+
+```witty:bmc
+partner: Zahlungsdienstleister, Hosting-Anbieter, Domain-Registrar, der Kleingartenverein als Zugang
+ressourcen: Die Fruchtfolge-Logik als eigentliches Kapital, drei Jahre eigene Beetdaten zum Testen, die Abendstunden im Winterhalbjahr
+```
+
+## 11 · Nordstern — 🔍
+
+> Kurzbefund: Es wird sauber gemessen, aber keine der Zahlen ist zur Leitzahl erklärt worden.
+
+**Lern-Anker: Leading vs. Lagging, AARRR, die sechs A.** Eine **vorlaufende** Kennzahl (leading) steigt, bevor der Umsatz steigt; eine **nachlaufende** (lagging) misst das Ergebnis. Der Nordstern muss vorlaufend sein, sonst steuert man im Rückspiegel. **AARRR** ist der Trichter: Acquisition · Activation · Retention · Referral · Revenue. Die **sechs A** prüfen jede Kennzahl: *Aligned* · *Attainable* · *Acute* (wenige) · *Accurate* · *Actionable* · *Alive*.
+
+**Vorschlag.** Nordstern: *Zahl der Gärten mit vollständig geplanter Saison*. Vorlaufend, weil die Planung dem Kauf vorausgeht.
+
+## 12 · PMF-Stufe — ✅
+
+> Kurzbefund: Stufe 2 — sieben Menschen haben bezahlt, drei kommen wöchentlich wieder.
+
+**Lern-Anker: PMF als Gradient, nicht als Meilenstein.** Product-Market-Fit ist kein Datum, sondern eine Leiter: **1** eine Person liebt es · **2** eine zahlt substanziell oder kehrt wöchentlich zurück · **3** mehrere lieben *und* zahlen · **4** es zieht von allein · **5** konstantes Wachstum. Jede Stufe hat einen beobachtbaren Beweis statt eines Gefühls.
+
+**Nächster Beweis.** Drei Käufe, die nicht aus dem eigenen Verein stammen.
+
+```witty:experiment
+annahme: Gärtner:innen außerhalb des eigenen Vereins finden das Problem ebenso dringend.
+hypothese: Ich glaube, dass mindestens 3 von 5 Befragten aus einem fremden Verein eine konkrete Fehlpflanzung der letzten zwei Jahre benennen können.
+test: Mom-Test-Gespräche — Ich baue nichts, ich frage nach der Vergangenheit statt nach Absicht.
+messgroesse: Ich messe, wie viele einen konkreten Vorfall erinnern.
+erfolg_wenn: ≥ 3 von 5
+risiko: value
+aufwand: 1 Tag
+ergebnis: offen
+```
+
+## 13 · Validierungs-Loop — ⭕
+
+> Kurzbefund: Es wird gemessen, aber es ist nie festgelegt worden, was ein Ergebnis auslösen würde.
+
+**Die offene Frage.** Was müsste passieren, damit die Richtung geändert wird — und nicht nur ein Detail?
+
+**Lern-Anker: Build–Measure–Learn, Pivot vs. Iterate, Mom Test.** Leitplanke: Vision konstant, Taktik variabel. Ein *Iterate* ändert das Wie (Preis, Onboarding, Reihenfolge), ein *Pivot* das Was oder Für-wen. Der **Mom Test** ist die Gesprächstechnik dazu: nie „Würdest du das kaufen?" fragen — darauf lügen selbst Mütter freundlich — sondern nach der Vergangenheit: wie hast du das zuletzt gelöst, was hat es gekostet, was hat genervt. Vergangenes Verhalten ist Evidenz, zukünftige Absicht ist Höflichkeit.
+
+Dazu die **Adaptability**-Frage: Was von außen könnte die bisherigen Antworten ungültig machen — Technologie, Rechtslage, Plattform-Abhängigkeit, Wettbewerb?
+
+## 14 · Snapshot-Regel — 🕊️
+
+> Kurzbefund: Bewusst vertagt — die Frage wird nach der ersten vollen Saison wieder aufgerufen.
+
+**Befund.** Vor dem ersten kompletten Gartenjahr gibt es zu wenig Bewegung, als dass sich ein erneuter Durchlauf lohnen würde. Das ist eine aktive Entscheidung, kein Vergessen — und deshalb 🕊️ statt ⭕.
+
+**Lern-Anker: Review-Kadenz.** Aus Scrum entlehnt: Das Sprint-Review ist der feste Moment, an dem gezeigt und neu bewertet wird. Für Solo-Arbeit ersetzt man den Rhythmus durch **Auslöser** — an ein Ereignis geknüpft statt an ein Datum, weil Kalendertermine verrutschen und Ereignisse unübersehbar sind. „Alle drei Monate" ist eine schlechte Regel, „nach der ersten vollen Saison" eine gute.
+
+## Fazit — die nächsten fünf Fragen, in dieser Reihenfolge
+
+| # | Die Frage | Aufwand | Was sie freischaltet |
+|---|---|---|---|
+| **1** | Worauf wird gewettet, und was bleibt dafür liegen? | 1 Std. | Schritt 6 schließt sich; ohne Wetten priorisiert man nach Laune |
+| **2** | Was löst einen Richtungswechsel aus? | 30 Min. | Schritt 13; eine Zahl ohne Konsequenz ist ein Stimmungsbarometer |
+| **3** | Finden Fremde das Problem genauso dringend? | 1 Tag | prüft, ob der eigene Verein repräsentativ war |
+| **4** | Welche Zahl ist der Nordstern? | 30 Min. | Schritt 11; ohne sie misst man alles und steuert nichts |
+| **5** | Was ist die kleinste bezahlte Version? | 2 Std. | Schritt 8; der Schnitt fehlt trotz gelebter Phasen |
+
+**Faustregel:** Die ersten vier Fragen kosten zusammen weniger als zwei Tage und beantworten drei der vier offenen Schritte. Denken ist hier billiger als Bauen.
+
+## Spiegel-Lesart
+
+**Was das Projekt bereits kann — mit Lehrbuch-Namen.** Ein sauberes Problem Statement aus eigenem Erleben, ein ausformulierter Jobs-to-be-Done-Satz, eine Positionierung, die jemanden wegschickt, gelebte Product Principles, und eine Ökonomie, die gerechnet statt geschätzt ist. Das ist mehr, als die meisten Projekte dieser Größe vorweisen.
+
+**Wo die echten Lücken sind.** Nicht im Produkt — es läuft, es verkauft, es rechnet sich. Sondern in den zwei Sätzen, die niemand aufgeschrieben hat: worauf gewettet wird (Schritt 6) und wann man umsteuert (Schritt 13). Beide kosten zusammen anderthalb Stunden und verändern jede spätere Priorisierung.
+
+**Der Beweis, der als Nächstes fehlt.** Alle sieben zahlenden Menschen kommen aus dem eigenen Verein. Solange das so ist, misst jede Zahl die Nähe zur Gründerin und nicht die Attraktivität des Produkts.
+
+**Der nächste wertvollste Schritt.** Fünf Gespräche in einem fremden Verein, nach dem Mom-Test-Muster. Ein Tag Aufwand, und er entscheidet, ob die bisherigen Zahlen etwas bedeuten.
+
+## Persönliche Empfehlungen
+
+1. **Die Stärke ist die Rechnung, die Schwäche der Satz.** Die Ökonomie steht sauber, aber es fehlt die halbe Seite, die sagt, worauf gewettet wird. Bei Solo-Projekten ist das der häufigste blinde Fleck: Zahlen fühlen sich objektiv an, Strategie fühlt sich nach Meinung an — und wird deshalb aufgeschoben.
+2. **Der eigene Verein ist Zugang und Falle zugleich.** Er hat die ersten sieben Käufe gebracht und verzerrt jetzt jede Aussage über den Markt.
+3. **Ein 🕊️ ist ein gutes Zeichen.** Schritt 14 bewusst zu vertagen, statt ihn offen zu lassen, ist der Unterschied zwischen einer Entscheidung und einem Versäumnis.
+
+## Glossar — die Begriffe aus diesem Audit
+
+| Begriff | In einem Satz | Wo |
+|---|---|---|
+| **Problem Statement** | Der Ein-Satz-Kern als erlebtes Problem, nicht als Lösung. | 1 |
+| **Vision / Mission** | Vision = wie die Welt aussieht, wenn wir fertig sind; Mission = warum es uns gibt. | 2 |
+| **Jobs-to-be-Done** | „Wenn [Situation], will ich [Motivation], damit [Ergebnis]." | 3 |
+| **ICP / Archetyp** | Die eine typische Person, auf die optimiert wird. | 3 |
+| **Product Principles / MoSCoW** | Vorab getroffene Entscheidungsregeln; „Won't have" spart die Zeit. | 4 |
+| **Positioning** | Die Wahl, in welchem Wettbewerbsumfeld man bewertet werden will. | 5 |
+| **Strategy Blocks** | 3–5 Wetten mit was / warum / wofür-nicht. | 6 |
+| **Drei Horizonte** | 1 optimieren · 2 erweitern · 3 Neues erschließen. | 6 |
+| **User Story / Akzeptanzkriterien** | Anforderung aus Nutzersicht; Kriterien machen sie prüfbar. | 7 |
+| **RICE / Kano** | Reach × Impact × Confidence ÷ Effort; Basis vor Begeisterung. | 8 |
+| **Beachhead / Value Metric** | Der winzige Erstmarkt; die Einheit, an der der Preis hängt. | 9 |
+| **Unit Economics / CAC / CLV** | Kosten und Erlös je Einheit; Akquisekosten gegen Lebenszeitwert. | 10 |
+| **Leading vs. Lagging** | Vorlaufend steigt vor dem Umsatz, nachlaufend danach. | 11 |
+| **AARRR / die sechs A** | Der Trichter; die Qualitätsprüfung je Kennzahl. | 11 |
+| **PMF-Gradient** | Product-Market-Fit als 5-stufige Leiter. | 12 |
+| **Pivot vs. Iterate / Mom Test** | Was oder Wie ändern; nach Vergangenheit fragen statt nach Absicht. | 13 |
+| **Adaptability** | Was von außen die bisherigen Antworten ungültig macht. | 13 |
+| **Review-Kadenz** | Der Auslöser, an dem neu bewertet wird — ereignis- statt kalenderbasiert. | 14 |
+| **Double Diamond** | Discover → Define → Develop → Deliver. | Überblick |
+
+## Verlauf
+
+```witty:log
+2026-08-01 | – | Demo | Beispiel-Audit eines erfundenen Projekts
+```
+</script>
+
+<script>
+/* ============ i18n ============ */
+const I18N = {
+  de: {
+    tagline: "Der PM-Spiegel — sieh, was du längst machst, und wie es heißt.",
+    tabSpiegel: "Spiegel", tabPrompt: "Audit-Prompt",
+    loadTitle: "Audit-Ergebnis laden",
+    loadExpl: "Lade einen PM-STATUS als Markdown-Datei (per Datei, Drag & Drop oder Einfügen) — witty rendert daraus dein Dashboard und deinen Spiegel. Noch kein Audit-MD? Hol dir den Prompt.",
+    btnFile: "MD-Datei laden", btnDemo: "Demo ansehen (Beispielprojekt)", btnNoMd: "→ Ich brauche erst den Prompt",
+    saveDirty: "Geändert — noch in keiner Datei gesichert.",
+    btnDownloadMd: "Markdown herunterladen", btnCopyMd: "Markdown kopieren",
+    btnLinkFile: "Mit Datei verbinden", btnCreateFile: "Neue Datei anlegen", btnUnlinkFile: "Verbindung lösen",
+    fileSaved: "in die Datei geschrieben", fileWriting: "wird geschrieben …",
+    fileNone: "Noch mit keiner Datei verbunden — der Browser-Speicher ist nur Absturzsicherung.",
+    fileNoApi: "Dieser Browser kann keine Datei verbinden (Chrome oder Edge können es; Brave nur mit aktivierter Datei-Schnittstelle) — bis dahin herunterladen und im Projekt ablegen.",
+    leaveWarn: "Es gibt Änderungen, die in keiner Datei stehen.",
+    logTitle: "Verlauf — was wann geändert wurde",
+    projMetaTitle: "Projekt-Formular wiederhergestellt",
+    annoAdd: "+ Anmerkung", annoSave: "Speichern", annoEdit: "Bearbeiten", annoRemove: "Entfernen",
+    annoPending: "Ausstehende Anmerkung — noch nicht eingearbeitet",
+    annoPh: "Was fehlt oder stimmt nicht mehr? Wird beim nächsten Update-Lauf eingearbeitet, nicht sofort.",
+    grpUpdate: "Update",
+    updateIntro: "Anmerkungen aus den Schritten und Bearbeitungen aus Canvas & Roadmap werden hier zu einem Prompt, der eine neue Version erzeugt — kopiere ihn in eine LLM-Session, das Ergebnis ersetzt dieses Dokument.",
+    updateCount: "{n} Anmerkung(en) vorgemerkt:", updateNone: "Keine Anmerkungen vorgemerkt — im Spiegel bei einem Schritt auf „+ Anmerkung“ klicken.",
+    suggestCompareText: "Das sieht nach einem neueren Stand desselben Projekts aus.",
+    suggestCompareBtn: "Gegen vorherigen Stand vergleichen",
+    conflictOlder: "Achtung: Der aktuelle Stand hat Änderungen von {mine}, die geladene Datei ist von {theirs}.\n\nDie ältere Datei würde den neueren Stand ersetzen. Trotzdem laden?",
+    conflictNoLog: "ohne Verlauf",
+    lensSteps: "Schritte", lensBmc: "Business Model Canvas",
+    grpAll: "Alles lesen", grpSummaryView: "Zusammenfassung", grpCompare: "Vergleich",
+    cmpIntro: "Zwei Stände nebeneinander: Was ist vorangekommen — und was ist zurückgefallen? Lade einen früheren oder späteren PM-STATUS desselben Projekts.",
+    cmpPick: "Zweiten Stand laden", cmpPaste: "…oder einfügen", cmpPastePh: "Markdown des anderen Stands hier einfügen",
+    cmpOlder: "früherer Stand", cmpNewer: "neuerer Stand",
+    cmpUp: "vorangekommen", cmpDown: "zurückgefallen", cmpSame: "unverändert", cmpNew: "neu",
+    cmpDownNote: "Ein Rückschritt ist kein Fehler im Dokument, sondern eine Annahme, die gekippt ist — meist die ehrlichste Zeile im ganzen Vergleich.",
+    cmpLog: "Neu im Verlauf", cmpNoFormat: "Kein PM-STATUS-Format erkannt.", grpShowAll: "Ganze Gruppe anzeigen", grpConcept: "Konzept & Strategie", grpProduct: "Produkt",
+    grpMarket: "Markt & Geld", grpLearn: "Messen & Lernen", grpSummary: "Auswertung",
+    bmcIntro: "Dieselben Antworten, anders angeordnet: Das Business Model Canvas ist ein Neun-Felder-Raster für ein Geschäftsmodell. Sieben Felder speisen sich aus deinen Schritten, alle neun sind direkt bearbeitbar — gestrichelte Kästen sind Lücken. Änderungen landen als Anmerkung im Update-Prompt; ein überschriebenes Feld (✎) leeren stellt die Ableitung wieder her.",
+    bmcFrom: "aus Schritt ", bmcEmpty: "noch offen — kommt aus Schritt ",
+    bmcOverride: "überschrieben", bmcOverrideHint: "Feld leeren stellt den aus dem Schritt abgeleiteten Text wieder her.",
+    bmcPendSet: "BMC · {f}: {v}", bmcPendClear: "BMC · {f}: geleert",
+    bmcNoSchema: "Im 14-Schritte-Schema nicht vorgesehen — eine Lücke des Schemas, nicht deines Projekts.",
+    bmcNoSchemaShort: "keine Quelle im Schema — hier selbst ausfüllen",
+    bmcFillPh: "z. B. Zahlungsdienstleister, Hosting, fremde Software, auf die du angewiesen bist",
+    bmcKp: "Schlüsselpartner", bmcKa: "Schlüsselaktivitäten", bmcKr: "Schlüsselressourcen",
+    bmcVp: "Wertversprechen", bmcCr: "Kundenbeziehungen", bmcCh: "Kanäle",
+    bmcSeg: "Kundensegmente", bmcCost: "Kostenstruktur", bmcRev: "Einnahmequellen",
+    pnlTitle: "Mini-P&L — rechnen statt schätzen",
+    pnlCostMonth: "Kosten pro Monat", pnlGross: "Bruttopreis", pnlVat: "USt in %",
+    pnlFeePct: "Gebühren in %", pnlFeeFix: "Gebühr fix", pnlTarget: "Zielstückzahl",
+    pnlHours: "Bauzeit in Stunden (optional)",
+    pnlNetPerUnit: "Netto pro verkaufter Einheit", pnlYearCost: "Kosten pro Jahr",
+    pnlBreakEven: "Deckungspunkt", pnlUnits: "Stück",
+    pnlTargetRevenue: "Erlös bei Zielstückzahl", pnlSurplus: "Überschuss nach Kosten",
+    pnlHourly: "…entspricht pro Stunde Bauzeit",
+    pnlImport: "Zahlen einfügen (CSV oder aus einer Tabelle kopiert)",
+    pnlImportPh: "Kosten pro Monat;8\nBruttopreis;12,00\nZiel Stück;120",
+    pnlImportBtn: "Übernehmen", pnlImportOk: "{n} Werte übernommen", pnlImportNone: "Keine passenden Zeilen erkannt",
+    pnlNote: "Änderungen wandern zurück ins Dokument — unten herunterladen, damit sie erhalten bleiben.",
+    rmTitle: "Roadmap — nur „Jetzt“ ist verbindlich",
+    rmNow: "Jetzt", rmNext: "Danach", rmLater: "Später",
+    rmNote: "Karten am Griff ziehen, auch in eine andere Spalte; ✎ bearbeitet, × streicht, + legt eine neue an — die Reihenfolge ist die Priorität und wandert zurück ins Dokument. Änderungen landen zusätzlich als Anmerkung im Update-Prompt.",
+    rmEdit: "Bearbeiten", rmDelete: "Streichen", rmAdd: "Neue Karte",
+    rmPendEdit: "Roadmap: „{a}“ geändert zu „{b}“", rmPendDel: "Roadmap: „{a}“ gestrichen",
+    rmPendAdd: "Roadmap: „{a}“ neu unter „{c}“",
+    rmPendMove: "Roadmap: „{a}“ verschoben nach „{c}“",
+    expTitle: "Experiment — billig prüfen, bevor gebaut wird",
+    expAssumption: "Annahme (implizit, ungeprüft)", expHypothesis: "Hypothese (spezifisch, widerlegbar)",
+    expTest: "Verfahren", expMetric: "Messgröße", expSuccess: "Erfolg, wenn …",
+    expRisk: "Risikoart", expEffort: "Aufwand",
+    expRes_offen: "offen", expRes_bestaetigt: "bestätigt", expRes_widerlegt: "widerlegt",
+    expRisk_value: "Value — will das jemand?", expRisk_usability: "Usability — kommen sie klar?",
+    expRisk_feasibility: "Feasibility — bauen und betreiben?", expRisk_viability: "Viability — trägt es sich?",
+    expRisk_adaptability: "Adaptability — was kommt von außen?",
+    expNote: "Erfolgsschwelle vor dem Test festlegen. Ein widerlegtes Experiment ist ein vollwertiges Ergebnis — es hat Geld gespart.",
+    pastePh: "…oder Markdown hier einfügen", btnPaste: "Eingefügtes laden",
+    thStep: "Schritt", thStatus: "Status", thNote: "Stand in einem Satz",
+    legend: "⭕ offen · 🔍 implizit abgedeckt (dein Spiegel — gelb) · ✅ beantwortet · 🕊️ bewusst vertagt · Zeile anklicken springt zum Detail",
+    btnReset: "Anderes Projekt laden",
+    cOpen: "offen", cMirror: "implizit — dein Spiegel", cDone: "beantwortet", cDeferred: "bewusst vertagt",
+    promptTitle: "Der Audit-Prompt (kopieren & loslegen)",
+    promptExpl: "Kopiere diesen Prompt in eine LLM-Session. Das Ergebnis ist ein PM-STATUS.md — speichere es ins Projekt und lade es links im Spiegel.",
+    projLabel: "Dein Projekt — Antworten werden in den Prompt eingebaut",
+    q1: "Wie heißt das Projekt?", q1ph: "z. B. \"Beetplan\"",
+    q2: "Was ist es, in 1–2 Sätzen?", q2ph: "z. B. \"Web-Tool, das Handschrift in echte Fonts verwandelt\"",
+    qGoal: "Was ist das Ziel?", qGoalPh: "z. B. \"soll sich selbst tragen\" oder \"1000 Nutzer:innen\"",
+    qStage: "Wo steht es gerade?",
+    st0: "Idee", st1: "Im Bau", st2: "Prototyp", st3: "Beta", st4: "Voll live", st5: "Etabliert",
+    stUnset: "— nicht gesetzt",
+    qMoney: "Kostet es Geld, bringt es Geld? (optional)", qMoneyPh: "z. B. \"Vercel Free, Domain 30 €/Jahr, noch keine Einnahmen\"",
+    qSpace: "Themen oder Nachbarmärkte, die dich reizen? (optional)",
+    qSpacePh: "Dinge, von denen du wenig Ahnung hast — witty liefert das Vokabular und sagt ehrlich, ob es Gewinn oder Ballast wäre",
+    qComp: "Wer macht etwas Ähnliches? (optional)", qCompPh: "z. B. \"Notiz-Apps, Tabellen\" — oder \"kenne keine\"",
+    qWhy: "Warum das Audit? (optional)", qWhyPh: "z. B. \"strategische Verortung\" oder \"entscheiden, ob ich Geld verlangen soll\"",
+    qRes: "Ressourcen",
+    qResPh: "GitHub-Link, Website, Dateipfade, Doku … — leer lassen, wenn die LLM schon im Projekt sitzt oder du Dateien anhängst",
+    qCnslProject: "CNSL-Projekt (Link, optional)",
+    qCnslProjectPh: "Der agentSlug-Link dieses Projekts — die LLM-Session liest darüber Notes & Tasks, bevor sie auditiert",
+    qCnslSkills: "CNSL-Skills (Link, optional)",
+    qCnslSkillsPh: "Link zur Skills-/Wissensbasis, die für dieses Projekt relevant ist",
+    projHint: "Alles ist optional: leer lassen ist ok, wenn die LLM-Session dein Projekt schon kennt (z. B. Claude Code direkt im Repo) — der Prompt sagt ihr dann, den Kontext zu nutzen. Der Prompt unten aktualisiert sich live mit deinen Antworten.",
+    btnCopy: "Prompt kopieren", btnDlPrompt: "Als Datei laden", copied: "✓ kopiert",
+    cliTitle: "Lieber im Terminal? Ein Befehl statt Copy-Paste",
+    cliExpl: "Prompt herunterladen, im Projektordner ausführen — das Modell liest Repository und Historie direkt und schreibt den PM-STATUS als Datei. Danach hier wieder laden.",
+    howItWorksLink: "← Start",
+    aboutTitle: "Warum witty",
+    about1: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Ludwig Wittgenstein",
+    about2: "Im LLM-Zeitalter gilt das wörtlich: Man kann nur in die Richtungen prompten — und bauen —, für die man die Sprache hat. Wer ohne PM-Vokabular baut, wendet viele Methoden längst an — nur unbenannt.",
+    about3: "Der Audit ist ein Spiegel, kein Examen: Er benennt, was du längst machst, und macht Offenes als Frage sichtbar. Methoden sind dabei Optionen, nie Pflicht.",
+    footer1: "witty · Markdown bleibt Source of Truth · Methoden sind Optionen, nie Pflicht.",
+    footer2: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Wittgenstein",
+    subLoaded: "geladen · bleibt lokal (localStorage)",
+  },
+  en: {
+    tagline: "The PM mirror — see what you already do, and what it's called.",
+    tabSpiegel: "Mirror", tabPrompt: "Audit prompt",
+    loadTitle: "Load an audit result",
+    loadExpl: "Load a PM-STATUS markdown file (file picker, drag & drop, or paste) — witty renders your dashboard and your mirror. No audit MD yet? Grab the prompt.",
+    btnFile: "Load MD file", btnDemo: "View demo (example project)", btnNoMd: "→ I need the prompt first",
+    saveDirty: "Changed — not stored in any file yet.",
+    btnDownloadMd: "Download markdown", btnCopyMd: "Copy markdown",
+    btnLinkFile: "Link a file", btnCreateFile: "Create new file", btnUnlinkFile: "Unlink",
+    fileSaved: "written to the file", fileWriting: "writing …",
+    fileNone: "Not linked to a file yet — browser storage is only a crash buffer.",
+    fileNoApi: "This browser cannot link a file — download it and keep it with your project.",
+    leaveWarn: "There are changes that are not in any file.",
+    logTitle: "History — what changed when",
+    projMetaTitle: "Project form restored",
+    annoAdd: "+ Note", annoSave: "Save", annoEdit: "Edit", annoRemove: "Remove",
+    annoPending: "Pending note — not yet incorporated",
+    annoPh: "What's missing or out of date? Gets incorporated on the next update run, not right away.",
+    grpUpdate: "Update",
+    updateIntro: "Notes from the steps and edits from the canvas & roadmap turn into a prompt here that produces a new version — copy it into an LLM session, the result replaces this document.",
+    updateCount: "{n} note(s) queued:", updateNone: "No notes queued yet — click “+ Note” on a step in the Mirror.",
+    suggestCompareText: "This looks like a newer snapshot of the same project.",
+    suggestCompareBtn: "Compare against the previous one",
+    conflictOlder: "Careful: the current state has changes from {mine}, the file you are loading is from {theirs}.\n\nThe older file would replace the newer state. Load anyway?",
+    conflictNoLog: "without history",
+    lensSteps: "Steps", lensBmc: "Business Model Canvas",
+    grpAll: "Read everything", grpSummaryView: "Summary", grpCompare: "Compare",
+    cmpIntro: "Two states side by side: what moved forward — and what fell back? Load an earlier or later PM-STATUS of the same project.",
+    cmpPick: "Load second state", cmpPaste: "…or paste", cmpPastePh: "Paste the markdown of the other state here",
+    cmpOlder: "earlier state", cmpNewer: "later state",
+    cmpUp: "moved forward", cmpDown: "fell back", cmpSame: "unchanged", cmpNew: "new",
+    cmpDownNote: "A step falling back is not a mistake in the document but an assumption that collapsed — usually the most honest line in the whole comparison.",
+    cmpLog: "New in the history", cmpNoFormat: "No PM-STATUS format recognized.", grpShowAll: "Show whole group", grpConcept: "Concept & strategy", grpProduct: "Product",
+    grpMarket: "Market & money", grpLearn: "Measure & learn", grpSummary: "Summary",
+    bmcIntro: "The same answers, arranged differently: the Business Model Canvas is a nine-field grid for a business model. Seven fields are fed by your steps, all nine can be edited directly — dashed boxes are gaps. Changes land as a note in the update prompt; clearing an overridden field (✎) restores the derived text.",
+    bmcFrom: "from step ", bmcEmpty: "still open — comes from step ",
+    bmcOverride: "overridden", bmcOverrideHint: "Clearing the field restores the text derived from the step.",
+    bmcPendSet: "BMC · {f}: {v}", bmcPendClear: "BMC · {f}: cleared",
+    bmcNoSchema: "Not covered by the 14-step schema — a gap in the schema, not in your project.",
+    bmcNoSchemaShort: "no source in the schema — fill in here",
+    bmcFillPh: "e.g. payment provider, hosting, third-party software you depend on",
+    bmcKp: "Key partners", bmcKa: "Key activities", bmcKr: "Key resources",
+    bmcVp: "Value proposition", bmcCr: "Customer relationships", bmcCh: "Channels",
+    bmcSeg: "Customer segments", bmcCost: "Cost structure", bmcRev: "Revenue streams",
+    pnlTitle: "Mini P&L — calculate instead of guess",
+    pnlCostMonth: "Cost per month", pnlGross: "Gross price", pnlVat: "VAT in %",
+    pnlFeePct: "Fees in %", pnlFeeFix: "Fixed fee", pnlTarget: "Target units",
+    pnlHours: "Build time in hours (optional)",
+    pnlNetPerUnit: "Net per unit sold", pnlYearCost: "Cost per year",
+    pnlBreakEven: "Break-even", pnlUnits: "units",
+    pnlTargetRevenue: "Revenue at target units", pnlSurplus: "Surplus after cost",
+    pnlHourly: "…which is per hour of build time",
+    pnlImport: "Paste numbers (CSV or copied from a spreadsheet)",
+    pnlImportPh: "Cost per month;3\nGross price;9.99\nTarget units;100",
+    pnlImportBtn: "Apply", pnlImportOk: "{n} values applied", pnlImportNone: "No matching rows found",
+    pnlNote: "Changes are written back into the document — download it below to keep them.",
+    rmTitle: "Roadmap — only “Now” is committed",
+    rmNow: "Now", rmNext: "Next", rmLater: "Later",
+    rmNote: "Drag cards by the grip, across columns too; ✎ edits, × removes, + adds a new one — the order is the priority and is written back into the document. Changes also land as a note in the update prompt.",
+    rmEdit: "Edit", rmDelete: "Remove", rmAdd: "New card",
+    rmPendEdit: "Roadmap: “{a}” changed to “{b}”", rmPendDel: "Roadmap: “{a}” removed",
+    rmPendAdd: "Roadmap: “{a}” added under “{c}”",
+    rmPendMove: "Roadmap: “{a}” moved to “{c}”",
+    expTitle: "Experiment — test cheaply before building",
+    expAssumption: "Assumption (implicit, unverified)", expHypothesis: "Hypothesis (specific, refutable)",
+    expTest: "Method", expMetric: "Metric", expSuccess: "Success if …",
+    expRisk: "Risk type", expEffort: "Effort",
+    expRes_offen: "open", expRes_bestaetigt: "confirmed", expRes_widerlegt: "refuted",
+    expRisk_value: "Value — does anyone want it?", expRisk_usability: "Usability — can they use it?",
+    expRisk_feasibility: "Feasibility — build and operate?", expRisk_viability: "Viability — does it sustain?",
+    expRisk_adaptability: "Adaptability — what comes from outside?",
+    expNote: "Define the success threshold before the test. \"Refuted\" is a full result — it saved you money.",
+    pastePh: "…or paste markdown here", btnPaste: "Load pasted text",
+    thStep: "Step", thStatus: "Status", thNote: "State in one sentence",
+    legend: "⭕ open · 🔍 implicitly covered (your mirror — yellow) · ✅ answered · 🕊️ deliberately deferred · click a row to jump to detail",
+    btnReset: "Load another project",
+    cOpen: "open", cMirror: "implicit — your mirror", cDone: "answered", cDeferred: "deferred",
+    promptTitle: "The audit prompt (copy & go)",
+    promptExpl: "Copy this prompt into an LLM session. The result is a PM-STATUS.md — save it to the project and load it in the mirror.",
+    projLabel: "Your project — answers get built into the prompt",
+    q1: "What is the project called?", q1ph: "e.g. \"Beetplan\"",
+    q2: "What is it, in 1–2 sentences?", q2ph: "e.g. \"web tool that turns handwriting into real fonts\"",
+    qGoal: "What is the goal?", qGoalPh: "e.g. \"should sustain itself\" or \"1000 users\"",
+    qStage: "Where does it stand?",
+    st0: "Idea", st1: "Building", st2: "Prototype", st3: "Beta", st4: "Fully live", st5: "Established",
+    stUnset: "— not set",
+    qMoney: "Does it cost money, does it make money? (optional)", qMoneyPh: "e.g. \"Vercel free tier, domain €30/year, no revenue yet\"",
+    qSpace: "Topics or adjacent markets that draw you in? (optional)",
+    qSpacePh: "Things you know little about — witty supplies the vocabulary and says honestly whether it would be gain or ballast",
+    qComp: "Who does something similar? (optional)", qCompPh: "e.g. \"note apps, spreadsheets\" — or \"none I know of\"",
+    qWhy: "Why this audit? (optional)", qWhyPh: "e.g. \"strategic positioning\" or \"decide whether to charge money\"",
+    qRes: "Resources",
+    qResPh: "GitHub link, website, file paths, docs … — leave empty if the LLM already sits inside the project or you attach files",
+    qCnslProject: "CNSL project (link, optional)",
+    qCnslProjectPh: "This project's agentSlug link — the LLM session reads notes & tasks from it before auditing",
+    qCnslSkills: "CNSL skills (link, optional)",
+    qCnslSkillsPh: "Link to the skills/knowledge base relevant to this project",
+    projHint: "Everything is optional: leaving it empty is fine if the LLM session already knows your project (e.g. Claude Code inside the repo) — the prompt tells it to use that context. The prompt below updates live with your answers.",
+    btnCopy: "Copy prompt", btnDlPrompt: "Download as file", copied: "✓ copied",
+    cliTitle: "Prefer the terminal? One command instead of copy-paste",
+    cliExpl: "Download the prompt, run it inside your project folder — the model reads the repository and its history directly and writes the PM-STATUS as a file. Then load it back here.",
+    howItWorksLink: "← Home",
+    aboutTitle: "Why witty",
+    about1: "“The limits of my language mean the limits of my world.” — Ludwig Wittgenstein",
+    about2: "In the LLM era that is literal: you can only prompt — and build — in the directions you have language for. Builders without PM vocabulary already practice many of the methods — just unnamed.",
+    about3: "The audit is a mirror, not an exam: it names what you already do and turns what's open into questions. Methods are options, never mandatory.",
+    footer1: "witty · markdown stays the source of truth · methods are options, never mandatory.",
+    footer2: "“The limits of my language mean the limits of my world.” — Wittgenstein",
+    subLoaded: "loaded · stays local (localStorage)",
+  }
+};
+
+/* ============ Audit-Prompts ============ */
+// Backtick-Zäune für Code-Blöcke im Prompt: in String.raw bliebe ein escapter
+// Backtick als "\`" stehen, deshalb als Substitution einsetzen.
+const FENCE = String.fromCharCode(96, 96, 96);
+const PROMPTS = {
+de: String.raw`Du bist ein PM-Audit-Assistent ("witty"-Audit). Das zu auditierende Projekt steht am ENDE dieses Prompts unter PROJEKT. Analysiere dazu alles Verfügbare — Code-Repository, Git-Historie, README, Dokumente, angehängte Dateien, bisherige Gespräche. Wenn dir Kontext fehlt, stelle ZUERST gezielte Fragen, statt zu raten.
+
+Erstelle daraus einen PM-STATUS als Markdown. Das Audit prüft 14 Schritte. Vergib pro Schritt genau einen Status:
+- ⭕ offen — nie beantwortet
+- 🔍 implizit abgedeckt — faktisch getan/entschieden, aber nie so benannt. NUR mit konkretem Beleg (Commit, Datei, Zitat, Feature). Sei streng: im Zweifel ⭕ statt eines großzügigen 🔍.
+- ✅ beantwortet — explizit entschieden oder dokumentiert
+- 🕊️ bewusst vertagt — aktiv entschieden, dass die Frage jetzt nicht dran ist
+
+Die 14 Schritte (Klartext-Frage · [Fachbegriff als Lern-Anker]):
+1. Spark — Welcher konkrete Moment hat zum Bauen geführt? [Problem Statement]
+2. Vision & Ambition — Was soll entstehen (1-2 Sätze), und wie groß: Hobby / soll sich tragen / Geschäft? Vision (wie sieht die Welt aus, wenn wir fertig sind — Basis für strategische Entscheidungen) UND Mission (warum gibt es uns, was tun wir — Basis für operative Ziele). [Vision Statement, Mission]
+3. Zielgruppe — Für wen? Eine konkrete typische Person + "Wenn ich ___, will ich ___, damit ___." [Archetyp/ICP, Jobs-to-be-Done]
+4. Nein-Liste — Was macht das Produkt bewusst NICHT? [Product Principles]
+5. Unterschied — Warum dieses Tool statt der Alternativen? Ein nachprüfbarer Satz. [Positioning]
+6. Strategie — Die 3-5 großen Wetten: was · warum · was man dafür bewusst nicht tut. Pro Wette den Horizont benennen: 1 = Bestehendes optimieren · 2 = erweitern · 3 = Neues erschließen. [Strategy Pillars, Drei Horizonte/Ambidextrie]
+7. User Flows — Was tut die Zielperson Schritt für Schritt bis zum Wow-Moment? [User Stories, Aha-Moment]
+8. Priorisierung — Was zuerst (Phase 1 = kleinste Version, die den Wow-Moment enthält), was später, was nie? Zweite Prüffrage: Feasibility — können wir das bauen UND dauerhaft betreiben? [MVP, Feasibility-Risiko]
+9. Go-to-Market — Wer erfährt zuerst davon, über welche Wege, zu welchem Preis, was muss vorher stehen? [Beachhead, GTM]
+10. Ökonomie — Kosten/Monat, Kosten pro Nutzer:in, ab wann trägt es sich? [Unit Economics]
+11. Nordstern — Die EINE Erfolgszahl + 2-3 heute schon messbare Hilfszahlen. Der Nordstern muss VORLAUFEND sein (leading: steigt vor dem Umsatz), nicht nachlaufend (lagging). Hilfszahlen als benannte Stufen des Trichters Acquisition→Activation→Retention→Referral→Revenue. Jede Kennzahl gegen die sechs A prüfen: Aligned, Attainable, Acute (wenige), Accurate, Actionable, Alive. Bei technischen Zahlen den Moneypath zeigen (z. B. Ladezeit → Abbruch → Conversion → Umsatz). [North Star Metric, Leading/Lagging, AARRR]
+12. PMF-Stufe — 1 eine Person liebt es · 2 eine zahlt oder kehrt wöchentlich zurück · 3 mehrere · 4 es zieht von allein · 5 konstantes Wachstum — plus: der nächste beobachtbare Beweis. [Product-Market Fit]
+13. Validierungs-Loop — Wie wird laufend geprüft, und was würde einen RICHTUNGSwechsel auslösen (nicht nur Detail-Anpassung)? Zusätzlich Adaptability: Was von außen könnte die bisherigen Antworten ungültig machen (Technologie, Rechtslage, Plattform-Abhängigkeit, Wettbewerb)? [Build-Measure-Learn, Pivot vs. Iterate, Adaptability-Risiko]
+14. Snapshot-Regel — Bei welchem EREIGNIS wird dieses Dokument erneuert (kein Kalenderdatum)? [Review-Kadenz]
+
+EXPERIMENTE — für jede offene Frage einen billigen Test vorschlagen:
+
+Jedes ⭕ und jede Zahl, die auf einer Annahme beruht, ist ein Testkandidat. Eine Annahme ist implizit und ungeprüft ("die Zielgruppe zahlt 20 €"), eine Hypothese ist spezifisch und widerlegbar ("von 100 Besucher:innen klicken mindestens 8 auf Kaufen"). Der Übergang ist die Arbeit.
+
+Vier Regeln: Erfolgskriterium VOR dem Test festlegen · das billigste Verfahren wählen, das die Frage beantwortet ("bau den Cupcake, nicht die Hochzeitstorte") · gegen den eigenen Wunsch testen, nicht dafür · eine widerlegte Hypothese ist ein vollwertiges Ergebnis, kein Fehlschlag.
+
+Methode nach Validierungsfrage wählen — pro offener Frage 3-5 Vorschläge mit Begründung, NIE die ganze Liste:
+- PROBLEM (lohnt sich das Problem? Schritte 1, 3): Kundeninterviews im Mom-Test-Stil · Contextual Inquiry · Fake Door · Comprehension Test · App-Reviews und Foren lesen · Five People Who Are In · Find the Watering Hole
+- MARKT (will das jemand? Schritte 3, 5, 9): Spoof Landing Page · Testanzeigen schalten · Video Demo · Wizard of Oz · Concierge · Feature Stub · Trends- und Keyword-Analyse · Classified Posting
+- PRODUKT (löst es das Problem? Schritte 7, 8): Klickbarer Prototyp · Papier-Prototyp · Five-Second-Test · First-Click-Test · Guerilla- oder Remote-Usertest · Takeaway Test · Beta-Launch · Single-Feature-Produkt
+- ZAHLUNGSBEREITSCHAFT (zahlt jemand? Schritte 9, 10, 12): Dry Wallet (Kaufen anklickbar, Zahlung noch nicht möglich) · High Hurdle · Sell the Future · Collect Pre-orders · Contract · Crowdfunding · Conjoint Analysis · One Night Stand
+
+Reihenfolge beachten: Wer Zahlungsbereitschaft prüft, bevor Problem und Markt bestätigt sind, misst Rauschen. Und: Echtes Geld oder eine Unterschrift schlagen jeden Klick.
+
+Gib jedes Experiment als Datenblock direkt unter dem betroffenen Schritt aus:
+${FENCE}witty:experiment
+annahme: [die implizite Überzeugung]
+hypothese: Ich glaube, dass …
+test: [Verfahren] — Ich baue …
+messgroesse: Ich messe …
+erfolg_wenn: [Schwelle, vorab festgelegt]
+risiko: value | usability | feasibility | viability | adaptability
+aufwand: [Stunden oder Tage]
+ergebnis: offen
+${FENCE}
+
+ARBEITSWEISE — bevor du schreibst:
+- Belege sammeln: Repository, Commit-Historie inkl. Datum, README, Dokumente, Spikes, offene UND nicht gemergte Branches, frühere Gespräche. Nicht gemergte Branches sind oft der Ort, an dem die wichtigsten Entscheidungen liegen.
+- Verstreute Entscheidungen ZUSAMMENFÜHREN statt auf Quellen zu verweisen. Wenn die Nein-Liste über drei Dokumente verteilt ist, schreibe die Liste — der Verweis "steht verstreut in X, Y, Z" ist keine Antwort.
+- Selbst rechnen, wo Zahlen möglich sind: Break-even, Marge nach Gebühren, Aufwandsschätzung in Tagen, Anteile. Jede Annahme als Annahme kennzeichnen.
+
+AUSGABEFORMAT — diese Markdown-Struktur (der witty-Viewer parst sie):
+
+# PM-STATUS — [Projektname]
+
+> Stand: [Monat Jahr] · Snapshot v[N] · witty-Audit v0.4
+
+[Falls unter PROJEKT ein ${FENCE}witty:project${FENCE}-Datenblock mitgegeben wurde: gib ihn hier unverändert wieder aus, Zeichen für Zeichen, direkt nach der Stand-Zeile. Wurde keiner mitgegeben, überspringe diesen Schritt ersatzlos.]
+
+[Ein kurzer Absatz: wie dieses Dokument zu lesen ist.]
+
+## Abdeckung auf einen Blick
+
+| # | Schritt | Status | Stand in einem Satz |
+|---|---|---|---|
+| 1 | Spark | [Emoji] | [ein Satz] |
+| 2 | Vision & Ambition | [Emoji] | [ein Satz] |
+(… alle 14 Zeilen; Schrittnamen exakt: Spark, Vision & Ambition, Zielgruppe, Nein-Liste, Unterschied, Strategie, User Flows, Priorisierung, Go-to-Market, Ökonomie, Nordstern, PMF-Stufe, Validierungs-Loop, Snapshot-Regel)
+
+**Bilanz:** [n]× ✅ · [n]× 🔍 · [n]× ⭕ · [n]× 🕊️
+
+### Wo die Lücken liegen — nach Double-Diamond-Phase
+[2-3 Sätze, was der Double Diamond ist: Discover (Problemraum öffnen) → Define (eingrenzen) → Develop (Lösungsraum öffnen) → Deliver (ausliefern). Dann eine Tabelle Phase | Modus | Schritte | Bilanz dieses Projekts (Discover 1-3, Define 4-6, Develop 7, Deliver 8-14), und ein Satz, welches Muster daraus spricht.]
+
+Danach pro Schritt eine Sektion in genau dieser Gliederung:
+
+## [N] · [Schrittname] — [Emoji]
+
+> Kurzbefund: [ein Satz]
+
+**Befund.** [1-3 Absätze Klartext. Bei ⭕ die offene Frage ausschreiben, bei 🕊️ wann sie wieder dran ist.]
+
+**Belege.** [Aufzählung, jeder Beleg in Klartext: was passiert ist, wann, und warum es zählt — Beispiel: "30.07. — Erstnutzer:innen landeten vorher im leeren Editor; seither kein Gate, ein Startpunkt und eine geführte Tour (Commit 1e0d4a7)." NIEMALS ein nackter Hash oder Dateipfad ohne Klartext daneben.]
+
+**Lern-Anker: [Fachbegriff(e)].** [2-3 kurze Sätze, lieber knapp als vollständig: was der Begriff bedeutet, in Alltagssprache erklärt, und wie er auf dieses Projekt zutrifft. Wo möglich ein ausgefülltes Beispiel aus den echten Projektdaten — ein Vision-Statement, eine User Story mit Akzeptanzkriterien, ein RICE-Score. Den Kernbegriff optional als Tooltip auszeichnen: {{Begriff::Ein-Satz-Erklärung}} — der Viewer macht daraus eine Hover-Erklärung, nutze es sparsam, nur beim ersten Auftreten eines neuen Begriffs.]
+
+**Nächster Handgriff.** [1-3 Sätze, konkret und heute machbar.]
+
+Tabellen nutzen, wo es etwas zu vergleichen gibt. Insbesondere:
+- Schritt 5: Vergleichstabelle gegen die genannten Alternativen (Achsen als Zeilen).
+- Schritt 8: RICE-Durchlauf über die offenen Kandidaten (Reach · Impact · Confidence · Effort · Score) plus eine Now/Next/Later-Tabelle. Weise dabei explizit darauf hin, dass RICE ein Sense-Check NACH der Priorisierung ist, keine Strategie — der Score rankt nur, was schon als Kandidat gilt, er ersetzt nicht die Entscheidung aus Schritt 6, welche Kandidaten überhaupt auf der Liste stehen. Dazu denselben Inhalt als Datenblock, damit er im Werkzeug sortierbar wird — eine Zeile je Karte, Reihenfolge = Priorität:
+${FENCE}witty:roadmap
+now: [Kandidat]
+next: [Kandidat]
+later: [Kandidat]
+${FENCE}
+- Schritt 9/10: BMC-Zuordnung — welches der neun Business-Model-Canvas-Felder kommt aus welchem Schritt, und welche Felder bleiben leer. Zwei Felder hat das 14-Schritte-Schema nicht: Schlüsselpartner und Schlüsselressourcen. Fülle sie aus dem vorhandenen Kontext vor (Zahlungsdienstleister, Hosting, Datenbank, fremde Software, von der das Produkt abhängt; und die Mittel, ohne die es nicht liefe — Code, Daten, Reichweite, Zugänge, eigene Zeit) und gib sie als Datenblock aus, damit sie im Werkzeug bearbeitbar sind:
+${FENCE}witty:bmc
+partner: [kommagetrennt, aus dem Kontext hergeleitet]
+ressourcen: [kommagetrennt, aus dem Kontext hergeleitet]
+${FENCE}
+- Schritt 10: Mini-P&L in drei Tabellen (Erlös pro verkaufter Einheit nach Steuern/Gebühren · laufende Kosten pro Monat mit Leerspalte für echte Werte · Break-even in 2-3 Szenarien) und ein Satz, was die Zielzahl aus Schritt 2 wirklich bedeutet. Zusätzlich ein Datenblock, damit spätere Rechner damit arbeiten können:
+${FENCE}witty:pnl
+kosten_monat: [Zahl]
+brutto: [Zahl]
+ust_prozent: [Zahl]
+gebuehr_prozent: [Zahl]
+gebuehr_fix: [Zahl]
+ziel_stueck: [Zahl]
+${FENCE}
+
+SPRACHRAUM — nur erzeugen, wenn unter PROJEKT Themen oder Nachbarmärkte genannt sind:
+
+Der Zweck: Zu einem Feld, für das jemand noch kein Vokabular hat, die Sprache liefern — und ehrlich sagen, ob sie Gewinn oder Ballast wäre. Ein Vokabular ohne Urteil ist schlechter als Nichtwissen, weil es sich nach Verstehen anfühlt. Deshalb ist das Verdikt Pflicht, nicht Zierrat.
+
+Drei Filter für das Verdikt:
+1. Anschluss — hängt das Feld an etwas, das im Projekt schon passiert? Wenn ja, gehört es in den Spiegel, nicht ins Neuland.
+2. Entscheidungsrelevanz — würde dieses Wissen eine Entscheidung in einem der 14 Schritte verändern? Wenn kein einziger Begriff das tut, ist das Feld vorerst Ballast.
+3. Vier-Wochen-Probe — was würde in den nächsten vier Wochen anders gemacht? Wenn nichts: Es ist Faszination. Das ist legitim, muss aber so benannt und nicht als Arbeit getarnt werden.
+
+Sektion direkt vor dem Fazit, pro genanntem Thema ein Block:
+
+## Sprachraum — [Thema 1] · [Thema 2] …
+
+### [Thema]
+**Worum es geht.** [2-3 Sätze Klartext, ohne Fachbegriffe]
+**Das Vokabular.** [5-8 Begriffe, je einer pro Zeile mit einem Satz Erklärung — das ist die eigentliche Lieferung]
+**Was das Feld fragt.** [2-3 Leitfragen, die dort üblich sind]
+**Anschluss.** [an welchen der 14 Schritte es andockt — oder ehrlich: an keinen]
+**Gewinn.** [was es diesem Projekt konkret gäbe]
+**Kosten.** [Zeit, zusätzliche Komplexität, Risiko von geliehenem Jargon]
+**Verdikt: aufnehmen · später · bewusst nicht** — [ein Satz Begründung]
+
+Verdikt-Folgen benennen: "aufnehmen" heißt, es ist eine Wette und gehört als solche in Schritt 6 mit einem Horizont (2 = Erweiterung, 3 = Neues). "bewusst nicht" heißt, es gehört als Zeile auf die Nein-Liste in Schritt 4. "später" braucht einen Auslöser, kein Datum.
+
+Sei hier besonders unbestechlich: Bei einem Werkzeug in der Frühphase ist die richtige Antwort meistens "später" oder "bewusst nicht". Ein begründetes Nein ist wertvoller als ein höfliches Ja.
+
+Zum Schluss drei Sektionen:
+
+## Fazit — die nächsten fünf Fragen, in dieser Reihenfolge
+[Tabelle: # | Die Frage | Aufwand | Was sie freischaltet. Sortiert nach Hebel pro Aufwand, billig und entscheidend zuerst. Darunter ein Satz Faustregel, der Aufwand gegen Nutzen stellt.]
+
+## Spiegel-Lesart
+[Vier Absätze, jeder mit einem fetten Vorspann-Satz: (1) Was das Projekt bereits kann — mit den Lehrbuch-Namen, das ist der Spiegel. (2) Wo die echten Lücken sind, und warum es nicht die sind, die man vermutet. (3) Die direkte Antwort auf den unter PROJEKT genannten Anlass. (4) Der nächste wertvollste Schritt, mit Aufwand.]
+
+## Persönliche Empfehlungen
+[3-5 nummerierte Empfehlungen, hergeleitet aus dem beobachteten Arbeitsmuster, nicht aus dem Lehrbuch. Konkret und ansprechbar, ohne Schmeichelei.]
+
+## Glossar — die Begriffe aus diesem Audit
+[Tabelle: Begriff | In einem Satz | Wo im Dokument. Alle Fachbegriffe, die im Dokument vorkommen.]
+
+REGELN:
+- Klartext vor Fachbegriff. Jeder Fachbegriff wird bei seiner ersten Nennung erklärt — das Dokument soll lesbar sein für jemanden, der noch nie PM gemacht hat.
+- Das gilt auch INNERHALB eines Schritts: taucht der Fachbegriff eines Lern-Ankers schon in der Abdeckungstabelle, im Kurzbefund oder in den Belegen desselben Schritts auf — das passiert leicht, weil diese vor dem Lern-Anker geschrieben werden —, erklär ihn dort sofort in ein bis drei Worten oder als Tooltip {{Begriff::Ein-Satz-Erklärung}}, statt ihn bis zum Lern-Anker unerklärt stehen zu lassen.
+- Absätze statt Textwände. Fette Vorspann-Wörter, Aufzählungen, Tabellen. Kein Abschnitt länger als fünf Zeilen ohne Gliederung.
+- Kürzer ist besser als vollständiger. Ein Lern-Anker mit zwei knappen Sätzen schlägt fünf ausführliche. Jeder Satz über etwa 20 Wörtern: teilen oder streichen.
+- Sprich wie zu einem Menschen am Küchentisch, nicht wie ein Handbuch: aktiv statt passiv ("Niemand wurde gefragt, ob er zahlt" statt "Zahlungsbereitschaft ist bei null Personen erhoben"), kurze Sätze, kein Behörden- oder Beraterdeutsch.
+- Methoden sind Optionen, nie Pflicht — nichts erzwingen.
+- Ehrlich statt gefällig: ein sauberes ⭕ ist wertvoller als ein geschöntes ✅. Im Zweifel ⭕ statt eines großzügigen 🔍.
+- Widersprüche benennen statt glätten: wenn zwei Pläne im Projekt gegeneinander laufen, ist genau das der Befund.
+- Falls unter PROJEKT ein Anlass genannt ist, beantworte ihn direkt in der Spiegel-Lesart.
+- Antworte in der Sprache dieses Prompts.`,
+
+en: String.raw`You are a PM audit assistant (the "witty" audit). The project to audit is stated at the END of this prompt under PROJECT. Analyze everything available about it — code repository, git history, README, documents, attached files, prior conversations. If you lack context, ask targeted questions FIRST instead of guessing.
+
+Produce a PM-STATUS as markdown. The audit checks 14 steps. Assign exactly one status per step:
+- ⭕ open — never answered
+- 🔍 implicitly covered — actually done/decided, but never named as such. ONLY with concrete evidence (commit, file, quote, feature). Be strict: when in doubt, ⭕ beats a generous 🔍.
+- ✅ answered — explicitly decided or documented
+- 🕊️ deliberately deferred — actively decided this question is not due now
+
+The 14 steps (plain question · [textbook term as learning anchor]):
+1. Spark — Which concrete moment led to building this? [Problem Statement]
+2. Vision & Ambition — What should this become (1-2 sentences), and how big: hobby / should sustain itself / business? Vision (what the world looks like when we are done — basis for strategic decisions) AND mission (why we exist, what we do — basis for operational goals). [Vision Statement, Mission]
+3. Audience — For whom? One concrete typical person + "When I ___, I want to ___, so that ___." [Archetype/ICP, Jobs-to-be-Done]
+4. No-list — What does the product deliberately NOT do? [Product Principles]
+5. Difference — Why this tool instead of the alternatives? One verifiable sentence. [Positioning]
+6. Strategy — The 3-5 big bets: what · why · what you deliberately don't do for each. Name the horizon of each bet: 1 = optimise what exists · 2 = extend it · 3 = build something new. [Strategy Pillars, Three Horizons/Ambidexterity]
+7. User Flows — What does the target person do step by step until the wow moment? [User Stories, Aha Moment]
+8. Prioritization — What first (phase 1 = smallest version that still contains the wow moment), what later, what never? Second check: feasibility — can we build AND operate this? [MVP, feasibility risk]
+9. Go-to-Market — Who hears about it first, through which channels, at what price, and what must be ready beforehand? [Beachhead, GTM]
+10. Economics — Cost/month, cost per user, and when does it sustain itself? [Unit Economics]
+11. North Star — The ONE success number + 2-3 helper numbers measurable today. The north star must be LEADING (rises before revenue does), not lagging. Helper numbers should be named stages of the funnel Acquisition→Activation→Retention→Referral→Revenue. Check every metric against the six A: Aligned, Attainable, Acute (few), Accurate, Actionable, Alive. For technical numbers show the money path (e.g. load time → drop-off → conversion → revenue). [North Star Metric, Leading/Lagging, AARRR]
+12. PMF Stage — 1 one person loves it · 2 one pays or returns weekly · 3 several do · 4 it pulls on its own · 5 constant growth — plus: the next observable proof. [Product-Market Fit]
+13. Validation Loop — How is it continuously checked, and what would trigger a change of DIRECTION (not just detail)? Plus adaptability: what from the outside could invalidate the answers so far (technology, law, platform dependency, competition)? [Build-Measure-Learn, Pivot vs. Iterate, adaptability risk]
+14. Snapshot Rule — On which EVENT does this document get renewed (not a calendar date)? [Review cadence]
+
+EXPERIMENTS — propose a cheap test for every open question:
+
+Every ⭕ and every figure resting on an assumption is a test candidate. An assumption is implicit and unverified ("the target market will pay €20"); a hypothesis is specific and refutable ("at least 8 of 100 visitors click buy"). Making that transition is the work.
+
+Four rules: define the success threshold BEFORE the test · pick the cheapest method that answers the question ("build the cupcake, not the wedding cake") · test against your own wish, not for it · a refuted hypothesis is a full result, not a failure.
+
+Pick the method by validation question — 3-5 suggestions per open question with reasons, NEVER the whole list:
+- PROBLEM (is the problem worth solving? steps 1, 3): Mom-Test interviews · contextual inquiry · fake door · comprehension test · reading app reviews and forums · five people who are in · find the watering hole
+- MARKET (does anyone want it? steps 3, 5, 9): spoof landing page · run test ads · video demo · Wizard of Oz · concierge · feature stub · trends and keyword analysis · classified posting
+- PRODUCT (does it solve the problem? steps 7, 8): clickable prototype · paper prototype · five-second test · first-click test · guerilla or remote user test · takeaway test · beta launch · single-feature product
+- WILLINGNESS TO PAY (will anyone pay? steps 9, 10, 12): dry wallet (buy button live, payment not yet possible) · high hurdle · sell the future · collect pre-orders · contract · crowdfunding · conjoint analysis · one night stand
+
+Mind the order: testing willingness to pay before problem and market are confirmed measures noise. And real money or a signature beats any click.
+
+Output each experiment as a data block directly under the step it belongs to:
+${FENCE}witty:experiment
+assumption: [the implicit belief]
+hypothesis: I believe that …
+test: [method] — I build …
+metric: I measure …
+success_if: [threshold, defined in advance]
+risk: value | usability | feasibility | viability | adaptability
+effort: [hours or days]
+result: open
+${FENCE}
+
+HOW TO WORK — before you write:
+- Gather evidence: repository, commit history including dates, README, documents, spikes, open AND unmerged branches, prior conversations. Unmerged branches are often where the most important decisions live.
+- CONSOLIDATE scattered decisions instead of pointing at sources. If the no-list is spread across three documents, write the list — "it is scattered across X, Y, Z" is not an answer.
+- Do the math yourself wherever numbers are possible: break-even, margin after fees, effort estimates in days, ratios. Mark every assumption as an assumption.
+
+OUTPUT FORMAT — this markdown structure (the witty viewer parses it):
+
+# PM-STATUS — [project name]
+
+> As of: [month year] · Snapshot v[N] · witty audit v0.4
+
+[If a ${FENCE}witty:project${FENCE} data block was given under PROJECT: reproduce it unchanged, character for character, right after the "as of" line. If none was given, skip this step entirely.]
+
+[One short paragraph: how to read this document.]
+
+## Coverage at a glance
+
+| # | Step | Status | State in one sentence |
+|---|---|---|---|
+| 1 | Spark | [emoji] | [one sentence] |
+| 2 | Vision & Ambition | [emoji] | [one sentence] |
+(… all 14 rows; step names exactly: Spark, Vision & Ambition, Audience, No-list, Difference, Strategy, User Flows, Prioritization, Go-to-Market, Economics, North Star, PMF Stage, Validation Loop, Snapshot Rule)
+
+**Tally:** [n]× ✅ · [n]× 🔍 · [n]× ⭕ · [n]× 🕊️
+
+### Where the gaps sit — by Double Diamond phase
+[2-3 sentences on what the Double Diamond is: Discover (open the problem space) → Define (narrow it) → Develop (open the solution space) → Deliver (ship and sustain). Then a table Phase | Mode | Steps | This project's tally (Discover 1-3, Define 4-6, Develop 7, Deliver 8-14), and one sentence on the pattern it reveals.]
+
+Then one section per step, in exactly this structure:
+
+## [N] · [Step name] — [emoji]
+
+> Short verdict: [one sentence]
+
+**Finding.** [1-3 plain-language paragraphs. For ⭕ spell out the open question, for 🕊️ when it becomes due.]
+
+**Evidence.** [A list, each item in plain language: what happened, when, and why it counts — example: "30 Jul — first-time users used to land in an empty editor; since then there is no gate, a starting point and a guided tour (commit 1e0d4a7)." NEVER a bare hash or file path without plain language next to it.]
+
+**Learning anchor: [textbook term(s)].** [2-3 short sentences, better terse than exhaustive: what the term means in everyday language, and how it applies to this project. Where possible include a filled-in example built from the real project data — a vision statement, a user story with acceptance criteria, a RICE score. Optionally mark the core term as a tooltip: {{Term::One-sentence explanation}} — the viewer turns it into a hover explanation; use sparingly, only on a term's first occurrence.]
+
+**Next move.** [1-3 sentences, concrete and doable today.]
+
+Use tables wherever something is being compared. In particular:
+- Step 5: comparison table against the named alternatives (axes as rows).
+- Step 8: a RICE pass over the open candidates (Reach · Impact · Confidence · Effort · Score) plus a Now/Next/Later table. Explicitly note that RICE is a sense-check AFTER prioritization, not a strategy — the score only ranks what's already a candidate, it doesn't replace the Step 6 decision of which candidates belong on the list at all. Add the same content as a data block so it becomes sortable in the tool — one line per card, order = priority:
+${FENCE}witty:roadmap
+now: [candidate]
+next: [candidate]
+later: [candidate]
+${FENCE}
+- Step 9/10: Business Model Canvas mapping — which of the nine BMC fields comes from which step, and which fields stay empty. Two fields have no source in the 14 steps: key partners and key resources. Pre-fill them from the available context (payment provider, hosting, database, third-party software the product depends on; and the means without which it would not run — code, data, reach, access, your own time) and output them as a data block so they are editable in the tool:
+${FENCE}witty:bmc
+key_partners: [comma-separated, derived from context]
+key_resources: [comma-separated, derived from context]
+${FENCE}
+- Step 10: a mini P&L in three tables (revenue per unit sold after tax and fees · monthly running cost with an empty column for real figures · break-even in 2-3 scenarios) and one sentence on what the target number from step 2 actually means. Plus a data block so later calculators can use it:
+${FENCE}witty:pnl
+cost_month: [number]
+gross: [number]
+vat_percent: [number]
+fee_percent: [number]
+fee_fixed: [number]
+target_units: [number]
+${FENCE}
+
+LANGUAGE SPACE — only produce this if topics or adjacent markets are named under PROJECT:
+
+The purpose: for a field someone has no vocabulary for yet, supply the language — and say honestly whether it would be gain or ballast. Vocabulary without judgement is worse than not knowing, because it feels like understanding. The verdict is therefore mandatory, not decoration.
+
+Three filters for the verdict:
+1. Attachment — does the field connect to something already happening in the project? If so it belongs in the mirror, not in new territory.
+2. Decision relevance — would this knowledge change a decision in any of the 14 steps? If no single term does, the field is ballast for now.
+3. Four-week test — what would be done differently in the next four weeks? If nothing: it is fascination. Legitimate, but label it as such instead of dressing it as work.
+
+Section directly before the verdict section, one block per named topic:
+
+## Language Space — [topic 1] · [topic 2] …
+
+### [topic]
+**What it is.** [2-3 plain sentences, no jargon]
+**The vocabulary.** [5-8 terms, one per line with a one-sentence explanation — this is the actual delivery]
+**What the field asks.** [2-3 questions that are standard there]
+**Attachment.** [which of the 14 steps it connects to — or honestly: none]
+**Gain.** [what it would concretely give this project]
+**Cost.** [time, added complexity, risk of borrowed jargon]
+**Verdict: adopt · later · deliberately not** — [one sentence of reasoning]
+
+Name the consequence of each verdict: "adopt" means it is a bet and belongs in step 6 with a horizon (2 = extension, 3 = something new). "deliberately not" means it belongs as a line on the no-list in step 4. "later" needs a trigger, not a date.
+
+Be especially incorruptible here: for an early-stage tool the right answer is usually "later" or "deliberately not". A reasoned no is worth more than a polite yes.
+
+Finally three sections:
+
+## Verdict — the next five questions, in this order
+[Table: # | The question | Effort | What it unlocks. Sorted by leverage per effort, cheap and decisive first. Below it one rule-of-thumb sentence weighing effort against payoff.]
+
+## Mirror Reading
+[Four paragraphs, each opening with a bold lead sentence: (1) What the project already does well — with the textbook names, that is the mirror. (2) Where the real gaps are, and why they are not the ones you would guess. (3) A direct answer to the reason stated under PROJECT. (4) The next most valuable step, with its effort.]
+
+## Personal recommendations
+[3-5 numbered recommendations derived from the observed working pattern, not from the textbook. Concrete and addressable, without flattery.]
+
+## Glossary — the terms used in this audit
+[Table: Term | In one sentence | Where in the document. Every textbook term that appears in the document.]
+
+RULES:
+- Plain language before jargon. Every term is explained at first use — the document must be readable by someone who has never done PM.
+- This also applies WITHIN a step: if a learning-anchor term already shows up in the coverage table, the short verdict, or the evidence of the same step — easy to happen, since those are written before the learning anchor — explain it right there in a word or two, or as a tooltip {{Term::One-sentence explanation}}, instead of leaving it unexplained until the learning anchor.
+- Paragraphs, not walls of text. Bold lead-ins, lists, tables. No passage longer than five lines without structure.
+- Shorter beats more complete. A learning anchor with two tight sentences beats five thorough ones. Any sentence over roughly 20 words: split it or cut it.
+- Talk like a human across the kitchen table, not a manual: active voice, not passive ("Nobody was asked whether they'd pay" instead of "Willingness to pay was surveyed among zero people"), short sentences, no bureaucratic or consultant-speak.
+- Methods are options, never mandatory — force nothing.
+- Honest beats flattering: a clean ⭕ is worth more than a polished ✅. When in doubt, ⭕ rather than a generous 🔍.
+- Name contradictions instead of smoothing them over: if two plans inside the project pull against each other, that is precisely the finding.
+- If a reason for this audit is stated under PROJECT, address it directly in the Mirror Reading.
+- Answer in the language of this prompt.`
+};
+
+/* ============ Projekt-Injektion in den Prompt ============ */
+const PROJECT_FALLBACK = {
+  de: `PROJEKT:
+Nicht explizit angegeben — nimm das Projekt, in dessen Kontext du arbeitest (aktuelles Repository, angehängte Dateien, bisheriger Verlauf). Gibt es keinen solchen Kontext, frag zuerst: Wie heißt das Projekt, was ist es, und wo steht es gerade?`,
+  en: `PROJECT:
+Not explicitly stated — use the project in whose context you are working (current repository, attached files, prior conversation). If no such context exists, ask first: What is the project called, what is it, and where does it stand?`
+};
+let stageSet = false; // Slider hat immer einen Wert — nur zählen, wenn bewusst bewegt/geladen
+function projectBlock() {
+  const name = $("proj-name").value.trim();
+  const desc = $("proj-desc").value.trim();
+  const goal = $("proj-goal").value.trim();
+  const money = $("proj-money").value.trim();
+  const comp = $("proj-comp").value.trim();
+  const focus = $("proj-focus").value.trim();
+  const space = $("proj-space").value.trim();
+  const res = $("proj-resources").value.trim();
+  const cnslProject = $("proj-cnsl-project").value.trim();
+  const cnslSkills = $("proj-cnsl-skills").value.trim();
+  if (!name && !desc && !goal && !stageSet && !money && !comp && !focus && !space && !res && !cnslProject && !cnslSkills) return PROJECT_FALLBACK[lang];
+  const de = lang === "de";
+  const lines = [(de ? "PROJEKT" : "PROJECT") + ": " + (name || "—")];
+  if (desc)     lines.push((de ? "Was es ist: " : "What it is: ") + desc);
+  if (goal)     lines.push((de ? "Ziel: " : "Goal: ") + goal);
+  if (stageSet) lines.push((de ? "Stand: " : "Stage: ") + t("st" + $("proj-stage").value));
+  if (money)    lines.push((de ? "Kosten/Einnahmen (Input für Schritt 10, Ökonomie — nutze diese Zahlen statt Annahmen): " : "Costs/revenue (input for step 10, Economics — use these figures instead of assumptions): ") + money);
+  if (comp)     lines.push((de ? "Ähnliche Produkte/Alternativen (Input für Schritt 5, Unterschied): " : "Similar products/alternatives (input for step 5, Difference): ") + comp);
+  if (focus)    lines.push((de ? "Anlass für das Audit: " : "Reason for this audit: ") + focus);
+  if (space)    lines.push((de ? "Themen/Nachbarmärkte zum Erkunden (erzeuge dafür die Sprachraum-Sektion): " : "Topics/adjacent markets to explore (produce the Language-Space section for these): ") + space);
+  if (res)      lines.push((de ? "Ressourcen (nutze sie als Evidenzquellen): " : "Resources (use them as evidence sources): ") + res);
+  if (cnslProject) {
+    lines.push((de ? "CNSL-Projekt-Link (lies Notes & Tasks dieses Projekts über diesen Link, bevor du auditierst): " : "CNSL project link (read this project's notes & tasks via this link before auditing): ") + cnslProject);
+    lines.push(de
+      ? "Hast du keinen eigenen HTTP-Zugriff, bitte darum, den Inhalt dieses Links einzufügen, statt zu raten. Wiederhole den Link nirgends im Output — er ist der Zugangsschlüssel zum Projekt."
+      : "If you have no HTTP access of your own, ask for this link's content to be pasted instead of guessing. Never repeat the link itself in your output — it's the project's access key.");
+    lines.push(de
+      ? "Schreibe nach Abschluss des Audits das vollständige PM-STATUS-Ergebnis als neue Note über denselben Link zurück (POST an den Link mit { title, body }; title z. B. \"witty — PM-STATUS Snapshot vN (Datum)\", body = das komplette Markdown) — das wird der Projekt-Speicher für künftige Vergleiche (Coach-Diff)."
+      : "When the audit is done, write the complete PM-STATUS result back as a new note via the same link (POST to the link with { title, body }; title e.g. \"witty — PM-STATUS snapshot vN (date)\", body = the full markdown) — this becomes the project's memory for future comparisons (coach-diff).");
+    lines.push(de
+      ? "Die Notes über diesen Link sind die aktuellere Quelle als die Felder oben — sind Beschreibung, Ziel, Kosten/Einnahmen, Konkurrenz o. Ä. hier leer oder wirken veraltet, übernimm sie stattdessen aus den CNSL-Notes, statt danach zu fragen."
+      : "The notes behind this link are the more current source than the fields above — if description, goal, costs/revenue, competitors etc. are empty or outdated here, take them from the CNSL notes instead of asking.");
+  }
+  if (cnslSkills) {
+    lines.push((de ? "CNSL-Skills-Link (lies die relevante Skills-/Wissensbasis über diesen Link): " : "CNSL skills link (read the relevant skills/knowledge base via this link): ") + cnslSkills);
+    lines.push(de
+      ? "Auch hier: ohne eigenen HTTP-Zugriff um Einfügen bitten, und den Link nie im Output wiederholen."
+      : "Same here: without HTTP access of your own, ask for a paste, and never repeat the link in your output.");
+  }
+  const nl = s => s.replace(/\r?\n/g, " ");
+  const meta = {};
+  if (name)        meta.name = nl(name);
+  if (desc)        meta.desc = nl(desc);
+  if (goal)        meta.goal = nl(goal);
+  if (stageSet)    meta.stage = $("proj-stage").value;
+  if (money)       meta.money = nl(money);
+  if (comp)        meta.comp = nl(comp);
+  if (focus)       meta.focus = nl(focus);
+  if (space)       meta.space = nl(space);
+  if (res)         meta.res = nl(res);
+  if (cnslProject) meta.cnslproj = cnslProject;
+  if (cnslSkills)  meta.cnslskills = cnslSkills;
+  lines.push("");
+  lines.push(de
+    ? "Gib den folgenden Datenblock unverändert in deinem PM-STATUS-Ergebnis aus (siehe AUSGABEFORMAT) — witty liest ihn beim nächsten Laden automatisch ein und stellt dieses Formular wieder her:"
+    : "Reproduce the following data block unchanged in your PM-STATUS result (see OUTPUT FORMAT) — witty reads it back automatically on next load and restores this form:");
+  lines.push(FENCE + "witty:project");
+  lines.push(serializeBlock(meta));
+  lines.push(FENCE);
+  return lines.join("\n");
+}
+function buildPrompt() { return PROMPTS[lang] + "\n\n" + projectBlock(); }
+
+/* ============ Update-Prompt: witty:pending einarbeiten ============
+   Anders als buildPrompt() kein Von-vorn-Audit — das komplette geladene
+   Dokument geht mit, samt witty:pending-Block; die LLM arbeitet die
+   Anmerkungen ein und liefert Snapshot v+1 zurück. */
+const UPDATE_PROMPTS = {
+  de: String.raw`Unten steht das VOLLSTÄNDIGE, aktuell geladene PM-STATUS-Dokument eines witty-Audits. Es enthält einen ${FENCE}witty:pending${FENCE}-Block mit einer oder mehreren rohen, unbearbeiteten Anmerkungen zu einzelnen Schritten (Format: "step: N" gefolgt vom Anmerkungstext).
+
+Manche Anmerkungen sind automatisch entstanden, weil der Nutzer direkt im Business Model Canvas oder in der Roadmap editiert hat (Zeilen, die mit "BMC ·" oder "Roadmap:" beginnen). Die Blöcke ${FENCE}witty:bmc${FENCE} und ${FENCE}witty:roadmap${FENCE} tragen dann bereits den gewünschten Endstand — dreh sie nicht zurück, sondern richte die betroffenen Schritte inhaltlich daran aus.
+
+Deine Aufgabe: Arbeite JEDE Anmerkung in ihren Schritt ein — schreibe dort Kurzbefund, Befund, Belege, Lern-Anker und Nächster Handgriff neu, soweit die Anmerkung das nötig macht, und leite den Status (⭕/🔍/✅/🕊️) neu her. Behandle den Anmerkungstext als neue Evidenz, nicht als wörtlich zu übernehmenden Text. Halte dich an dieselben REGELN wie beim ursprünglichen Audit (Klartext vor Fachbegriff, auch innerhalb eines Schritts; kurze Sätze; menschlicher Ton).
+
+Gib JEDEN anderen Schritt, jede andere Sektion und jeden anderen Datenblock (${FENCE}witty:pnl${FENCE}, ${FENCE}witty:bmc${FENCE}, ${FENCE}witty:roadmap${FENCE}, ${FENCE}witty:log${FENCE}, ${FENCE}witty:project${FENCE}, ${FENCE}witty:experiment${FENCE}) unverändert wieder aus, Zeichen für Zeichen. Einzige Ausnahme: Hast du eine "BMC ·"-Anmerkung zu einem Feld MIT Schema-Quelle in ihren Schritt eingearbeitet, entferne genau diesen Schlüssel aus dem ${FENCE}witty:bmc${FENCE}-Block — das Feld wird danach wieder aus dem Schritt abgeleitet. partner/ressourcen (bzw. key_partners/key_resources) bleiben immer stehen. Erhöhe "Snapshot v[N]" in der Kopfzeile um eins. Hänge im ${FENCE}witty:log${FENCE}-Block eine neue, datierte Zeile an, die die geänderten Schritte kurz benennt.
+
+Gib den ${FENCE}witty:pending${FENCE}-Block NICHT mehr aus — jede Anmerkung darin ist mit diesem Durchlauf eingearbeitet, der Block entfällt vollständig.
+
+Gib NUR das komplette aktualisierte Markdown-Dokument aus, keinen Kommentar davor oder danach.
+
+---
+
+`,
+  en: String.raw`Below is the FULL, currently loaded PM-STATUS document of a witty audit. It contains a ${FENCE}witty:pending${FENCE} block with one or more raw, unedited annotations about specific steps (format: "step: N" followed by the note text).
+
+Some annotations were generated automatically because the user edited the Business Model Canvas or the roadmap directly (lines starting with "BMC ·" or "Roadmap:"). In that case the ${FENCE}witty:bmc${FENCE} and ${FENCE}witty:roadmap${FENCE} blocks already carry the intended end state — do not roll them back; align the affected steps with them instead.
+
+Your job: incorporate EVERY annotation into its step — rewrite that step's short verdict, finding, evidence, learning anchor and next move as needed, and re-derive its status (⭕/🔍/✅/🕊️). Treat the annotation as new evidence, not as literal prose to copy. Follow the same RULES as the original audit (plain language before jargon, including within a step; short sentences; human tone).
+
+Reproduce every OTHER step, section, and data block (${FENCE}witty:pnl${FENCE}, ${FENCE}witty:bmc${FENCE}, ${FENCE}witty:roadmap${FENCE}, ${FENCE}witty:log${FENCE}, ${FENCE}witty:project${FENCE}, ${FENCE}witty:experiment${FENCE}) unchanged, character for character. Single exception: once you have incorporated a "BMC ·" annotation for a field WITH a schema source into its step, remove exactly that key from the ${FENCE}witty:bmc${FENCE} block — the field is then derived from the step again. partner/ressourcen (or key_partners/key_resources) always stay. Bump "Snapshot v[N]" in the header by one. Append one new dated line to the ${FENCE}witty:log${FENCE} block summarizing which steps changed.
+
+Do NOT output the ${FENCE}witty:pending${FENCE} block — every annotation in it has been incorporated in this pass, so the block is dropped entirely.
+
+Output ONLY the complete updated markdown document, no commentary before or after.
+
+---
+
+`
+};
+function buildUpdatePrompt() { return UPDATE_PROMPTS[lang] + currentMd; }
+
+/* ============ State ============ */
+const LS = { lang: "witty.lang", md: "witty.project.md", pname: "witty.proj.name", pdesc: "witty.proj.desc", pgoal: "witty.proj.goal", pstage: "witty.proj.stage", pmoney: "witty.proj.money", pspace: "witty.proj.space", pcomp: "witty.proj.comp", pfocus: "witty.proj.focus", pres: "witty.proj.res", pcnslproj: "witty.proj.cnslproject", pcnslskills: "witty.proj.cnslskills" };
+const PROJ_FIELDS = [["proj-name","pname"],["proj-desc","pdesc"],["proj-goal","pgoal"],["proj-money","pmoney"],["proj-comp","pcomp"],["proj-focus","pfocus"],["proj-space","pspace"],["proj-resources","pres"],["proj-cnsl-project","pcnslproj"],["proj-cnsl-skills","pcnslskills"]];
+let lang = localStorage.getItem(LS.lang) || "de";
+
+const $ = (id) => document.getElementById(id);
+const t = (k) => (I18N[lang] && I18N[lang][k]) || k;
+
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  $("lang-de").classList.toggle("active", lang === "de");
+  $("lang-en").classList.toggle("active", lang === "en");
+  $("prompt-text").textContent = buildPrompt();
+  updateStageLabel();
+  const saved = localStorage.getItem(LS.md);
+  if (saved) renderMirror(saved); // re-render counts/labels in new language
+}
+
+/* ============ Markdown parsing ============ */
+const STATUS = {
+  "⭕": { key: "open",     cls: "st-open" },
+  "🔍": { key: "mirror",   cls: "st-mirror" },
+  "✅": { key: "done",     cls: "st-done" },
+  "🕊️": { key: "deferred", cls: "st-deferred" },
+  "🕊":  { key: "deferred", cls: "st-deferred" },
+};
+function findStatus(s) {
+  for (const emoji of ["🕊️", "🕊", "⭕", "🔍", "✅"]) if (s.includes(emoji)) return { emoji: emoji === "🕊" ? "🕊️" : emoji, ...STATUS[emoji] };
+  return null;
+}
+
+function parseStatusMd(md) {
+  const lines = md.split(/\r?\n/);
+  const doc = { title: "PM-STATUS", meta: "", coverExtra: "", rows: [], sections: [] };
+
+  const h1 = lines.find(l => l.startsWith("# "));
+  if (h1) doc.title = h1.replace(/^#\s*/, "").trim();
+  const meta = lines.find(l => /^>\s*(Stand|As of)/i.test(l));
+  if (meta) doc.meta = meta.replace(/^>\s*/, "").trim();
+
+  // dashboard table rows: | n | name | status | note | — nur innerhalb der
+  // Abdeckungs-Sektion suchen. v0.2-Dokumente enthalten viele weitere Tabellen
+  // (BMC, RICE, P&L, Glossar); ohne diese Eingrenzung landen deren Zeilen im Dashboard.
+  let scan = lines;
+  const covAt = lines.findIndex(l => /^##\s+(Abdeckung|Coverage)/i.test(l.trim()));
+  if (covAt >= 0) {
+    const rest = lines.slice(covAt + 1);
+    const nextH = rest.findIndex(l => /^##\s+/.test(l.trim()));
+    scan = nextH < 0 ? rest : rest.slice(0, nextH);
+  }
+  for (const l of scan) {
+    const m = l.match(/^\|\s*(\d{1,2})\s*\|([^|]+)\|([^|]+)\|([^|]*)\|?\s*$/);
+    if (m) {
+      const st = findStatus(m[3]);
+      if (st) doc.rows.push({ n: +m[1], name: m[2].trim(), status: st, note: m[4].trim() });
+    }
+  }
+
+  // sections: ## ... (skip the dashboard heading)
+  const parts = md.split(/^##\s+/m).slice(1);
+  for (const p of parts) {
+    const nl = p.indexOf("\n");
+    const head = (nl < 0 ? p : p.slice(0, nl)).trim();
+    const body = nl < 0 ? "" : p.slice(nl + 1).trim();
+    if (/^(Abdeckung|Coverage)/i.test(head)) {
+      // Die Dashboard-Tabelle wird oben gerendert; alles andere aus dieser Sektion
+      // (Bilanz-Zeile, Double-Diamond-Raster) darf nicht verlorengehen. Deshalb nur
+      // den ERSTEN zusammenhängenden Tabellenblock entfernen, nicht alle.
+      const bl = body.split(/\r?\n/);
+      const from = bl.findIndex(l => /^\s*\|/.test(l));
+      if (from >= 0) {
+        let to = from;
+        while (to < bl.length && /^\s*\|/.test(bl[to])) to++;
+        bl.splice(from, to - from);
+      }
+      doc.coverExtra = bl.join("\n").trim();
+      continue;
+    }
+    const st = findStatus(head);
+    const nm = head.match(/^(\d{1,2})\s*[·.]\s*(.+?)(\s*[—-]\s*[⭕🔍✅🕊].*)?$/u);
+    doc.sections.push({
+      n: nm ? +nm[1] : null,
+      name: nm ? nm[2].trim() : head.replace(/[—-]\s*[⭕🔍✅🕊].*$/u, "").trim(),
+      status: st, body
+    });
+  }
+
+  // fallback dashboard from sections
+  if (!doc.rows.length) {
+    doc.sections.filter(s => s.n).forEach(s => doc.rows.push({
+      n: s.n, name: s.name, status: s.status || { emoji: "⭕", ...STATUS["⭕"] }, note: ""
+    }));
+  }
+  return doc;
+}
+
+function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+// Für HTML-Attributwerte in doppelten Anführungszeichen.
+function escAttr(s) { return esc(s).replace(/"/g, "&quot;"); }
+// Inline-Icons (lucide.dev, ISC-Lizenz): Griff zum Ziehen, Stift, Kreuz.
+const ICON_ATTRS = 'xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+const ICONS = {
+  grip: `<svg ${ICON_ATTRS}><circle cx="12" cy="5" r="1"/><circle cx="19" cy="5" r="1"/><circle cx="5" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="19" cy="19" r="1"/><circle cx="5" cy="19" r="1"/></svg>`,
+  pencil: `<svg ${ICON_ATTRS}><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>`,
+  x: `<svg ${ICON_ATTRS}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+  plus: `<svg ${ICON_ATTRS}><path d="M5 12h14"/><path d="M12 5v14"/></svg>`
+};
+function inlineMd(s) {
+  return s
+    .replace(/\{\{([^:{}]+)::([^{}]+)\}\}/g,
+      (_, term, tip) => '<span class="gloss" tabindex="0">' + term + '<span class="gloss-tip" role="tooltip">' + tip + '</span></span>')
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+function splitRow(r) { return r.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map(c => c.trim()); }
+function isSepRow(r) { return /^\s*\|?[\s:|-]+\|?\s*$/.test(r) && r.includes("-"); }
+function renderTable(rows) {
+  let head = null, body = rows;
+  if (rows.length > 1 && isSepRow(rows[1])) { head = splitRow(rows[0]); body = rows.slice(2); }
+  const th = head
+    ? "<thead><tr>" + head.map(c => "<th>" + inlineMd(esc(c)) + "</th>").join("") + "</tr></thead>" : "";
+  const tb = "<tbody>" + body.map(r =>
+    "<tr>" + splitRow(r).map(c => "<td>" + inlineMd(esc(c)) + "</td>").join("") + "</tr>").join("") + "</tbody>";
+  return '<div class="tablewrap"><table class="md">' + th + tb + "</table></div>";
+}
+/* ============ Breakouts ============
+   Ein Breakout liest einen ```witty:<name>-Block aus dem Markdown, bearbeitet
+   ihn im Browser und schreibt ihn in dasselbe Dokument zurück. Die MD-Datei
+   bleibt Source of Truth — kein Konto, kein Backend, kein eigenes Format.
+   Wer hier nichts registriert hat, bekommt weiterhin den sichtbaren Datenblock. */
+const BREAKOUTS = {};                       // name -> (data, rawCode) => html
+let currentMd = "";                         // Rohtext des geladenen Dokuments
+let dirty = false;                          // seit dem Laden verändert, noch nicht in die Datei geschrieben
+let fenceSeq = {};                          // laufende Nummer je Blocktyp innerhalb eines Renderdurchlaufs
+
+/* ============ Datei-Anbindung ============
+   witty ist ein Editor, keine Ablage: Die Datei auf der Platte ist die Wahrheit,
+   der Browser-Speicher nur Absturzsicherung. Wo die File System Access API
+   vorhanden ist (Chrome/Edge), wird eine echte Datei verbunden und bei jeder
+   Änderung direkt beschrieben — dann gibt es keinen ungespeicherten Zustand.
+   Wo sie fehlt (Safari/Firefox), bleibt das Herunterladen samt Warnung. */
+const CAN_LINK = typeof window.showSaveFilePicker === "function";
+let fileHandle = null;                       // FileSystemFileHandle oder null
+let lastWrite = null;                        // Zeitpunkt des letzten Schreibens
+
+// Der Handle überlebt Neustarts nur in IndexedDB — localStorage kann ihn nicht halten.
+function idb(mode, fn) {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open("witty", 1);
+    open.onupgradeneeded = () => open.result.createObjectStore("handles");
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const tx = open.result.transaction("handles", mode);
+      const req = fn(tx.objectStore("handles"));
+      tx.oncomplete = () => resolve(req && req.result);
+      tx.onerror = () => reject(tx.error);
+    };
+  });
+}
+const saveHandle = h => idb("readwrite", s => s.put(h, "current")).catch(() => {});
+const readHandle = () => idb("readonly", s => s.get("current")).catch(() => null);
+const forgetHandle = () => idb("readwrite", s => s.delete("current")).catch(() => {});
+
+async function handleWritable(h, ask) {
+  if (!h || !h.queryPermission) return false;
+  const opts = { mode: "readwrite" };
+  if (await h.queryPermission(opts) === "granted") return true;
+  if (!ask) return false;
+  return await h.requestPermission(opts) === "granted";
+}
+async function writeToFile() {
+  if (!fileHandle) return false;
+  try {
+    const w = await fileHandle.createWritable();
+    await w.write(currentMd);
+    await w.close();
+    lastWrite = new Date();
+    dirty = false;
+    updateSaveBar();
+    return true;
+  } catch (e) {
+    console.warn("Schreiben fehlgeschlagen:", e);
+    updateSaveBar();
+    return false;
+  }
+}
+// Schreiben zusammenfassen: Ein Schieberegler feuert sonst dutzende Schreibvorgänge.
+let writeTimer = null;
+function scheduleWrite() {
+  if (!fileHandle) return;
+  clearTimeout(writeTimer);
+  writeTimer = setTimeout(writeToFile, 400);
+}
+async function linkFile(create) {
+  try {
+    const name = (($("proj-title").textContent || "PM-STATUS").trim().replace(/[^\w\-]+/g, "-") || "PM-STATUS") + ".md";
+    const opts = { types: [{ description: "Markdown", accept: { "text/markdown": [".md", ".markdown"] } }] };
+    const h = create
+      ? await window.showSaveFilePicker({ ...opts, suggestedName: name })
+      : (await window.showOpenFilePicker({ ...opts, multiple: false }))[0];
+    if (!await handleWritable(h, true)) return;
+    fileHandle = h;
+    await saveHandle(h);
+    if (!create) {                       // bestehende Datei: ihr Inhalt gewinnt
+      const text = await (await h.getFile()).text();
+      if (text.trim()) { loadMd(text); return; }
+    }
+    await writeToFile();
+  } catch (e) {
+    if (e && e.name !== "AbortError") console.warn("Verbinden abgebrochen:", e);
+  }
+}
+async function unlinkFile() {
+  fileHandle = null; lastWrite = null;
+  await forgetHandle();
+  updateSaveBar();
+}
+// Beim Start: gemerkten Handle holen. Die Berechtigung darf ohne Klick nicht
+// erneuert werden — deshalb nur prüfen und den Zustand anzeigen.
+async function restoreHandle() {
+  if (!CAN_LINK) return;
+  const h = await readHandle();
+  if (!h) return;
+  fileHandle = h;
+  if (!await handleWritable(h, false)) fileHandle = h;   // bleibt verbunden, braucht einen Klick
+  updateSaveBar();
+}
+
+// "schlüssel: wert" je Zeile. Kommentare (#) und Leerzeilen werden übersprungen.
+function parseBlock(text) {
+  const data = {};
+  text.split(/\r?\n/).forEach(l => {
+    const m = l.match(/^\s*([A-Za-z_][\w-]*)\s*[:=]\s*(.*?)\s*$/);
+    if (m && !l.trim().startsWith("#")) data[m[1].toLowerCase()] = m[2];
+  });
+  return data;
+}
+function serializeBlock(data) {
+  return Object.entries(data).map(([k, v]) => k + ": " + v).join("\n");
+}
+// Schlüssel normalisieren: "Ziel Stück" -> "ziel_stueck", damit eingefügte
+// Tabellenzeilen dieselben Namen treffen wie die Blöcke im Dokument.
+function slugKey(s) {
+  return s.toLowerCase()
+    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+    .replace(/[^a-z0-9_]+/g, "_").replace(/^_|_$/g, "");
+}
+// CSV, Semikolon-CSV oder Tab-getrennt (so kommt es aus Excel/Numbers via Copy).
+// Erwartet zwei Spalten: Schlüssel und Wert. Trenner nach Priorität, damit ein
+// Dezimalkomma ("9,99") nicht als Spaltentrenner missverstanden wird.
+function parseCsv(text) {
+  const data = {};
+  text.split(/\r?\n/).forEach(line => {
+    if (!line.trim()) return;
+    const delim = line.includes("\t") ? "\t" : (line.includes(";") ? ";" : ",");
+    let cells = line.split(delim).map(c => c.trim().replace(/^"|"$/g, ""));
+    if (cells.length < 2) return;
+    // Komma-CSV mit deutschem Dezimalkomma: die letzten beiden Zahlteile gehören zusammen
+    if (delim === "," && cells.length > 2 && /^\d+$/.test(cells[cells.length - 1]) && /^-?\d+$/.test(cells[cells.length - 2])) {
+      const dec = cells.pop(); cells[cells.length - 1] += "," + dec;
+    }
+    const key = slugKey(cells[0]);
+    if (key) data[key] = cells[cells.length - 1];
+  });
+  return data;
+}
+function num(v, fallback) {
+  if (v === undefined || v === null || v === "") return fallback;
+  const n = parseFloat(String(v).replace(/[^\d.,-]/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", "."));
+  return isFinite(n) ? n : fallback;
+}
+// Ersetzt den Inhalt eines witty-Blocks im Markdown. Blocknamen sind pro
+// Dokument eindeutig; fehlt der Block, passiert nichts (der Aufrufer prüft das).
+function replaceFence(md, name, body, nth) {
+  // Ein Dokument kann denselben Blocktyp mehrfach enthalten (vier Experimente
+  // z. B.) — deshalb wird gezielt das n-te Vorkommen ersetzt, nicht das erste.
+  const re = new RegExp("(^|\\n)```witty:" + name + "[^\\n]*\\n[\\s\\S]*?\\n```", "gi");
+  let i = 0, hit = false;
+  const out = md.replace(re, (m, lead) => {
+    if (i++ !== (nth || 0)) return m;
+    hit = true;
+    return lead + "```witty:" + name + "\n" + body + "\n```";
+  });
+  return hit ? out : null;
+}
+// Wie replaceFence, legt den Block aber an, wenn es ihn noch nicht gibt.
+function upsertFence(md, name, body, heading) {
+  const done = replaceFence(md, name, body, 0);
+  if (done !== null) return done;
+  const block = "\n\n```witty:" + name + "\n" + body + "\n```\n";
+  const at = md.search(/\n## (Verlauf|History)\b/);
+  return at >= 0 ? md.slice(0, at) + block + md.slice(at) : md.replace(/\s*$/, block);
+}
+/* ============ Verlauf: witty:log ============
+   Jede Änderung hängt eine datierte Zeile an. Der Log ist dreierlei zugleich:
+   lesbare Historie im Dokument, Grundlage für den späteren Fortschritts-/
+   Rückschritt-Vergleich, und die Identität, an der witty beim Laden erkennt,
+   ob eine Datei älter ist als der aktuelle Stand.                        */
+const LOG_NAME = "log";
+function isoDay(d) { return d.toISOString().slice(0, 10); }
+function logLines(md) {
+  const m = md.match(/```witty:log[^\n]*\n([\s\S]*?)\n```/i);
+  return m ? m[1].split(/\r?\n/).filter(l => l.trim()) : [];
+}
+function logLatest(md) {
+  const last = logLines(md).map(l => (l.match(/^\s*([\d]{4}-[\d]{2}-[\d]{2}[T\d:]*)/) || [])[1]).filter(Boolean).sort();
+  return last.length ? last[last.length - 1] : null;
+}
+function appendLog(md, entry) {
+  const line = new Date().toISOString().slice(0, 16).replace("T", " ") + " | " + entry;
+  const re = /(```witty:log[^\n]*\n)([\s\S]*?)(\n```)/i;
+  if (re.test(md)) return md.replace(re, (m, head, body, tail) => head + (body.trim() ? body + "\n" : "") + line + tail);
+  // Noch kein Log im Dokument: einen anlegen, ganz am Ende.
+  return md.replace(/\s*$/, "\n\n## Verlauf\n\n```witty:log\n" + line + "\n```\n");
+}
+/* ============ Anmerkungen: witty:pending ============
+   Ein Block fürs ganze Dokument, eine Strophe pro angemerktem Schritt,
+   leerzeilengetrennt (nicht der generische parseBlock, weil Notizen
+   mehrzeilig sind: "step: N" + freier Text). Wird per Update-Prompt in eine
+   echte neue Version eingearbeitet, s. buildUpdatePrompt(). */
+function pendingList(md) {
+  const m = (md || "").match(/```witty:pending[^\n]*\n([\s\S]*?)\n```/i);
+  if (!m) return [];
+  return m[1].split(/\n\s*\n/).map(block => {
+    const lines = block.split(/\r?\n/);
+    const head = lines[0].match(/^step:\s*(\d+)/i);
+    return head ? { step: +head[1], note: lines.slice(1).join("\n").trim() } : null;
+  }).filter(Boolean).filter(p => p.note);
+}
+function pendingWrite(list) {
+  return list.map(p => "step: " + p.step + "\n" + p.note).join("\n\n");
+}
+function commitBreakout(name, body, note, nth) {
+  const next = nth === "upsert" ? upsertFence(currentMd, name, body) : replaceFence(currentMd, name, body, nth);
+  if (next === null) return false;
+  currentMd = note ? appendLog(next, note) : next;
+  localStorage.setItem(LS.md, currentMd);
+  dirty = true;
+  if (note) renderLogView();
+  updateSaveBar();
+  scheduleWrite();          // verbundene Datei: sofort durchschreiben
+  return true;
+}
+// Der Log-Block wird als Tabelle gezeigt, nicht als Rohtext.
+BREAKOUTS.log = (_data, raw) => {
+  const rows = (raw || "").split(/\r?\n/).filter(l => l.trim()).reverse().map(l => {
+    const cells = l.split("|").map(c => c.trim());
+    return "<tr>" + cells.map(c => "<td>" + inlineMd(esc(c)) + "</td>").join("") + "</tr>";
+  }).join("");
+  return `<div class="breakout" data-breakout="log"><div class="bo-head"><span class="dblabel">${esc(t("logTitle"))}</span></div>
+    <div class="tablewrap"><table class="md"><tbody>${rows}</tbody></table></div></div>`;
+};
+// Nach einer Log-Änderung nur diesen einen Block neu zeichnen, damit die
+// Eingabefelder der anderen Breakouts ihren Fokus behalten.
+function renderLogView() {
+  const el = document.querySelector('[data-breakout="log"]');
+  const m = currentMd.match(/```witty:log[^\n]*\n([\s\S]*?)\n```/i);
+  if (!m) return;
+  if (el) { el.outerHTML = BREAKOUTS.log(null, m[1]); return; }
+  // Erster Eintrag überhaupt: Die Verlauf-Sektion gab es beim Rendern noch
+  // nicht, also einmal komplett neu zeichnen. Danach greift der Pfad oben.
+  renderMirror(currentMd);
+}
+function timeStr(d) {
+  return d ? d.toLocaleTimeString(lang === "de" ? "de-DE" : "en-US", { hour: "2-digit", minute: "2-digit" }) : "";
+}
+function updateSaveBar() {
+  const bar = $("savebar"), label = $("savebar-text");
+  if (!bar || !label) return;
+  const loaded = !!currentMd;
+  bar.classList.toggle("hidden", !loaded);
+  bar.classList.toggle("warn", dirty && !fileHandle);
+  if (fileHandle) {
+    label.innerHTML = `<b>${esc(fileHandle.name)}</b> — ` +
+      esc(dirty ? t("fileWriting") : t("fileSaved") + (lastWrite ? " " + timeStr(lastWrite) : ""));
+  } else {
+    // Ohne Datei muss immer erkennbar sein, ob Verbinden überhaupt geht —
+    // sonst sucht man einen Knopf, den dieser Browser gar nicht anbietet.
+    const state = dirty ? t("saveDirty") : t("fileNone");
+    label.textContent = CAN_LINK ? state : state + " " + t("fileNoApi");
+  }
+  // Knöpfe je nach Zustand
+  $("btn-link-file").classList.toggle("hidden", !CAN_LINK || !!fileHandle);
+  $("btn-create-file").classList.toggle("hidden", !CAN_LINK || !!fileHandle);
+  $("btn-unlink-file").classList.toggle("hidden", !fileHandle);
+  // Herunterladen und Kopieren bleiben auch mit verbundener Datei sichtbar —
+  // dann nicht als Speicherweg, sondern um eine Kopie zu verschicken.
+  $("btn-download-md").classList.toggle("lemon", !fileHandle);
+  $("btn-download-md").classList.toggle("secondary", !!fileHandle);
+}
+function downloadMd() {
+  const name = (($("proj-title").textContent || "PM-STATUS").trim().replace(/[^\w\-]+/g, "-") || "PM-STATUS") + ".md";
+  const url = URL.createObjectURL(new Blob([currentMd], { type: "text/markdown;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  dirty = false; updateSaveBar();
+}
+async function copyMd() {
+  try { await navigator.clipboard.writeText(currentMd); flash("copied-md"); }
+  catch { const ta = document.createElement("textarea"); ta.value = currentMd; document.body.appendChild(ta);
+          ta.select(); document.execCommand("copy"); document.body.removeChild(ta); flash("copied-md"); }
+}
+function flash(id) {
+  const el = $(id); if (!el) return;
+  el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 1600);
+}
+
+function renderFence(info, code) {
+  // ```witty:<name> — wenn ein Breakout registriert ist, rendert er; sonst bleibt
+  // der Datenblock sichtbar, damit das Format auch ohne Werkzeug durchgereicht wird.
+  const m = info.match(/^witty:([\w-]+)/i);
+  if (m) {
+    const name = m[1].toLowerCase();
+    if (BREAKOUTS[name]) {
+      const nth = (fenceSeq[name] = (fenceSeq[name] === undefined ? 0 : fenceSeq[name] + 1));
+      try { return BREAKOUTS[name](parseBlock(code), code, nth); }
+      catch (e) { console.warn("Breakout " + name + " fehlgeschlagen:", e); }
+    }
+    return '<div class="databox"><span class="dblabel">' + esc(info) + "</span><pre>" + esc(code) + "</pre></div>";
+  }
+  return '<pre class="code">' + esc(code) + "</pre>";
+}
+function renderBody(body) {
+  const out = []; let quote = [], list = [], listTag = "ul", table = [], fence = null, fenceInfo = "";
+  const flushQ = () => { if (quote.length) { out.push("<blockquote>" + quote.join("<br>") + "</blockquote>"); quote = []; } };
+  const flushL = () => { if (list.length) { out.push("<" + listTag + ">" + list.map(li => "<li>" + li + "</li>").join("") + "</" + listTag + ">"); list = []; } };
+  const flushT = () => { if (table.length) { out.push(renderTable(table)); table = []; } };
+  const pushList = (tag, item) => { if (list.length && listTag !== tag) flushL(); listTag = tag; list.push(item); };
+  for (const raw of body.split(/\r?\n/)) {
+    const l = raw.trim();
+    if (fence !== null) {                                    // innerhalb eines Code-Blocks
+      if (l.startsWith("```")) { out.push(renderFence(fenceInfo, fence.join("\n"))); fence = null; fenceInfo = ""; }
+      else fence.push(raw);
+      continue;
+    }
+    if (l.startsWith("```"))  { flushQ(); flushL(); flushT(); fence = []; fenceInfo = l.slice(3).trim(); continue; }
+    if (l.startsWith("> - ")) { flushL(); flushT(); quote.push("• " + inlineMd(esc(l.slice(4)))); continue; }
+    if (l.startsWith("> "))   { flushL(); flushT(); quote.push(inlineMd(esc(l.slice(2)))); continue; }
+    if (l === ">")            { quote.push(""); continue; }
+    flushQ();
+    if (/^\|.*\|\s*$/.test(l)) { flushL(); table.push(l); continue; }
+    flushT();
+    if (/^#{3,6}\s+/.test(l))  { flushL(); out.push("<h4>" + inlineMd(esc(l.replace(/^#{3,6}\s+/, ""))) + "</h4>"); continue; }
+    if (/^(-{3,}|_{3,}|\*{3,})$/.test(l)) { flushL(); out.push("<hr>"); continue; }
+    if (/^[-*]\s+/.test(l))    { pushList("ul", inlineMd(esc(l.replace(/^[-*]\s+/, "")))); continue; }
+    if (/^\d+\.\s+/.test(l))   { pushList("ol", inlineMd(esc(l.replace(/^\d+\.\s+/, "")))); continue; }
+    flushL();
+    if (l) out.push("<p>" + inlineMd(esc(l)) + "</p>");
+  }
+  if (fence !== null) out.push(renderFence(fenceInfo, fence.join("\n")));  // unterminiert
+  flushQ(); flushL(); flushT();
+  return out.join("");
+}
+
+/* ============ Render ============ */
+function renderMirror(md) {
+  let doc;
+  try { doc = parseStatusMd(md); } catch (e) { alert("Parse error: " + e.message); return; }
+  if (!doc.rows.length && !doc.sections.length) { alert(lang === "de" ? "Kein PM-STATUS-Format erkannt." : "No PM-STATUS format recognized."); return; }
+  restoreProjectMeta(md);   // witty:project kann vor der ersten ##-Section stehen,
+                            // also unabhängig vom Section-Parsing direkt im Rohtext suchen
+  const pending = pendingList(md);   // dito: witty:pending kann irgendwo landen
+
+  fenceSeq = {};   // Blocktyp-Zähler pro Renderdurchlauf zurücksetzen
+  $("proj-title").textContent = doc.title.replace(/^PM-STATUS\s*[—-]\s*/i, "");
+  $("proj-sub").textContent = (doc.meta ? doc.meta + " · " : "") + t("subLoaded");
+
+  const counts = { open: 0, mirror: 0, done: 0, deferred: 0 };
+  doc.rows.forEach(r => counts[r.status.key]++);
+  $("counts").innerHTML =
+    `<span class="count mirror">🔍 <b>${counts.mirror}</b> ${t("cMirror")}</span>` +
+    `<span class="count">✅ <b>${counts.done}</b> ${t("cDone")}</span>` +
+    `<span class="count">⭕ <b>${counts.open}</b> ${t("cOpen")}</span>` +
+    `<span class="count">🕊️ <b>${counts.deferred}</b> ${t("cDeferred")}</span>`;
+
+  $("dash-body").innerHTML = doc.rows.map(r =>
+    `<tr class="${r.status.cls}" data-jump="step-${r.n}">
+       <td class="num">${r.n}</td><td>${esc(r.name)}</td>
+       <td class="chip">${r.status.emoji}</td><td class="note">${inlineMd(esc(r.note))}</td>
+     </tr>`).join("");
+
+  $("cover-extra").innerHTML = doc.coverExtra ? renderBody(doc.coverExtra) : "";
+
+  $("sections").innerHTML = doc.sections.map((s, i) =>
+    `<div class="step ${s.status ? s.status.cls : ""}" data-group="${groupOf(s.n)}" id="step-${s.n ?? "x" + i}">
+       <h3>${s.status ? `<span class="chip">${s.status.emoji}</span>` : ""}
+           ${s.n ? s.n + " · " : ""}${esc(s.name)}</h3>
+       <div class="stepbody">${renderBody(s.body)}</div>
+       ${s.n ? annoBoxHtml(s.n, pending.find(p => p.step === s.n)?.note) : ""}
+     </div>`).join("");
+
+  currentDoc = doc;
+  group = "summary";
+  renderGroupNav(doc);
+  refreshUpdateTab();
+  $("bmc").innerHTML = renderBmc(doc);
+  mountBreakouts();
+
+  // Nur Dashboard-Zeilen und Canvas-Felder — die Menüeinträge der Navigation
+  // bringen ihren eigenen Handler mit und würden hier sonst überschrieben.
+  document.querySelectorAll("#dash-body [data-jump], #bmc [data-jump]").forEach(el =>
+    el.addEventListener("click", () => {
+      applyGroup("alle");   // in die Schritte-Ansicht wechseln und Filter lösen,
+                            // sonst springt es in eine ausgeblendete Sektion
+      const target = $(el.dataset.jump);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+
+  $("loader").classList.add("hidden");
+  $("mirror").classList.remove("hidden");
+}
+
+let currentDoc = null;
+let lens = "steps";
+
+/* ============ Gruppen ============
+   20 Sektionen am Stück sind nicht lesbar. Die Schritte werden deshalb in
+   vier inhaltliche Bündel geteilt, alles Unnummerierte (Sprachraum, Fazit,
+   Spiegel-Lesart, Empfehlungen, Glossar, Verlauf) bildet ein fünftes. */
+const GROUPS = [
+  { id: "summary",    from: -1, to: -1, label: "grpSummaryView", view: "summary" },
+  { id: "konzept",    from: 1,  to: 6,  label: "grpConcept" },
+  { id: "produkt",    from: 7,  to: 8,  label: "grpProduct" },
+  { id: "markt",      from: 9,  to: 10, label: "grpMarket" },
+  { id: "bmc",        from: -1, to: -1, label: "lensBmc", view: "bmc", sub: true },  // Unterpunkt von Markt & Geld
+  { id: "messen",     from: 11, to: 14, label: "grpLearn" },
+  { id: "auswertung", from: -1, to: -1, label: "grpSummary" },
+  { id: "compare",    from: -1, to: -1, label: "grpCompare", view: "compare" },
+  { id: "update",     from: -1, to: -1, label: "grpUpdate",  view: "update" },
+  { id: "alle",       from: 0,  to: 99, label: "grpAll" }
+];
+function groupOf(n) {
+  if (!n) return "auswertung";
+  const g = GROUPS.find(g => !g.view && g.id !== "alle" && g.from > 0 && n >= g.from && n <= g.to);
+  return g ? g.id : "auswertung";
+}
+let group = "alle";
+// Fortschritt einer Gruppe: ✅ zählt voll, 🔍 zur Hälfte — implizit abgedeckt
+// ist echter Fortschritt, aber noch nicht dasselbe wie beantwortet.
+function groupProgress(rows) {
+  if (!rows.length) return null;
+  const done = rows.filter(r => r.status.key === "done").length;
+  const half = rows.filter(r => r.status.key === "mirror").length;
+  const def  = rows.filter(r => r.status.key === "deferred").length;
+  return Math.round(((done + half * 0.5 + def) / rows.length) * 100);
+}
+// Update-Reiter nur zeigen, wenn es etwas zum Einarbeiten gibt — separat von
+// renderGroupNav aufrufbar, damit pendingSave/pendingRemove nicht die ganze
+// Navigation neu aufbauen müssen, nur um diesen einen Reiter zu toggeln.
+function refreshUpdateTab() {
+  const updateBtn = document.querySelector('.grp > .lens[data-group="update"]');
+  if (updateBtn) updateBtn.closest(".grp").classList.toggle("hidden", pendingList(currentMd).length === 0);
+}
+function renderGroupNav(doc) {
+  const nav = $("groupnav");
+  if (!nav) return;
+  nav.innerHTML = GROUPS.map(g => {
+    const rows = g.view || g.id === "alle" || g.from < 0 ? [] : doc.rows.filter(r => groupOf(r.n) === g.id);
+    const pct = groupProgress(rows);
+    const range = !g.view && g.from > 0 ? `<span class="grprange">${g.from}–${g.to}</span>` : "";
+    const bar = pct === null ? "" :
+      `<span class="grpbar" title="${pct}%"><i style="width:${pct}%"></i></span>`;
+    const arrow = g.sub ? '<span class="grparrow">↳</span> ' : "";
+    const caret = rows.length ? '<span class="grpcaret">▾</span>' : "";
+    const items = rows.map(r =>
+      `<li><button class="grpitem" data-jump="step-${r.n}" data-group="${g.id}">
+         <span class="chip">${r.status.emoji}</span>
+         <span class="grpnum">${r.n}</span> ${esc(r.name)}</button></li>`).join("");
+    const menu = rows.length
+      ? `<ul class="grpmenu hidden">
+           <li><button class="grpitem all" data-group="${g.id}">${esc(t("grpShowAll"))}</button></li>
+           ${items}
+         </ul>` : "";
+    return `<div class="grp">
+      <button class="lens${g.id === group ? " active" : ""}${g.sub ? " isview" : ""}" data-group="${g.id}">
+        ${arrow}${esc(t(g.label))} ${range}${bar}${caret}
+      </button>${menu}</div>`;
+  }).join("");
+
+  // Zeigegeräte: Untermenü bei Hover. Touch hat kein Hover, deshalb bleibt der
+  // Klick als zweiter Weg bestehen.
+  nav.querySelectorAll(".grp").forEach(grp => {
+    const menu = grp.querySelector(".grpmenu");
+    if (!menu) return;
+    grp.addEventListener("mouseenter", () => { closeMenus(); menu.classList.remove("hidden"); });
+    grp.addEventListener("mouseleave", () => menu.classList.add("hidden"));
+  });
+  nav.querySelectorAll(".grp > .lens").forEach(btn => btn.addEventListener("click", e => {
+    e.stopPropagation();
+    const menu = btn.parentElement.querySelector(".grpmenu");
+    const wasOpen = menu && !menu.classList.contains("hidden");
+    closeMenus();
+    if (menu && !wasOpen) { menu.classList.remove("hidden"); return; }   // erst öffnen
+    applyGroup(btn.dataset.group);                                       // ohne Untermenü: direkt filtern
+  }));
+  nav.querySelectorAll(".grpitem").forEach(item => item.addEventListener("click", e => {
+    e.stopPropagation();
+    closeMenus();
+    applyGroup(item.dataset.group);
+    const target = item.dataset.jump && $(item.dataset.jump);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }));
+}
+function closeMenus() {
+  document.querySelectorAll(".grpmenu").forEach(m => m.classList.add("hidden"));
+}
+document.addEventListener("click", closeMenus);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenus(); });
+
+function applyGroup(id) {
+  const entry = GROUPS.find(g => g.id === id);
+  group = id;
+  $("groupnav").querySelectorAll(".grp > .lens").forEach(b =>
+    b.classList.toggle("active", b.dataset.group === id));
+  // Ein Eintrag ist entweder eine andere Ansicht (Canvas) oder ein Filter über
+  // die Schritte — beides über dieselbe Leiste, damit es nur eine Navigation gibt.
+  const view = (entry && entry.view) || "steps";
+  switchLens(view);
+  if (view !== "steps") return;
+  document.querySelectorAll("#sections .step").forEach(el =>
+    el.classList.toggle("hidden", id !== "alle" && el.dataset.group !== id));
+}
+
+function switchLens(which) {
+  lens = which;
+  $("summary").classList.toggle("hidden", which !== "summary");
+  $("compare").classList.toggle("hidden", which !== "compare");
+  $("sections").classList.toggle("hidden", which !== "steps");
+  $("bmc").classList.toggle("hidden", which !== "bmc");
+  $("update-view").classList.toggle("hidden", which !== "update");
+  if (which === "update") renderUpdateView();
+}
+function renderUpdateView() {
+  const pend = pendingList(currentMd);
+  $("update-summary").textContent = pend.length
+    ? t("updateCount").replace("{n}", pend.length) + " " + pend.map(p => "#" + p.step).join(", ")
+    : t("updateNone");
+  $("update-prompt-text").textContent = pend.length ? buildUpdatePrompt() : "";
+}
+
+/* ============ Breakout: Mini-P&L ============
+   Ersetzt den witty:pnl-Datenblock durch einen Rechner. Deutsche und
+   englische Schlüssel treffen dieselben Felder, damit ein Dokument aus dem
+   einen Prompt auch in der anderen Sprache rechnet. */
+const PNL_FIELDS = [
+  { id: "cost_month",  aliases: ["kosten_monat", "kosten_pro_monat", "laufende_kosten"], label: "pnlCostMonth", def: 0 },
+  { id: "gross",       aliases: ["brutto", "bruttopreis", "preis"],                      label: "pnlGross",     def: 0 },
+  { id: "vat_percent", aliases: ["ust_prozent", "mwst_prozent", "ust"],                  label: "pnlVat",       def: 0 },
+  { id: "fee_percent", aliases: ["gebuehr_prozent", "gebuehren_prozent"],                label: "pnlFeePct",    def: 0 },
+  { id: "fee_fixed",   aliases: ["gebuehr_fix", "gebuehren_fix"],                        label: "pnlFeeFix",    def: 0 },
+  { id: "target_units",aliases: ["ziel_stueck", "zielstueck", "ziel"],                   label: "pnlTarget",    def: 0 },
+  { id: "hours",       aliases: ["stunden", "bauzeit_stunden"],                          label: "pnlHours",     def: 0 }
+];
+function pnlRead(data) {
+  const out = {};
+  PNL_FIELDS.forEach(f => {
+    const key = [f.id, ...f.aliases].find(k => data[k] !== undefined);
+    out[f.id] = num(key ? data[key] : undefined, f.def);
+  });
+  out.currency = data.currency || data.waehrung || "€";
+  // Merkt sich, ob das Dokument deutsche Schlüssel benutzt — dann wird auch so zurückgeschrieben.
+  out._de = PNL_FIELDS.some(f => f.aliases.some(a => data[a] !== undefined));
+  return out;
+}
+function pnlWrite(v) {
+  const pick = f => (v._de ? f.aliases[0] : f.id);
+  // Optionale Felder nur schreiben, wenn sie gesetzt sind — sonst wächst der
+  // Block bei jedem Speichern um Nullwerte, die niemand eingetragen hat.
+  const lines = PNL_FIELDS.filter(f => f.id !== "hours" || v.hours).map(f => pick(f) + ": " + v[f.id]);
+  if (v.currency && v.currency !== "€") lines.push((v._de ? "waehrung" : "currency") + ": " + v.currency);
+  return lines.join("\n");
+}
+function pnlCompute(v) {
+  const netPerUnit = v.gross / (1 + v.vat_percent / 100) - v.gross * (v.fee_percent / 100) - v.fee_fixed;
+  const yearCost = v.cost_month * 12;
+  const breakEven = netPerUnit > 0 ? Math.ceil(yearCost / netPerUnit) : null;
+  const targetRevenue = v.target_units * netPerUnit;
+  const surplus = targetRevenue - yearCost;
+  const hourly = v.hours > 0 ? surplus / v.hours : null;
+  return { netPerUnit, yearCost, breakEven, targetRevenue, surplus, hourly };
+}
+function fmt(n, cur) {
+  if (n === null || !isFinite(n)) return "—";
+  const s = n.toLocaleString(lang === "de" ? "de-DE" : "en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return cur ? s + " " + cur : s;
+}
+function renderPnl(data, _raw, nth) {
+  const v = pnlRead(data);
+  const inputs = PNL_FIELDS.map(f =>
+    `<label class="pnl-field"><span>${esc(t(f.label))}</span>
+       <input type="number" step="any" data-pnl="${f.id}" value="${v[f.id]}"></label>`).join("");
+  return `<div class="breakout" data-breakout="pnl" data-nth="${nth || 0}" data-currency="${esc(v.currency)}" data-de="${v._de ? 1 : 0}">
+    <div class="bo-head"><span class="dblabel">${esc(t("pnlTitle"))}</span></div>
+    <div class="pnl-grid">${inputs}</div>
+    <div class="pnl-out"></div>
+    <details class="pnl-import">
+      <summary>${esc(t("pnlImport"))}</summary>
+      <textarea class="paste pnl-paste" rows="4" placeholder="${esc(t("pnlImportPh"))}"></textarea>
+      <div class="loadrow"><button class="btn secondary small pnl-apply">${esc(t("pnlImportBtn"))}</button>
+        <span class="pnl-msg"></span></div>
+    </details>
+    <p class="pnl-note">${esc(t("pnlNote"))}</p>
+  </div>`;
+}
+function mountPnl(root) {
+  const cur = root.dataset.currency || "€";
+  const isDe = root.dataset.de === "1";
+  const read = () => {
+    const v = { currency: cur, _de: isDe };
+    root.querySelectorAll("[data-pnl]").forEach(i => { v[i.dataset.pnl] = num(i.value, 0); });
+    return v;
+  };
+  const paint = () => {
+    const v = read(), c = pnlCompute(v);
+    const rows = [
+      [t("pnlNetPerUnit"), fmt(c.netPerUnit, cur)],
+      [t("pnlYearCost"), fmt(c.yearCost, cur)],
+      [t("pnlBreakEven"), c.breakEven === null ? "—" : c.breakEven + " " + t("pnlUnits")],
+      [t("pnlTargetRevenue"), fmt(c.targetRevenue, cur)],
+      [t("pnlSurplus"), fmt(c.surplus, cur)]
+    ];
+    if (c.hourly !== null) rows.push([t("pnlHourly"), fmt(c.hourly, cur)]);
+    root.querySelector(".pnl-out").innerHTML =
+      '<div class="tablewrap"><table class="md"><tbody>' +
+      rows.map(([k, val], i) =>
+        `<tr class="${i === 2 ? "pnl-key" : ""}"><td>${esc(k)}</td><td><b>${esc(val)}</b></td></tr>`).join("") +
+      "</tbody></table></div>";
+    return v;
+  };
+  const nth = +(root.dataset.nth || 0);
+  const save = note => { const v = read(); commitBreakout("pnl", pnlWrite(v), note, nth); };
+  root.querySelectorAll("[data-pnl]").forEach(i => {
+    let before = i.value;
+    i.addEventListener("focus", () => { before = i.value; });
+    i.addEventListener("input", paint);
+    i.addEventListener("change", () => {
+      paint();
+      const note = before !== i.value ? `10 | P&L | ${i.dataset.pnl} ${before || "–"} → ${i.value}` : null;
+      save(note);
+      before = i.value;
+    });
+  });
+  const applyBtn = root.querySelector(".pnl-apply");
+  if (applyBtn) applyBtn.addEventListener("click", () => {
+    const parsed = pnlRead(parseCsv(root.querySelector(".pnl-paste").value));
+    let hits = 0;
+    root.querySelectorAll("[data-pnl]").forEach(i => {
+      if (parsed[i.dataset.pnl]) { i.value = parsed[i.dataset.pnl]; hits++; }
+    });
+    root.querySelector(".pnl-msg").textContent = hits ? t("pnlImportOk").replace("{n}", hits) : t("pnlImportNone");
+    paint(); if (hits) save(`10 | P&L | ${hits} Werte importiert`);
+  });
+  paint();
+}
+/* ============ Breakout: Roadmap Now / Next / Later ============
+   Format im Dokument, eine Zeile je Karte — les- und diffbar, und die
+   Reihenfolge im Text ist die Priorität:
+     now: 5 Kundengespräche
+     next: Konten anlegen
+     later: Animation ausbauen                                          */
+const RM_COLS = [
+  { id: "now",   match: /^(now|jetzt)$/i,                   label: "rmNow" },
+  { id: "next",  match: /^(next|danach|als_?n(ä|ae)chstes)$/i, label: "rmNext" },
+  { id: "later", match: /^(later|sp(ä|ae)ter)$/i,           label: "rmLater" }
+];
+function rmParse(raw) {
+  const cols = { now: [], next: [], later: [] };
+  (raw || "").split(/\r?\n/).forEach(line => {
+    const m = line.match(/^\s*([\wäöüÄÖÜ_]+)\s*:\s*(.+?)\s*$/);
+    if (!m) return;
+    const col = RM_COLS.find(c => c.match.test(m[1]));
+    if (col) cols[col.id].push(m[2]);
+  });
+  return cols;
+}
+function rmWrite(cols) {
+  return RM_COLS.flatMap(c => cols[c.id].map(item => c.id + ": " + item)).join("\n");
+}
+function renderRoadmap(_data, raw, nth) {
+  const cols = rmParse(raw);
+  // data-raw trägt den unformatierten Kartentext — Umsortieren und Bearbeiten
+  // lesen ihn von dort, damit Markdown im Text (z. B. **fett**) erhalten bleibt.
+  const col = c => `<div class="rm-col" data-col="${c.id}">
+      <h4>${esc(t(c.label))}</h4>
+      <div class="rm-cards">${cols[c.id].map(item => `
+        <div class="rm-card" draggable="true" data-raw="${escAttr(item)}">
+          <span class="rm-grip">${ICONS.grip}</span>
+          <span class="rm-text">${inlineMd(esc(item))}</span>
+          <span class="rm-btns">
+            <button class="rm-act rm-edit" title="${escAttr(t("rmEdit"))}">${ICONS.pencil}</button>
+            <button class="rm-act rm-del" title="${escAttr(t("rmDelete"))}">${ICONS.x}</button>
+          </span>
+        </div>`).join("") || `<p class="rm-empty">—</p>`}</div>
+      <button class="rm-add" title="${escAttr(t("rmAdd"))}">${ICONS.plus}<span>${esc(t("rmAdd"))}</span></button>
+    </div>`;
+  return `<div class="breakout" data-breakout="roadmap" data-nth="${nth || 0}">
+    <div class="bo-head"><span class="dblabel">${esc(t("rmTitle"))}</span></div>
+    <div class="rm-grid">${RM_COLS.map(col).join("")}</div>
+    <p class="pnl-note">${esc(t("rmNote"))}</p>
+  </div>`;
+}
+function mountRoadmap(root) {
+  const state = () => {
+    const cols = { now: [], next: [], later: [] };
+    root.querySelectorAll(".rm-col").forEach(c =>
+      c.querySelectorAll(".rm-card").forEach(card => cols[c.dataset.col].push(card.dataset.raw)));
+    return cols;
+  };
+  const rmNth = +(root.dataset.nth || 0);
+  const save = note => commitBreakout("roadmap", rmWrite(state()), note, rmNth);
+  const repaint = cols => {
+    const wrap = root.parentElement;
+    root.outerHTML = renderRoadmap(null, rmWrite(cols), rmNth);
+    const fresh = wrap.querySelector('[data-breakout="roadmap"]');
+    if (fresh) mountRoadmap(fresh);
+  };
+  const short = s => s.length > 40 ? s.slice(0, 38) + "…" : s;
+  const at = btn => {
+    const card = btn.closest(".rm-card"), colEl = btn.closest(".rm-col");
+    return { card, colEl, idx: [...colEl.querySelectorAll(".rm-card")].indexOf(card) };
+  };
+  // Karte streichen
+  root.querySelectorAll(".rm-del").forEach(btn => btn.addEventListener("click", () => {
+    const { colEl, idx } = at(btn);
+    const cols = state();
+    const item = cols[colEl.dataset.col][idx];
+    cols[colEl.dataset.col].splice(idx, 1);
+    repaint(cols);
+    commitBreakout("roadmap", rmWrite(cols), `8 | Roadmap | gestrichen: ${short(item)}`, rmNth);
+    pendingAppendLine(8, t("rmPendDel").replace("{a}", item));
+  }));
+  // Karte an Ort und Stelle bearbeiten
+  root.querySelectorAll(".rm-edit").forEach(btn => btn.addEventListener("click", () => {
+    const { card, colEl, idx } = at(btn);
+    if (card.querySelector(".rm-editfield")) return;
+    const old = card.dataset.raw;
+    card.draggable = false;
+    const input = document.createElement("input");
+    input.className = "rm-editfield";
+    input.value = old;
+    card.querySelector(".rm-text").replaceWith(input);
+    input.focus();
+    input.select();
+    let done = false;
+    const finish = commit => {
+      if (done) return;
+      done = true;
+      const val = input.value.trim();
+      const cols = state();
+      if (commit && val && val !== old) {
+        cols[colEl.dataset.col][idx] = val;
+        repaint(cols);
+        commitBreakout("roadmap", rmWrite(cols), `8 | Roadmap | ${short(old)} → ${short(val)}`, rmNth);
+        pendingAppendLine(8, t("rmPendEdit").replace("{a}", old).replace("{b}", val));
+      } else {
+        repaint(cols);          // Ansicht zurücksetzen, nichts geändert
+      }
+    };
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") finish(true);
+      else if (e.key === "Escape") finish(false);
+    });
+    input.addEventListener("blur", () => finish(true));
+  }));
+  // Neue Karte ans Ende einer Spalte
+  root.querySelectorAll(".rm-add").forEach(btn => btn.addEventListener("click", () => {
+    const colEl = btn.closest(".rm-col");
+    const open = colEl.querySelector(".rm-cards .rm-editfield");
+    if (open) { open.focus(); return; }
+    const input = document.createElement("input");
+    input.className = "rm-editfield";
+    colEl.querySelector(".rm-cards").appendChild(input);
+    input.focus();
+    let done = false;
+    const finish = commit => {
+      if (done) return;
+      done = true;
+      const val = input.value.trim();
+      const cols = state();
+      if (commit && val) {
+        const colId = colEl.dataset.col;
+        cols[colId].push(val);
+        repaint(cols);
+        commitBreakout("roadmap", rmWrite(cols), `8 | Roadmap | neu (${colId}): ${short(val)}`, rmNth);
+        const colName = t(RM_COLS.find(c => c.id === colId).label);
+        pendingAppendLine(8, t("rmPendAdd").replace("{a}", val).replace("{c}", colName));
+      } else {
+        repaint(cols);          // Eingabe verworfen, Ansicht zurücksetzen
+      }
+    };
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") finish(true);
+      else if (e.key === "Escape") finish(false);
+    });
+    input.addEventListener("blur", () => finish(true));
+  }));
+  // Drag & Drop — der Griff links ist die sichtbare Einladung dazu
+  let dragged = null, dragFrom = null;
+  root.querySelectorAll(".rm-card").forEach(card => {
+    card.addEventListener("dragstart", () => {
+      dragged = card; dragFrom = card.closest(".rm-col").dataset.col;
+      card.classList.add("dragging");
+    });
+    card.addEventListener("dragend", () => {
+      card.classList.remove("dragging");
+      dragged = null;
+      // Spaltenwechsel ist eine Prioritätsentscheidung: präzise Log-Zeile plus
+      // Anmerkung für den Update-Prompt. Sortieren innerhalb bleibt still.
+      const toCol = card.closest(".rm-col");
+      const to = toCol ? toCol.dataset.col : dragFrom;
+      if (to === dragFrom) { save("8 | Roadmap | umsortiert"); return; }
+      const item = card.dataset.raw;
+      save(`8 | Roadmap | ${short(item)}: ${dragFrom} → ${to}`);
+      const line = t("rmPendMove").replace("{a}", item).replace("{c}", t(RM_COLS.find(c => c.id === to).label));
+      pendingAppendLine(8, line, t("rmPendMove").split("{c}")[0].replace("{a}", item));
+    });
+  });
+  root.querySelectorAll(".rm-cards").forEach(zone => {
+    zone.addEventListener("dragover", e => {
+      e.preventDefault();
+      if (!dragged) return;
+      const after = [...zone.querySelectorAll(".rm-card:not(.dragging)")].find(c =>
+        e.clientY < c.getBoundingClientRect().top + c.getBoundingClientRect().height / 2);
+      zone.insertBefore(dragged, after || null);
+    });
+    zone.addEventListener("drop", e => e.preventDefault());
+  });
+}
+
+/* ============ Breakout: Experiment ============
+   Macht aus dem Datenblock ein Formular. Der wichtigste Teil ist das
+   Ergebnisfeld: "widerlegt" ist gleichwertig zu "bestätigt", nicht das
+   Scheitern — ein Test, der eine Annahme kippt, hat Geld gespart. */
+const EXP_FIELDS = [
+  { id: "annahme",     alias: "assumption", label: "expAssumption", rows: 2 },
+  { id: "hypothese",   alias: "hypothesis",  label: "expHypothesis", rows: 2 },
+  { id: "test",        alias: "test",        label: "expTest",       rows: 2 },
+  { id: "messgroesse", alias: "metric",      label: "expMetric",     rows: 1 },
+  { id: "erfolg_wenn", alias: "success_if",  label: "expSuccess",    rows: 1 }
+];
+const EXP_RISKS = ["value", "usability", "feasibility", "viability", "adaptability"];
+const EXP_RESULTS = ["offen", "bestaetigt", "widerlegt"];
+function expRead(data) {
+  const v = {};
+  EXP_FIELDS.forEach(f => { v[f.id] = data[f.id] ?? data[f.alias] ?? ""; });
+  v.risiko = (data.risiko || data.risk || "").toLowerCase();
+  v.aufwand = data.aufwand || data.effort || "";
+  const r = (data.ergebnis || data.result || "offen").toLowerCase();
+  v.ergebnis = r.startsWith("best") || r === "confirmed" ? "bestaetigt"
+             : r.startsWith("wider") || r === "refuted" ? "widerlegt" : "offen";
+  v._en = data.assumption !== undefined || data.hypothesis !== undefined;
+  return v;
+}
+function expWrite(v) {
+  const k = f => (v._en ? f.alias : f.id);
+  const lines = EXP_FIELDS.map(f => k(f) + ": " + v[f.id]);
+  lines.push((v._en ? "risk" : "risiko") + ": " + v.risiko);
+  lines.push((v._en ? "effort" : "aufwand") + ": " + v.aufwand);
+  const res = v._en ? { offen: "open", bestaetigt: "confirmed", widerlegt: "refuted" }[v.ergebnis] : v.ergebnis;
+  lines.push((v._en ? "result" : "ergebnis") + ": " + res);
+  return lines.join("\n");
+}
+function renderExperiment(data, _raw, nth) {
+  const v = expRead(data);
+  const fields = EXP_FIELDS.map(f => `
+    <label class="exp-field"><span>${esc(t(f.label))}</span>
+      <textarea data-exp="${f.id}" rows="${f.rows}">${esc(v[f.id])}</textarea></label>`).join("");
+  const opt = (list, cur, pre) => list.map(o =>
+    `<option value="${o}"${o === cur ? " selected" : ""}>${esc(t(pre + o))}</option>`).join("");
+  return `<div class="breakout exp res-${v.ergebnis}" data-breakout="experiment" data-nth="${nth || 0}" data-en="${v._en ? 1 : 0}">
+    <div class="bo-head"><span class="dblabel">${esc(t("expTitle"))}</span>
+      <select class="exp-result" data-exp="ergebnis">${opt(EXP_RESULTS, v.ergebnis, "expRes_")}</select></div>
+    <div class="exp-grid">${fields}</div>
+    <div class="exp-meta">
+      <label class="exp-field"><span>${esc(t("expRisk"))}</span>
+        <select data-exp="risiko"><option value=""></option>${opt(EXP_RISKS, v.risiko, "expRisk_")}</select></label>
+      <label class="exp-field"><span>${esc(t("expEffort"))}</span>
+        <input type="text" data-exp="aufwand" value="${esc(v.aufwand)}"></label>
+    </div>
+    <p class="pnl-note">${esc(t("expNote"))}</p>
+  </div>`;
+}
+function mountExperiment(root) {
+  const nth = +(root.dataset.nth || 0);
+  const isEn = root.dataset.en === "1";
+  const read = () => {
+    const v = { _en: isEn };
+    root.querySelectorAll("[data-exp]").forEach(el => { v[el.dataset.exp] = el.value.trim(); });
+    return v;
+  };
+  const save = note => {
+    const v = read();
+    root.className = "breakout exp res-" + v.ergebnis;
+    commitBreakout("experiment", expWrite(v), note, nth);
+  };
+  root.querySelectorAll("[data-exp]").forEach(el => {
+    let before = el.value;
+    el.addEventListener("focus", () => { before = el.value; });
+    el.addEventListener("change", () => {
+      const v = read();
+      const note = el.dataset.exp === "ergebnis" && before !== el.value
+        ? `– | Experiment | ${(v.hypothese || v.test || "").slice(0, 40)}: ${t("expRes_" + v.ergebnis)}`
+        : null;
+      save(note);
+      before = el.value;
+    });
+  });
+}
+
+// Nach jedem Rendern die Breakouts verdrahten.
+function mountBreakouts() {
+  document.querySelectorAll('[data-breakout="experiment"]').forEach(mountExperiment);
+  document.querySelectorAll("[data-bmc]").forEach(el =>
+    el.addEventListener("change", () => bmcSave(el.dataset.bmc)));
+  document.querySelectorAll('[data-breakout="pnl"]').forEach(mountPnl);
+  document.querySelectorAll('[data-breakout="roadmap"]').forEach(mountRoadmap);
+  document.querySelectorAll('[data-anno-step]').forEach(mountAnnoBox);
+}
+BREAKOUTS.pnl = renderPnl;
+BREAKOUTS.roadmap = renderRoadmap;
+BREAKOUTS.experiment = renderExperiment;
+
+// witty:project — trägt das Formular aus dem Prompt-Tab zurück ins geladene
+// Dokument ein, damit ein gespeichertes PM-STATUS.md die Formularwerte beim
+// nächsten Laden von selbst wiederherstellt (statt nur im Browser zu leben).
+const PROJECT_META_MAP = { name: "pname", desc: "pdesc", goal: "pgoal", stage: "pstage", money: "pmoney", comp: "pcomp", focus: "pfocus", space: "pspace", res: "pres", cnslproj: "pcnslproj", cnslskills: "pcnslskills" };
+function renderProjectMeta(data) {
+  Object.entries(PROJECT_META_MAP).forEach(([k, lsKey]) => {
+    if (data[k] !== undefined) localStorage.setItem(LS[lsKey], data[k]);
+  });
+  applyProjectFields();
+  if (["0","1","2","3","4","5"].includes(data.stage)) {
+    $("proj-stage").value = data.stage; stageSet = true;
+  }
+  updateStageLabel();
+  return '<div class="breakout"><div class="bo-head"><span class="dblabel">' + esc(t("projMetaTitle")) +
+    '</span></div><p class="pnl-note">' + esc(data.name || "—") + "</p></div>";
+}
+BREAKOUTS.project = renderProjectMeta;
+// Der Block steht meist VOR der ersten ##-Section (direkt nach der Stand-Zeile)
+// und landet dort nie im Section-Parsing — deshalb hier direkt im Rohtext suchen,
+// unabhängig davon, wo der Block im Dokument tatsächlich steht.
+function restoreProjectMeta(md) {
+  const m = md.match(/```witty:project\n([\s\S]*?)\n```/i);
+  if (m) renderProjectMeta(parseBlock(m[1]));
+}
+
+// Reiner Datenblock — die eigentliche UI lebt pro Schritt (annoBoxHtml unten),
+// nicht als eigene sichtbare Karte an der Fundstelle des Blocks im Dokument.
+BREAKOUTS.pending = () => "";
+
+function pendingSave(step, text) {
+  const list = pendingList(currentMd).filter(p => p.step !== step);
+  const note = (text || "").trim();
+  if (note) list.push({ step, note });
+  list.sort((a, b) => a.step - b.step);
+  commitBreakout("pending", pendingWrite(list), null, "upsert");
+  repaintAnnoBox(step);
+  refreshUpdateTab();
+}
+function pendingRemove(step) { pendingSave(step, ""); }
+
+// Automatische Anmerkung aus einem Breakout-Edit (BMC-Feld, Roadmap-Karte):
+// hängt eine Zeile an die Strophe des Schritts an, statt sie zu ersetzen.
+// dedupPrefix ersetzt eine frühere Zeile desselben Felds — nur die letzte gilt.
+function pendingAppendLine(step, line, dedupPrefix) {
+  const list = pendingList(currentMd);
+  const cur = list.find(p => p.step === step);
+  // Ein offener, noch ungespeicherter Anmerkungsentwurf zum selben Schritt
+  // würde beim Neuzeichnen verloren gehen — er wird deshalb mit übernommen.
+  const box = document.querySelector(`[data-anno-step="${step}"] .anno-paste`);
+  const draft = box ? box.value.trim() : "";
+  let base = cur ? cur.note : "";
+  if (draft && draft !== base) base = draft;
+  let lines = base ? base.split(/\r?\n/).filter(l => l.trim()) : [];
+  if (dedupPrefix) lines = lines.filter(l => !l.startsWith(dedupPrefix));
+  lines.push(line);
+  const rest = list.filter(p => p.step !== step);
+  rest.push({ step, note: lines.join("\n") });
+  rest.sort((a, b) => a.step - b.step);
+  commitBreakout("pending", pendingWrite(rest), null, "upsert");
+  repaintAnnoBox(step);
+  refreshUpdateTab();
+}
+
+// note gesetzt → "wartet auf Einarbeitung"-Ansicht; sonst das Eingabeformular,
+// draft befüllt es beim Bearbeiten einer schon gespeicherten Anmerkung vor.
+function annoBoxHtml(step, note, draft) {
+  if (note) {
+    return `<div class="annobox anno-pending" data-anno-step="${step}">
+      <div class="bo-head"><span class="dblabel">🕓 ${esc(t("annoPending"))}</span></div>
+      <p class="anno-text">${esc(note).replace(/\n/g, "<br>")}</p>
+      <div class="loadrow">
+        <button class="btn secondary small anno-edit">${esc(t("annoEdit"))}</button>
+        <button class="btn secondary small anno-remove">${esc(t("annoRemove"))}</button>
+      </div>
+    </div>`;
+  }
+  return `<details class="annobox" data-anno-step="${step}"${draft ? " open" : ""}>
+    <summary>${esc(t("annoAdd"))}</summary>
+    <textarea class="paste anno-paste" rows="3" placeholder="${esc(t("annoPh"))}">${esc(draft || "")}</textarea>
+    <div class="loadrow"><button class="btn secondary small anno-save">${esc(t("annoSave"))}</button></div>
+  </details>`;
+}
+function repaintAnnoBox(step, draft) {
+  const el = document.querySelector(`[data-anno-step="${step}"]`);
+  if (!el) return;
+  const note = pendingList(currentMd).find(p => p.step === step)?.note;
+  el.outerHTML = annoBoxHtml(step, note, draft);
+  mountAnnoBox(document.querySelector(`[data-anno-step="${step}"]`));
+}
+function mountAnnoBox(el) {
+  if (!el) return;
+  const step = +el.dataset.annoStep;
+  const editBtn = el.querySelector(".anno-edit");
+  const removeBtn = el.querySelector(".anno-remove");
+  const saveBtn = el.querySelector(".anno-save");
+  if (editBtn) editBtn.addEventListener("click", () => {
+    const note = pendingList(currentMd).find(p => p.step === step)?.note || "";
+    el.outerHTML = annoBoxHtml(step, null, note);
+    mountAnnoBox(document.querySelector(`[data-anno-step="${step}"]`));
+  });
+  if (removeBtn) removeBtn.addEventListener("click", () => pendingRemove(step));
+  if (saveBtn) saveBtn.addEventListener("click", () => pendingSave(step, el.querySelector(".anno-paste").value));
+}
+
+/* ============ Vergleich zweier Snapshots ============
+   Der Kern ist nicht der Fortschritt, sondern der RÜCKSCHRITT: Ein Schritt,
+   der von ✅ auf 🔍 oder ⭕ fällt, ist kein Fehler im Dokument, sondern eine
+   Annahme, die gekippt ist. Genau das kann kein Formular zeigen.        */
+const STATUS_RANK = { open: 0, mirror: 1, deferred: 2, done: 3 };
+function compareDocs(older, newer) {
+  const byN = doc => { const m = {}; doc.rows.forEach(r => m[r.n] = r); return m; };
+  const a = byN(older), b = byN(newer);
+  const rows = [];
+  Object.keys(b).map(Number).sort((x, y) => x - y).forEach(n => {
+    const to = b[n], from = a[n];
+    if (!from) { rows.push({ n, name: to.name, from: null, to: to.status, dir: "new" }); return; }
+    const d = STATUS_RANK[to.status.key] - STATUS_RANK[from.status.key];
+    rows.push({ n, name: to.name, from: from.status, to: to.status, dir: d > 0 ? "up" : d < 0 ? "down" : "same" });
+  });
+  return rows;
+}
+function renderCompare(older, newer, olderMd, newerMd) {
+  const rows = compareDocs(older, newer);
+  const n = k => rows.filter(r => r.dir === k).length;
+  const changed = rows.filter(r => r.dir !== "same");
+  const line = r => `<tr class="cmp-${r.dir}">
+      <td class="num">${r.n}</td><td>${esc(r.name)}</td>
+      <td class="chip">${r.from ? r.from.emoji : "—"}</td>
+      <td class="chip">${r.dir === "up" ? "↗" : r.dir === "down" ? "↘" : r.dir === "new" ? "+" : "="}</td>
+      <td class="chip">${r.to.emoji}</td></tr>`;
+  // Verlaufszeilen, die nur im neueren Dokument stehen
+  const oldLog = new Set(logLines(olderMd));
+  const fresh = logLines(newerMd).filter(l => !oldLog.has(l));
+  return `<div class="cmp-head">
+      <span class="cmp-a">${esc(older.meta || t("cmpOlder"))}</span> →
+      <span class="cmp-b">${esc(newer.meta || t("cmpNewer"))}</span>
+    </div>
+    <p class="cmp-summary">
+      <b class="up">↗ ${n("up")}</b> ${esc(t("cmpUp"))} ·
+      <b class="down">↘ ${n("down")}</b> ${esc(t("cmpDown"))} ·
+      ${n("same")} ${esc(t("cmpSame"))}${n("new") ? " · " + n("new") + " " + esc(t("cmpNew")) : ""}
+    </p>
+    ${n("down") ? `<p class="cmp-note">${esc(t("cmpDownNote"))}</p>` : ""}
+    <div class="tablewrap"><table class="md"><tbody>
+      ${(changed.length ? changed : rows).map(line).join("")}
+    </tbody></table></div>
+    ${fresh.length ? `<h4>${esc(t("cmpLog"))}</h4><div class="tablewrap"><table class="md"><tbody>` +
+      fresh.reverse().map(l => "<tr>" + l.split("|").map(c => "<td>" + inlineMd(esc(c.trim())) + "</td>").join("") + "</tr>").join("") +
+      "</tbody></table></div>" : ""}`;
+}
+function runCompare(otherMd) {
+  let other;
+  try { other = parseStatusMd(otherMd); } catch (e) { alert("Parse error: " + e.message); return; }
+  if (!other.rows.length) { alert(t("cmpNoFormat")); return; }
+  // Reihenfolge aus dem Verlauf ableiten, nicht aus der Ladereihenfolge
+  const mine = logLatest(currentMd), theirs = logLatest(otherMd);
+  const otherIsOlder = !theirs || (mine && theirs < mine);
+  const [oldD, newD, oldMd, newMd] = otherIsOlder
+    ? [other, currentDoc, otherMd, currentMd]
+    : [currentDoc, other, currentMd, otherMd];
+  $("cmp-out").innerHTML = renderCompare(oldD, newD, oldMd, newMd);
+}
+
+/* ============ Linse: Business Model Canvas ============
+   Nichts wird neu abgefragt — die neun Felder werden aus den bereits
+   beantworteten Schritten zusammengesetzt. Zwei Felder haben im
+   14-Schritte-Schema keine Quelle; genau das macht die Linse sichtbar. */
+const BMC_FIELDS = [
+  { key: "kp",   cls: "bmc-kp",   steps: [],       slot: "partner",           enKey: "key_partners" },
+  { key: "ka",   cls: "bmc-ka",   steps: [6, 8],   slot: "aktivitaeten",      enKey: "key_activities" },
+  { key: "kr",   cls: "bmc-kr",   steps: [],       slot: "ressourcen",        enKey: "key_resources" },
+  { key: "vp",   cls: "bmc-vp",   steps: [5, 2],   slot: "wertversprechen",   enKey: "value_proposition" },
+  { key: "cr",   cls: "bmc-cr",   steps: [13, 12], slot: "kundenbeziehungen", enKey: "customer_relationships" },
+  { key: "ch",   cls: "bmc-ch",   steps: [9],      slot: "kanaele",           enKey: "channels" },
+  { key: "seg",  cls: "bmc-seg",  steps: [3],      slot: "segmente",          enKey: "customer_segments" },
+  { key: "cost", cls: "bmc-cost", steps: [10],     slot: "kosten",            enKey: "cost_structure" },
+  { key: "rev",  cls: "bmc-rev",  steps: [9, 10],  slot: "einnahmen",         enKey: "revenue_streams" }
+];
+const bmcLabel = f => t("bmc" + f.key.charAt(0).toUpperCase() + f.key.slice(1));
+// Feldinhalte im witty:bmc-Block. partner/ressourcen sind Pflicht (das Schema
+// liefert sie nicht), alle anderen Schlüssel sind Überschreibungen: Sie
+// verdecken den aus den Schritten abgeleiteten Text, bis sie geleert werden.
+function bmcSlots() {
+  const m = currentMd.match(/```witty:bmc[^\n]*\n([\s\S]*?)\n```/i);
+  const d = m ? parseBlock(m[1]) : {};
+  const out = { _en: BMC_FIELDS.some(f => d[f.enKey] !== undefined) };
+  BMC_FIELDS.forEach(f => { out[f.slot] = d[f.slot] !== undefined ? d[f.slot] : (d[f.enKey] || ""); });
+  return out;
+}
+function bmcSave(changedSlot) {
+  const cur = bmcSlots();
+  const el = k => document.querySelector('[data-bmc="' + k + '"]');
+  // Blockzeilen sind einzeilig ("schlüssel: wert") — Umbrüche werden zu " · ".
+  const oneLine = s => s.trim().replace(/\s*\r?\n+\s*/g, " · ");
+  const lines = [];
+  BMC_FIELDS.forEach(f => {
+    const box = el(f.slot);
+    const val = box ? oneLine(box.value) : (cur[f.slot] || "");
+    const derived = box ? (box.dataset.derived || "").trim() : "";
+    const noSchema = !f.steps.length;
+    if (noSchema || (val && val !== derived)) lines.push((cur._en ? f.enKey : f.slot) + ": " + val);
+  });
+  const f = BMC_FIELDS.find(x => x.slot === changedSlot);
+  commitBreakout("bmc", lines.join("\n"), f ? `9 | BMC | ${bmcLabel(f)} bearbeitet` : null, "upsert");
+  if (!f) return;
+  // Die Änderung wandert zusätzlich als Anmerkung in den Update-Prompt —
+  // zugeordnet zum Quell-Schritt des Felds, damit sie dort eingearbeitet wird.
+  const box = el(f.slot);
+  const val = oneLine(box.value);
+  const derived = (box.dataset.derived || "").trim();
+  const noSchema = !f.steps.length;
+  const isOverride = !noSchema && val && val !== derived;
+  const hadValue = !!(cur[f.slot] || "").trim();
+  const jump = box.closest(".bmc-box").querySelector("[data-jump]");
+  const step = jump ? +jump.dataset.jump.replace("step-", "") : 9;
+  let line = null;
+  if (val && (noSchema || isOverride)) line = t("bmcPendSet").replace("{f}", bmcLabel(f)).replace("{v}", val);
+  else if (hadValue && (noSchema ? !val : !isOverride)) line = t("bmcPendClear").replace("{f}", bmcLabel(f));
+  if (line) pendingAppendLine(step, line, "BMC · " + bmcLabel(f) + ":");
+  // Ansicht des Felds nachziehen, ohne die ganze Canvas neu zu zeichnen
+  if (!noSchema && !val) box.value = derived;   // geleert → Ableitung kehrt zurück
+  const ov = box.closest(".bmc-box").querySelector(".ov");
+  if (ov) ov.toggleAttribute("hidden", !isOverride);
+}
+// Kurzbefund einer Sektion: die erste Blockquote-Zeile, ohne das Präfix.
+function shortVerdict(section) {
+  if (!section) return "";
+  const line = section.body.split(/\r?\n/).find(l => /^>\s*\S/.test(l));
+  return line ? line.replace(/^>\s*/, "").replace(/^(Kurzbefund|Short verdict)\s*:\s*/i, "").trim() : "";
+}
+function renderBmc(doc) {
+  if (!doc) return "";
+  const byN = {};
+  doc.sections.forEach(s => { if (s.n) byN[s.n] = s; });
+  doc.rows.forEach(r => { if (!byN[r.n]) byN[r.n] = null; });
+  const noteOf = n => {
+    const row = doc.rows.find(r => r.n === n);
+    return shortVerdict(byN[n]) || (row ? row.note : "");
+  };
+  const statusOf = n => {
+    const row = doc.rows.find(r => r.n === n);
+    return (byN[n] && byN[n].status) || (row && row.status) || null;
+  };
+  const slots = bmcSlots();
+  const boxes = BMC_FIELDS.map(f => {
+    const title = esc(bmcLabel(f));
+    if (!f.steps.length) {
+      const val = slots[f.slot] || "";
+      return `<div class="bmc-box noschema ${f.cls}"><h4>${title}</h4>
+        <textarea class="bmc-input" data-bmc="${f.slot}" data-derived="" rows="3"
+          placeholder="${escAttr(t("bmcFillPh"))}">${esc(val)}</textarea>
+        <span class="bmc-src">${esc(t("bmcNoSchemaShort"))}</span></div>`;
+    }
+    const src = f.steps.find(n => noteOf(n)) || f.steps[0];
+    const derived = noteOf(src);
+    const override = (slots[f.slot] || "").trim();
+    const val = override || derived;
+    const st = statusOf(src);
+    const isGap = !val || (st && st.key === "open");
+    const rows = Math.min(7, Math.max(3, Math.ceil((val.length || 1) / 55)));
+    const chip = st ? st.emoji + " " : "";
+    return `<div class="bmc-box ${isGap ? "gap" : ""} ${f.cls}"><h4>${title}</h4>
+      <textarea class="bmc-input" data-bmc="${f.slot}" data-derived="${escAttr(derived)}" rows="${rows}"
+        placeholder="${escAttr(t("bmcEmpty") + f.steps.join(", "))}">${esc(val)}</textarea>
+      <span class="bmc-src" data-jump="step-${src}"><b class="ov"${override ? "" : " hidden"} title="${escAttr(t("bmcOverrideHint"))}">✎ ${esc(t("bmcOverride"))} · </b>${chip}${esc(t("bmcFrom"))}${f.steps.join(" · ")}</span></div>`;
+  }).join("");
+  return `<div class="bmc-intro">${esc(t("bmcIntro"))}</div><div class="bmc-grid">${boxes}</div>`;
+}
+
+function loadMd(md, opts) {
+  // Konfliktschutz: Wer eine ältere Datei über einen neueren Stand lädt, hat
+  // meist die falsche Kopie erwischt. Statt still zu überschreiben: fragen.
+  const prevMd = currentMd;
+  if (!(opts && opts.force) && currentMd && currentMd !== md) {
+    const mineAt = logLatest(currentMd), theirsAt = logLatest(md);
+    if (mineAt && (!theirsAt || theirsAt < mineAt)) {
+      const msg = t("conflictOlder").replace("{mine}", mineAt).replace("{theirs}", theirsAt || t("conflictNoLog"));
+      if (!confirm(msg)) return false;
+    }
+  }
+  currentMd = md;
+  dirty = false;
+  localStorage.setItem(LS.md, md);
+  renderMirror(md);
+  updateSaveBar();
+  maybeSuggestCompare(prevMd, md);
+  return true;
+}
+// Lose Verknüpfung zum bestehenden Vergleich: wenn ein zweiter Snapshot
+// desselben Projekts geladen wird, den Diff gegen den vorherigen Stand
+// anbieten — Vergleich funktioniert weiterhin eigenständig über Datei/Paste.
+function maybeSuggestCompare(prevMd, md) {
+  const banner = $("compare-suggest");
+  if (!banner) return;
+  if (!prevMd || prevMd === md) { banner.classList.add("hidden"); return; }
+  let prevDoc, newDoc;
+  try { prevDoc = parseStatusMd(prevMd); newDoc = parseStatusMd(md); }
+  catch { banner.classList.add("hidden"); return; }
+  if (!prevDoc.rows.length || !newDoc.rows.length || prevDoc.title !== newDoc.title) {
+    banner.classList.add("hidden"); return;
+  }
+  banner.classList.remove("hidden");
+  banner.querySelector(".cmpsuggest-btn").onclick = () => {
+    banner.classList.add("hidden");
+    applyGroup("compare");
+    runCompare(prevMd);
+  };
+  banner.querySelector(".cmpsuggest-dismiss").onclick = () => banner.classList.add("hidden");
+}
+
+/* ============ Wiring ============ */
+$("lang-de").onclick = () => { lang = "de"; localStorage.setItem(LS.lang, lang); applyI18n(); applyProjectFields(); renderCli(); };
+$("lang-en").onclick = () => { lang = "en"; localStorage.setItem(LS.lang, lang); applyI18n(); applyProjectFields(); renderCli(); };
+
+$("tab-spiegel").onclick = () => switchTab("spiegel");
+$("tab-prompt").onclick = () => switchTab("prompt");
+$("btn-to-prompt").onclick = () => switchTab("prompt");
+function switchTab(which) {
+  $("tab-spiegel").classList.toggle("active", which === "spiegel");
+  $("tab-prompt").classList.toggle("active", which === "prompt");
+  $("view-spiegel").classList.toggle("hidden", which !== "spiegel");
+  $("view-prompt").classList.toggle("hidden", which !== "prompt");
+}
+
+$("btn-file").onclick = () => $("file-input").click();
+$("file-input").onchange = (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(loadMd);
+};
+// Bewusster Dokumentwechsel — hier ist der Konfliktschutz fehl am Platz.
+$("btn-demo").onclick = () => loadMd($("demo-md").textContent.trim(), { force: true });
+$("btn-paste").onclick = () => { const v = $("paste-area").value.trim(); if (v) loadMd(v); };
+function resetProject() {
+  localStorage.removeItem(LS.md);
+  $("mirror").classList.add("hidden");
+  $("loader").classList.remove("hidden");
+  $("paste-area").value = "";
+  window.scrollTo({ top: 0 });
+}
+$("btn-reset").onclick = resetProject;
+$("btn-reset-top").onclick = resetProject;
+function promptFileName() { return "witty-audit-prompt-" + lang + ".md"; }
+function renderCli() {
+  const el = $("cli-cmd");
+  if (el) el.textContent = 'claude -p "$(cat ~/Downloads/' + promptFileName() + ')" --add-dir .';
+}
+$("btn-dl-prompt").onclick = () => {
+  const url = URL.createObjectURL(new Blob([buildPrompt()], { type: "text/markdown;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = promptFileName(); document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+};
+$("btn-cmp-file").onclick = () => $("cmp-input").click();
+$("cmp-input").onchange = e => {
+  const f = e.target.files[0];
+  if (f) f.text().then(runCompare);
+  e.target.value = "";
+};
+$("btn-cmp-paste").onclick = () => {
+  const ta = $("cmp-area");
+  ta.classList.toggle("hidden");
+  if (!ta.classList.contains("hidden")) ta.focus();
+};
+$("cmp-area").addEventListener("change", () => { if ($("cmp-area").value.trim()) runCompare($("cmp-area").value); });
+$("btn-download-md").onclick = downloadMd;
+$("btn-copy-md").onclick = copyMd;
+$("btn-link-file").onclick = () => linkFile(false);
+$("btn-create-file").onclick = () => linkFile(true);
+$("btn-unlink-file").onclick = unlinkFile;
+// Ohne verbundene Datei ist der Browser-Speicher die einzige Kopie — davor warnen.
+window.addEventListener("beforeunload", e => {
+  if (dirty && !fileHandle) { e.preventDefault(); e.returnValue = t("leaveWarn"); return e.returnValue; }
+});
+
+const drop = $("loader");
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("dragover"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("dragover"));
+drop.addEventListener("drop", e => {
+  e.preventDefault(); drop.classList.remove("dragover");
+  const f = e.dataTransfer.files[0];
+  if (f) f.text().then(loadMd);
+});
+
+$("btn-copy").onclick = async () => {
+  const text = buildPrompt();
+  try { await navigator.clipboard.writeText(text); }
+  catch {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+  }
+  const c = $("copied"); c.style.display = "inline";
+  setTimeout(() => { c.style.display = "none"; }, 1600);
+};
+
+$("btn-copy-update").onclick = async () => {
+  const text = buildUpdatePrompt();
+  try { await navigator.clipboard.writeText(text); }
+  catch {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+  }
+  const c = $("copied-update"); c.style.display = "inline";
+  setTimeout(() => { c.style.display = "none"; }, 1600);
+};
+$("btn-dl-update").onclick = () => {
+  const url = URL.createObjectURL(new Blob([buildUpdatePrompt()], { type: "text/markdown;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = "witty-update-prompt-" + lang + ".md"; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+};
+
+PROJ_FIELDS.forEach(([id, key]) => ["input", "change"].forEach(ev =>
+  $(id).addEventListener(ev, () => {
+    localStorage.setItem(LS[key], $(id).value);
+    $("prompt-text").textContent = buildPrompt();
+  })));
+
+function updateStageLabel() {
+  const el = $("stage-label");
+  el.textContent = stageSet ? t("st" + $("proj-stage").value) : t("stUnset");
+  el.classList.toggle("unset", !stageSet);
+}
+$("proj-stage").addEventListener("input", () => {
+  stageSet = true;
+  localStorage.setItem(LS.pstage, $("proj-stage").value);
+  updateStageLabel();
+  $("prompt-text").textContent = buildPrompt();
+});
+
+/* ============ Init ============ */
+// Beim allerersten Besuch das Formular mit dem Demo-Projekt vorbefüllen — ein
+// ausgefülltes Beispiel erklärt schneller als jeder Hilfetext. Sobald eigene
+// Werte gespeichert sind, greift die Vorbefüllung nie wieder.
+const PREFILL = {
+  pname: "Beetplan",
+  pdesc: {
+    de: "Web-Tool, mit dem Schrebergärtner:innen ihre Beete über die Saison planen und vor Fruchtfolge-Fehlern gewarnt werden.",
+    en: "Web tool for allotment gardeners to plan their beds across the season, warning them about crop-rotation mistakes."
+  },
+  pgoal: {
+    de: "Soll sich selbst tragen — kein Nebenerwerb, aber auch kein Zuschussgeschäft.",
+    en: "Should sustain itself — not a side income, but not a money pit either."
+  },
+  pmoney: {
+    de: "Hosting 8 €/Monat, Domain 15 €/Jahr, 7 verkaufte Saisonlizenzen bisher",
+    en: "Hosting €8/month, domain €15/year, 7 season licences sold so far"
+  },
+  pcomp: { de: "Notiz-Apps, Tabellen, Garten-Communities", en: "note apps, spreadsheets, gardening communities" },
+  pfocus: {
+    de: "Läuft und verkauft — aber worauf wette ich eigentlich?",
+    en: "It runs and it sells — but what am I actually betting on?"
+  },
+  pspace: {
+    de: "Permakultur, Saatgut-Tausch, Vereinsverwaltung",
+    en: "permaculture, seed swapping, club administration"
+  },
+  pres: { de: "—", en: "—" }
+};
+function applyProjectFields() {
+  const untouched = !PROJ_FIELDS.some(([, key]) => localStorage.getItem(LS[key]));
+  PROJ_FIELDS.forEach(([id, key]) => {
+    const stored = localStorage.getItem(LS[key]);
+    const pre = untouched && PREFILL[key];
+    $(id).value = stored || (pre ? (typeof pre === "string" ? pre : pre[lang]) : "");
+  });
+  if (untouched && !localStorage.getItem(LS.pstage)) { $("proj-stage").value = "2"; stageSet = true; }  // Prototyp
+  return untouched;
+}
+applyProjectFields();
+renderCli();
+const storedStage = localStorage.getItem(LS.pstage);
+if (["0","1","2","3","4","5"].includes(storedStage)) {
+  $("proj-stage").value = storedStage; stageSet = true;
+} else if (storedStage !== null) {
+  localStorage.removeItem(LS.pstage); // Altformat (z. B. "live") verwerfen
+}
+applyI18n();
+const saved = localStorage.getItem(LS.md);
+if (saved) loadMd(saved);   // setzt zugleich currentMd für die Breakouts
+restoreHandle();            // verbundene Datei aus der letzten Sitzung zurückholen
+
+// CTA-Einstieg von der Startseite (index.html?go=prompt|demo)
+const go = new URLSearchParams(location.search).get("go");
+if (go === "prompt") switchTab("prompt");
+else if (go === "demo") $("btn-demo").click();
+</script>
+</body>
+</html>
