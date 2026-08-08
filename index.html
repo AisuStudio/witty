@@ -7,9 +7,10 @@
 <link rel="stylesheet" href="design/tokens.css">
 <style>
   * { box-sizing: border-box; margin: 0; }
+  /* Startseite bleibt bewusst fix auf Blueberry, unabhängig vom Theme — wie der Hero */
   body {
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-blueberry);
+    color: var(--color-vanilla);
     font-family: var(--font-primary);
     font-size: 16px;
     line-height: 1.6;
@@ -19,15 +20,15 @@
   /* Sitebar — volle Breite als Fläche, Inhalt auf die Grid-/Seitenbreite ausgerichtet */
   .sitebar {
     background: var(--color-grape);
-    padding: 14px 0;
+    padding: var(--sp-sm) 0 var(--sp-md);
   }
   .sitebar-inner {
-    max-width: 900px; margin: 0 auto; padding: 0 var(--gutter);
-    display: flex; align-items: center; justify-content: space-between; gap: var(--sp-lg);
+    max-width: 880px; margin: 0 auto; padding: 0 var(--gutter);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-lg);
     flex-wrap: wrap;
   }
   .sitebar-brand { display: flex; align-items: flex-start; gap: var(--sp-lg); text-decoration: none; }
-  .sitebar .wordmark { font-family: var(--font-primary); font-weight: 700; font-size: 32px; color: var(--color-highlight); }
+  .sitebar .wordmark { font-family: var(--font-primary); font-weight: 700; font-size: 32px; line-height: 1; color: var(--color-highlight); }
   .sitebar-tagline { font-family: var(--font-primary); font-size: 12px; line-height: 11px; color: var(--color-vanilla); }
   .sitebar-links { display: flex; gap: var(--sp-2xl); }
   .sitebar-link {
@@ -54,7 +55,7 @@
     color: var(--color-vanilla);
     user-select: none; pointer-events: none;
   }
-  .hero-block .cta-strip { width: min(900px, calc(100% - 2 * var(--gutter))); margin: var(--sp-md) auto 0; }
+  .hero-block .cta-strip { width: min(880px, calc(100% - 2 * var(--gutter))); margin: var(--sp-md) auto 0; }
 
   .cta-strip {
     display: flex; align-items: center; justify-content: space-between; gap: var(--sp-md);
@@ -72,6 +73,25 @@
     box-shadow: var(--shadow-sm);
   }
   .cta-primary:hover { filter: brightness(1.08); }
+
+  .page { max-width: 880px; margin: 0 auto; padding: var(--sp-2xl) var(--gutter) var(--sp-4xl); }
+
+  .eyebrow {
+    font-family: var(--font-secondary);
+    font-size: .72rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--color-highlight);
+    margin: 0 0 var(--sp-sm);
+  }
+
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2xl); align-items: start; }
+  .about-quote {
+    font-family: var(--font-headline); font-weight: 300;
+    font-size: 22px; line-height: 1.35; margin: 0; color: var(--color-vanilla);
+  }
+  .about-grid p { font-size: .95rem; color: rgba(234,232,224,.85); margin: 0 0 var(--sp-sm); }
+  @media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -79,7 +99,7 @@
   <nav class="sitebar">
     <div class="sitebar-inner">
       <a class="sitebar-brand" href="index.html">
-        <div class="wordmark">witty!</div>
+        <div class="wordmark">Witty!</div>
         <div class="sitebar-tagline">A witty<br>Product Management<br>Companion</div>
       </a>
       <div class="sitebar-links">
@@ -139,6 +159,21 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwytttttttttyyttttttttttiiiiiiiii!iiitttyyyttttttttt
    </div>
   </header>
 
+  <div class="page">
+    <section class="about">
+      <div class="about-grid">
+        <div>
+          <p class="eyebrow" data-i18n="aboutTitle"></p>
+          <p class="about-quote" data-i18n="about1"></p>
+        </div>
+        <div>
+          <p data-i18n="about2"></p>
+          <p data-i18n="about3"></p>
+        </div>
+      </div>
+    </section>
+  </div>
+
 <script>
   const LS_LANG = "witty.lang";
   let lang = localStorage.getItem(LS_LANG) || "de";
@@ -146,11 +181,19 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwytttttttttyyttttttttttiiiiiiiii!iiitttyyyttttttttt
   const I18N = {
     de: {
       reassure: "Witty ist kostenlos und speichert keine Daten.",
-      ctaPrimary: "Projekt anlegen"
+      ctaPrimary: "Projekt anlegen",
+      aboutTitle: "Warum witty",
+      about1: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Ludwig Wittgenstein",
+      about2: "Im LLM-Zeitalter gilt das wörtlich: Man kann nur in die Richtungen prompten — und bauen —, für die man die Sprache hat. Wer ohne PM-Vokabular baut, wendet viele Methoden längst an — nur unbenannt.",
+      about3: "Der Audit ist ein Spiegel, kein Examen: Er benennt, was du längst machst, und macht Offenes als Frage sichtbar. Methoden sind dabei Optionen, nie Pflicht."
     },
     en: {
       reassure: "Witty is free and stores no data.",
-      ctaPrimary: "Create project"
+      ctaPrimary: "Create project",
+      aboutTitle: "Why witty",
+      about1: "“The limits of my language mean the limits of my world.” — Ludwig Wittgenstein",
+      about2: "In the LLM era that is literal: you can only prompt — and build — in the directions you have language for. Builders without PM vocabulary already practice many of the methods — just unnamed.",
+      about3: "The audit is a mirror, not an exam: it names what you already do and turns what's open into questions. Methods are options, never mandatory."
     }
   };
 
