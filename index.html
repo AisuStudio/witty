@@ -45,7 +45,7 @@
   .langtoggle button.active { color: var(--color-highlight); font-weight: 700; }
 
   /* Hero-Block — Blueberry durchgehend hinter Portrait UND dem Abstand zur CTA-Bar */
-  .hero-block { background: var(--color-blueberry); overflow: hidden; padding-bottom: var(--sp-md); }
+  .hero-block { background: var(--color-blueberry); overflow: hidden; margin-top: var(--sp-md); padding-bottom: var(--sp-md); }
   .hero-ascii-wrap { display: flex; justify-content: center; }
   .hero-ascii {
     margin: 0; display: block;
@@ -61,7 +61,7 @@
     display: flex; align-items: center; justify-content: space-between; gap: var(--sp-md);
     flex-wrap: wrap;
     background: var(--color-highlight);
-    padding: var(--sp-lg);
+    padding: var(--sp-md);
     border-radius: var(--radius-lg);
     margin-top: var(--sp-xl);
   }
@@ -75,15 +75,6 @@
   .cta-primary:hover { filter: brightness(1.08); }
 
   .page { max-width: 880px; margin: 0 auto; padding: var(--sp-2xl) var(--gutter) var(--sp-4xl); }
-
-  .eyebrow {
-    font-family: var(--font-secondary);
-    font-size: .72rem;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--color-highlight);
-    margin: 0 0 var(--sp-sm);
-  }
 
   .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2xl); align-items: start; }
   .about-quote {
@@ -163,7 +154,6 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwytttttttttyyttttttttttiiiiiiiii!iiitttyyyttttttttt
     <section class="about">
       <div class="about-grid">
         <div>
-          <p class="eyebrow" data-i18n="aboutTitle"></p>
           <p class="about-quote" data-i18n="about1"></p>
         </div>
         <div>
@@ -182,7 +172,6 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwytttttttttyyttttttttttiiiiiiiii!iiitttyyyttttttttt
     de: {
       reassure: "Witty ist kostenlos und speichert keine Daten.",
       ctaPrimary: "Projekt anlegen",
-      aboutTitle: "Warum witty",
       about1: "„Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.“ — Ludwig Wittgenstein",
       about2: "Im LLM-Zeitalter gilt das wörtlich: Man kann nur in die Richtungen prompten — und bauen —, für die man die Sprache hat. Wer ohne PM-Vokabular baut, wendet viele Methoden längst an — nur unbenannt.",
       about3: "Der Audit ist ein Spiegel, kein Examen: Er benennt, was du längst machst, und macht Offenes als Frage sichtbar. Methoden sind dabei Optionen, nie Pflicht."
@@ -190,7 +179,6 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwytttttttttyyttttttttttiiiiiiiii!iiitttyyyttttttttt
     en: {
       reassure: "Witty is free and stores no data.",
       ctaPrimary: "Create project",
-      aboutTitle: "Why witty",
       about1: "“The limits of my language mean the limits of my world.” — Ludwig Wittgenstein",
       about2: "In the LLM era that is literal: you can only prompt — and build — in the directions you have language for. Builders without PM vocabulary already practice many of the methods — just unnamed.",
       about3: "The audit is a mirror, not an exam: it names what you already do and turns what's open into questions. Methods are options, never mandatory."
