@@ -6,6 +6,19 @@
 <title>witty — PM Spiegel</title>
 <link rel="stylesheet" href="design/tokens.css">
 <style>
+  /* Lese-Skala. waffle liefert Farben und Abstände, aber keine Größenstufen —
+     die stehen deshalb hier, lokal. Verhältnis rund 1,25 je Stufe, damit eine
+     Überschrift auch ohne Fettung als Überschrift liest. */
+  :root {
+    --text-step:  23px;   /* Schritt-Titel (Stoke) */
+    --text-lede:  17px;   /* Kurzbefund und Zwischenüberschriften */
+    --text-body:  16px;   /* Fließtext */
+    --text-meta:  14px;   /* Tabellen */
+    /* Lesespalte. Kalibriert, nicht geraten: 1ch ist die Breite der Ziffer 0 und in
+       Public Sans rund 1,3× breiter als ein mittlerer Buchstabe — 54ch ergeben real
+       gemessene ~70 Zeichen je Zeile. Tabellen und Rechner brechen bewusst aus. */
+    --measure:    54ch;
+  }
   * { box-sizing: border-box; margin: 0; }
   body {
     background: var(--color-bg);
@@ -50,6 +63,10 @@
 
   .card { background: var(--color-surface); border-radius: var(--radius-md); padding: var(--sp-lg); box-shadow: var(--shadow-sm); }
   .card + .card { margin-top: var(--sp-lg); }
+  /* Die Dokumentfläche liegt eine Stufe heller als die übrigen Karten. Nicht Geschmack,
+     sondern Bedingung: gedämpfter Text auf --color-surface erreicht im Hellmodus nur
+     4,05:1 und verfehlt AA — auf surface-2 sind es 5,17:1. */
+  #sections { background: var(--color-surface-2); padding: var(--sp-xl) var(--sp-2xl); }
 
   /* Empty state / loader */
   .loader h2 { font-family: var(--font-primary); font-weight: 700; font-size: 18px; margin-bottom: var(--sp-sm); }
@@ -105,39 +122,79 @@
 
   .legend { margin-top: var(--sp-md); font-size: 12px; color: var(--color-muted); }
 
-  /* Sections */
-  .step { margin-top: var(--sp-lg); }
-  .step h3 { font-family: var(--font-primary); font-weight: 700; font-size: 15px; display: flex; gap: var(--sp-sm); align-items: baseline; }
-  .step h3 .chip { font-size: 14px; }
-  .stepbody { margin-top: var(--sp-sm); font-size: 14.5px; }
+  /* Sections — der Audit ist ein Dokument, kein Dashboard: Prosa läuft in einer
+     schmalen Lesespalte, Tabellen und Rechner brechen daraus aus. */
+  .step {
+    margin-top: var(--sp-3xl); padding-top: var(--sp-xl);
+    border-top: 1px solid var(--color-border);
+    scroll-margin-top: 72px;      /* sonst schiebt der Sprung den Titel unter die klebende Navigation */
+  }
+  #sections .step:first-child, #sections .step.firstvis { margin-top: 0; padding-top: 0; border-top: 0; }
+  .step h3 {
+    font-family: var(--font-headline); font-weight: 400; font-size: var(--text-step);
+    line-height: 1.25; display: flex; gap: var(--sp-sm); align-items: center;
+  }
+  /* Stoke liefert nur 300/400 — ein font-weight: 700 hier ergäbe synthetisches Faux-Bold. */
+  .step h3 .stepnum {
+    font-family: "iA Writer Mono S", monospace; font-size: 15px;
+    color: var(--color-muted); flex-shrink: 0;
+  }
+  .step h3 .chip {
+    font-size: 13px; line-height: 1; flex-shrink: 0;
+    padding: 5px 9px; border-radius: var(--radius-full);
+    background: var(--color-surface); border: 1px solid var(--color-border);
+  }
+  /* Vier Zustände, vier Erscheinungen — bisher war nur „Spiegel" überhaupt gestylt. */
+  .step.st-mirror h3 .chip { background: color-mix(in srgb, var(--color-lemon) 34%, var(--color-surface)); border-color: transparent; }
+  .step.st-done h3 .chip { background: color-mix(in srgb, var(--color-pistachio-3) 30%, var(--color-surface)); border-color: transparent; }
+  .step.st-deferred h3 .chip { border-style: dashed; }
+  .stepbody { margin-top: var(--sp-md); font-size: var(--text-body); line-height: 1.6; }
+  /* Lesespalte: nur Fließtext-Elemente, damit Tabellen und Breakouts breit bleiben */
+  .stepbody > p, .stepbody > ul, .stepbody > ol { max-width: var(--measure); }
+  .stepbody > *:last-child { margin-bottom: 0; }
   .stepbody blockquote {
-    border-left: 3px solid var(--color-accent); background: var(--color-surface-2);
+    border-left: 3px solid var(--color-accent); background: var(--color-surface);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    padding: var(--sp-sm) var(--sp-md); margin: var(--sp-xs) 0;
+    padding: var(--sp-md) var(--sp-lg); margin: 0 0 var(--sp-lg);
+    font-size: var(--text-lede); max-width: 48ch;
   }
   .step.st-mirror .stepbody blockquote { border-left-color: var(--color-lemon); }
-  .stepbody ul, .stepbody ol { padding-left: 1.3em; margin: var(--sp-xs) 0; }
-  .stepbody li { margin: 2px 0; }
-  .stepbody code { font-family: "iA Writer Mono S", monospace; font-size: .9em; background: var(--color-surface-2); padding: 1px 5px; border-radius: 3px; }
+  .stepbody ul, .stepbody ol { padding-left: 1.3em; margin: 0 0 var(--sp-md); }
+  /* Alle Inhaltsregeln hängen an der direkten Dokumentebene — die Rechner-Bausteine
+     bringen eigene Listen, Tabellen und h4 mit und sollen davon unberührt bleiben. */
+  .stepbody > ul li, .stepbody > ol li { margin: 0 0 var(--sp-sm); color: var(--color-muted); }
+  .stepbody code { font-family: "iA Writer Mono S", monospace; font-size: .9em; background: var(--color-surface); padding: 1px 5px; border-radius: 3px; }
   .stepbody em { color: var(--color-muted); }
-  .stepbody p { margin: var(--sp-xs) 0; }
-  .stepbody h4 {
-    font-family: var(--font-primary); font-weight: 700; font-size: 14px;
-    margin: var(--sp-md) 0 var(--sp-xs); letter-spacing: .01em;
+  .stepbody p { margin: 0 0 var(--sp-md); }
+  /* Rollen-Vorspann (**Befund.**, **Belege.**, **Lern-Anker: …**, **Nächster Handgriff.**):
+     Die Gliederung steckt längst im Text — sie war nur nie sichtbar. */
+  .stepbody > p.lead > b:first-child { color: var(--color-accent); }
+  .stepbody a { color: var(--color-accent); text-decoration: underline; }
+  /* Rückkipp-Regel: Belege stehen leiser, aber Zahlen, Namen und Pfade bleiben hart. */
+  .stepbody > ul li > b, .stepbody > ol li > b,
+  .stepbody > ul li code, .stepbody > ol li code { color: var(--color-text); }
+  .stepbody > h4 {
+    font-family: var(--font-primary); font-weight: 700; font-size: 18px; line-height: 1.35;
+    margin: var(--sp-2xl) 0 var(--sp-md); letter-spacing: .01em; max-width: var(--measure);
   }
-  .stepbody hr { border: 0; border-top: 1px solid var(--color-border); margin: var(--sp-md) 0; }
+  .stepbody hr { border: 0; border-top: 1px solid var(--color-border); margin: var(--sp-xl) 0; }
   /* Tabellen im Fließtext (v0.2-Format: BMC, RICE, P&L, Now/Next/Later, Glossar) */
   .tablewrap { overflow-x: auto; margin: var(--sp-sm) 0; -webkit-overflow-scrolling: touch; }
-  table.md { border-collapse: collapse; font-size: 13.5px; min-width: 100%; }
+  table.md { border-collapse: collapse; font-size: var(--text-meta); line-height: 1.45; min-width: 100%; }
   table.md th {
     text-align: left; font-family: var(--font-primary); font-weight: 700; font-size: 12px;
     text-transform: uppercase; letter-spacing: .04em; color: var(--color-muted);
     padding: 6px 10px; border-bottom: 1px solid var(--color-border); white-space: nowrap;
   }
-  table.md td { padding: 6px 10px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  table.md td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
   table.md tr:last-child td { border-bottom: 0; }
   table.md td:first-child { white-space: nowrap; }
   table.md td b { font-weight: 700; }
+  /* dieselbe Rückkipp-Regel wie in den Belegen: der Wert bleibt hart, der Kontext tritt
+     zurück — nur für Dokument-Tabellen, nicht für die Ausgaben der Rechner. */
+  .stepbody > .tablewrap table.md td { color: var(--color-muted); }
+  .stepbody > .tablewrap table.md td b,
+  .stepbody > .tablewrap table.md td code { color: var(--color-text); }
   /* Datenblöcke (```witty:pnl etc.) — Platzhalter, bis die Breakouts sie rendern */
   .databox {
     border: 1px dashed var(--color-border); border-radius: var(--radius-sm);
@@ -1949,7 +2006,11 @@ function renderBody(body) {
     if (/^[-*]\s+/.test(l))    { pushList("ul", inlineMd(esc(l.replace(/^[-*]\s+/, "")))); continue; }
     if (/^\d+\.\s+/.test(l))   { pushList("ol", inlineMd(esc(l.replace(/^\d+\.\s+/, "")))); continue; }
     flushL();
-    if (l) out.push("<p>" + inlineMd(esc(l)) + "</p>");
+    // Beginnt der Absatz mit einer Fettung, ist das ein Rollen-Vorspann
+    // (Befund., Belege., Lern-Anker: …) — nur der wird als Label gesetzt.
+    // Über CSS allein ginge das nicht: :first-child zählt nur Elemente,
+    // eine Fettung mitten im Satz wäre sonst dasselbe Kind.
+    if (l) out.push("<p" + (/^\*\*/.test(l) ? ' class="lead"' : "") + ">" + inlineMd(esc(l)) + "</p>");
   }
   if (fence !== null) out.push(renderFence(fenceInfo, fence.join("\n")));  // unterminiert
   flushQ(); flushL(); flushT();
@@ -1988,7 +2049,7 @@ function renderMirror(md) {
   $("sections").innerHTML = doc.sections.map((s, i) =>
     `<div class="step ${s.status ? s.status.cls : ""}" data-group="${groupOf(s.n)}" id="step-${s.n ?? "x" + i}">
        <h3>${s.status ? `<span class="chip">${s.status.emoji}</span>` : ""}
-           ${s.n ? s.n + " · " : ""}${esc(s.name)}</h3>
+           ${s.n ? `<span class="stepnum">${s.n}</span>` : ""}<span>${esc(s.name)}</span></h3>
        <div class="stepbody">${renderBody(s.body)}</div>
        ${s.n ? annoBoxHtml(s.n, pending.find(p => p.step === s.n)?.note) : ""}
      </div>`).join("");
@@ -2123,6 +2184,12 @@ function applyGroup(id) {
   if (view !== "steps") return;
   document.querySelectorAll("#sections .step").forEach(el =>
     el.classList.toggle("hidden", id !== "alle" && el.dataset.group !== id));
+  // Die Trennlinie über einem Schritt ist ein „hier beginnt der nächste" — über dem
+  // ersten sichtbaren wäre sie eine Linie ins Nichts. Beim Filtern wandert sie mit.
+  const steps = [...document.querySelectorAll("#sections .step")];
+  steps.forEach(el => el.classList.remove("firstvis"));
+  const first = steps.find(el => !el.classList.contains("hidden"));
+  if (first) first.classList.add("firstvis");
 }
 
 function switchLens(which) {
