@@ -67,6 +67,10 @@
      sondern Bedingung: gedämpfter Text auf --color-surface erreicht im Hellmodus nur
      4,05:1 und verfehlt AA — auf surface-2 sind es 5,17:1. */
   #sections { background: var(--color-surface-2); padding: var(--sp-xl) var(--sp-2xl); }
+  /* Dieselbe Fläche für die Zusammenfassung — sie trägt genauso gedämpften Text
+     (Notizspalte, Meter-Beschriftungen), und der erreicht auf --color-surface
+     im Hellmodus nur 4,05:1. */
+  #summary { background: var(--color-surface-2); }
 
   /* Empty state / loader */
   .loader h2 { font-family: var(--font-primary); font-weight: 700; font-size: 18px; margin-bottom: var(--sp-sm); }
@@ -122,12 +126,85 @@
 
   .legend { margin-top: var(--sp-md); font-size: 12px; color: var(--color-muted); }
 
+  /* ===== Übersichts-Dashboard =====
+     Statusfarben: Die vier Zustände sind GEORDNET (STATUS_RANK), deshalb eine
+     Ein-Ton-Skala statt vier Farben. Vier gleichrangige Töne aus den
+     waffle-Rampen fallen bei Rot-Grün-Sehschwäche durch — nachgerechnet, nicht
+     geschätzt (Grün+Orange erreicht ΔE 3,5). „Offen“ bekommt gar keine Farbe,
+     es IST die leere Spur. Das Emoji steht immer daneben: Farbe trägt nie allein. */
+  :root {
+    --viz-mirror:   #57a03a;   /* pistachio-4 */
+    --viz-deferred: #3e7c1f;   /* pistachio-5 */
+    --viz-done:     #2c5714;   /* eine Stufe unter waffles Rampe — hell braucht mehr Tiefe */
+    --viz-track:    color-mix(in srgb, var(--color-muted) 20%, transparent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      --viz-mirror: #3e7c1f; --viz-deferred: #57a03a; --viz-done: #92c982;
+    }
+  }
+  :root[data-theme="dark"] { --viz-mirror: #3e7c1f; --viz-deferred: #57a03a; --viz-done: #92c982; }
+
+  .dash-top { margin-bottom: var(--sp-xl); }
+  .dash-r1, .dash-r2 { display: flex; gap: var(--sp-xl); align-items: flex-start; flex-wrap: wrap; }
+  .dash-r2 { margin-top: var(--sp-lg); }
+  .dash-empty { color: var(--color-muted); font-size: 14px; }
+  .dhero { flex: 0 0 auto; }
+  /* Leitzahl in Public Sans, nicht in Stoke — eine Serife liest hier als Deko.
+     Proportionale Ziffern: tabellarische lassen „71“ auf Displaygröße lose wirken. */
+  .dhero-num { font-family: var(--font-primary); font-weight: 700; font-size: 52px; line-height: 1; }
+  .dhero-num span { font-size: 24px; color: var(--color-muted); margin-left: 2px; }
+  .dhero-lbl { font-size: 14px; margin-top: 6px; }
+  .dhero-sub { font-size: 12px; color: var(--color-muted); max-width: 30ch; margin-top: 2px; }
+  .dblock { flex: 1 1 300px; min-width: 0; }
+  .dblock-h {
+    font-family: "iA Writer Mono S", monospace; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--color-muted); margin-bottom: var(--sp-sm);
+  }
+  /* 2px Lücke in Flächenfarbe trennt die Felder — kein Rahmen um die Marke. */
+  .dstrip { display: flex; gap: 2px; }
+  .dcell {
+    flex: 1 1 0; min-width: 0; border: 0; background: transparent; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 3px 0; border-radius: var(--radius-sm);
+  }
+  .dcell:hover { background: var(--color-surface); }
+  .dcell-emoji { font-size: 13px; line-height: 1; }
+  .dcell-bar { width: 100%; height: 10px; border-radius: 3px; background: var(--viz-track); }
+  .dcell.st-mirror   .dcell-bar { background: var(--viz-mirror); }
+  .dcell.st-deferred .dcell-bar { background: var(--viz-deferred); }
+  .dcell.st-done     .dcell-bar { background: var(--viz-done); }
+  .dcell-n { font-family: "iA Writer Mono S", monospace; font-size: 10px; color: var(--color-muted); }
+  .dmeter { display: flex; align-items: center; gap: var(--sp-sm); font-size: 13px; margin-bottom: 6px; }
+  .dmeter-lbl { flex: 0 0 72px; color: var(--color-muted); }
+  .dmeter-track, .dpair-track {
+    flex: 1; height: 10px; border-radius: 5px; background: var(--viz-track); overflow: hidden;
+  }
+  /* Gerundetes Datenende, eckig an der Grundlinie. */
+  .dmeter-track i, .dpair-track i { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--viz-done); }
+  .dmeter-val, .dpair-val {
+    text-align: right; font-family: "iA Writer Mono S", monospace; font-size: 12px;
+    font-variant-numeric: tabular-nums;   /* hier richtig: eine Spalte von Zahlen */
+  }
+  .dmeter-val { flex: 0 0 46px; }
+  .dpair { margin-bottom: var(--sp-md); }
+  .dpair:last-child { margin-bottom: 0; }
+  .dpair-row { display: flex; align-items: center; gap: var(--sp-sm); font-size: 13px; margin-bottom: 4px; }
+  .dpair-lbl { flex: 0 0 104px; color: var(--color-muted); }
+  .dpair-val { flex: 0 0 82px; }
+  /* Ein Ton, zwei Helligkeiten: geplant kräftig, nötig zurückgenommen. */
+  .dpair-track i { background: color-mix(in srgb, var(--viz-done) 34%, transparent); }
+  .dpair-track i.strong { background: var(--viz-done); }
+
   /* Sections — der Audit ist ein Dokument, kein Dashboard: Prosa läuft in einer
      schmalen Lesespalte, Tabellen und Rechner brechen daraus aus. */
   .step {
     margin-top: var(--sp-3xl); padding-top: var(--sp-xl);
     border-top: 1px solid var(--color-border);
-    scroll-margin-top: 72px;      /* sonst schiebt der Sprung den Titel unter die klebende Navigation */
+    /* Gemessene Leistenhöhe statt fester Zahl: die Leiste bricht je nach
+       Fensterbreite auf zwei oder drei Zeilen um, ein fester Wert schiebt den
+       Sprungtitel dann darunter. Fallback für den Moment vor der ersten Messung. */
+    scroll-margin-top: var(--navh, 84px);
   }
   #sections .step:first-child, #sections .step.firstvis { margin-top: 0; padding-top: 0; border-top: 0; }
   .step h3 {
@@ -277,11 +354,15 @@
   .prohead { margin-bottom: var(--sp-md); }
   .groupnav .lens { font-size: 12.5px; padding: 5px var(--sp-sm); }
   .grprange { font-family: "iA Writer Mono S", monospace; font-size: 11px; color: var(--color-muted); }
-  .grpcount { font-size: 11px; letter-spacing: -.02em; margin-left: 2px; white-space: nowrap; }
   .groupnav .lens.active .grprange { color: var(--color-text); }
-  .groupnav .lens.isview { border-style: dashed; }
+  /* Zwei Sorten in einer Leiste, bisher nicht unterscheidbar: ein Filter zeigt
+     weniger Schritte, eine Ansicht tauscht das ganze Dokument aus. Filter sind
+     umrandete Pillen, Ansichten gefüllte Flächen ohne Rahmen. */
+  .groupnav .lens.isview {
+    border-color: transparent; background: var(--color-surface);
+  }
+  .groupnav .lens.isview.active { border-color: var(--color-accent); }
   .grparrow { color: var(--color-muted); margin-right: 2px; }
-  .groupnav .lens.isview.active { border-style: solid; }
   .groupnav .lens { display: inline-flex; align-items: center; gap: 6px; }
   .grp { position: relative; }
   .grpcaret { color: var(--color-muted); font-size: 9px; }
@@ -514,6 +595,7 @@
       </div>
       <nav class="groupnav" id="groupnav"></nav>
       <div class="card" id="summary">
+        <div class="dash-top" id="dash-top"></div>
         <table class="dash">
           <thead><tr>
             <th>#</th><th data-i18n="thStep"></th><th data-i18n="thStatus"></th><th data-i18n="thNote"></th>
@@ -544,9 +626,6 @@
           <span class="copiedflash" id="copied-update" data-i18n="copied"></span>
         </div>
         <pre class="prompt" id="update-prompt-text"></pre>
-      </div>
-      <div class="loadrow" style="margin-top:var(--sp-lg)">
-        <button class="btn secondary" id="btn-reset" data-i18n="btnReset"></button>
       </div>
       <!-- Erscheint, sobald ein Breakout das Dokument verändert hat -->
       <div class="savebar hidden" id="savebar">
@@ -924,7 +1003,16 @@ const I18N = {
     cmpUp: "vorangekommen", cmpDown: "zurückgefallen", cmpSame: "unverändert", cmpNew: "neu",
     cmpDownNote: "Ein Rückschritt ist kein Fehler im Dokument, sondern eine Annahme, die gekippt ist — meist die ehrlichste Zeile im ganzen Vergleich.",
     cmpLog: "Neu im Verlauf", cmpNoFormat: "Kein PM-STATUS-Format erkannt.", grpShowAll: "Ganze Gruppe anzeigen", grpConcept: "Konzept & Strategie", grpProduct: "Produkt",
-    grpMarket: "Markt & Geld", grpLearn: "Messen & Lernen", grpSummary: "Auswertung",
+    grpMarket: "Markt & Geld", grpLearn: "Messen & Lernen", grpAppendix: "Anhang",
+    dashCovered: "des Audits belegt",
+    dashWeighted: "beantwortet zählt voll, „impliziter Spiegel“ zur Hälfte",
+    dashStripTitle: "Die 14 Schritte — anklicken springt hin",
+    dashDiamondTitle: "Double Diamond — wo die Arbeit steht",
+    dashDiscover: "Discover", dashDefine: "Define", dashDevelop: "Develop", dashDeliver: "Deliver",
+    dashEconTitle: "Was das Ziel wirtschaftlich bedeutet",
+    dashTarget: "Ziel", dashBreakeven: "Break-even", dashUnits: "Stück",
+    dashRevenue: "Erlös bei Ziel", dashCost: "Kosten pro Jahr",
+    dashNoRows: "Keine Schritt-Tabelle im Dokument — ohne sie gibt es nichts zu zählen.",
     bmcIntro: "Dieselben Antworten, anders angeordnet: Das Business Model Canvas ist ein Neun-Felder-Raster für ein Geschäftsmodell. Sieben Felder speisen sich aus deinen Schritten, alle neun sind direkt bearbeitbar — gestrichelte Kästen sind Lücken. Änderungen landen als Anmerkung im Update-Prompt; ein überschriebenes Feld (✎) leeren stellt die Ableitung wieder her.",
     bmcFrom: "aus Schritt ", bmcEmpty: "noch offen — kommt aus Schritt ",
     bmcOverride: "überschrieben", bmcOverrideHint: "Feld leeren stellt den aus dem Schritt abgeleiteten Text wieder her.",
@@ -1029,7 +1117,16 @@ const I18N = {
     cmpUp: "moved forward", cmpDown: "fell back", cmpSame: "unchanged", cmpNew: "new",
     cmpDownNote: "A step falling back is not a mistake in the document but an assumption that collapsed — usually the most honest line in the whole comparison.",
     cmpLog: "New in the history", cmpNoFormat: "No PM-STATUS format recognized.", grpShowAll: "Show whole group", grpConcept: "Concept & strategy", grpProduct: "Product",
-    grpMarket: "Market & money", grpLearn: "Measure & learn", grpSummary: "Summary",
+    grpMarket: "Market & money", grpLearn: "Measure & learn", grpAppendix: "Appendix",
+    dashCovered: "of the audit evidenced",
+    dashWeighted: "answered counts full, “implicit mirror” counts half",
+    dashStripTitle: "The 14 steps — click to jump",
+    dashDiamondTitle: "Double Diamond — where the work stands",
+    dashDiscover: "Discover", dashDefine: "Define", dashDevelop: "Develop", dashDeliver: "Deliver",
+    dashEconTitle: "What the target means economically",
+    dashTarget: "Target", dashBreakeven: "Break-even", dashUnits: "units",
+    dashRevenue: "Revenue at target", dashCost: "Cost per year",
+    dashNoRows: "No step table in this document — nothing to count without it.",
     bmcIntro: "The same answers, arranged differently: the Business Model Canvas is a nine-field grid for a business model. Seven fields are fed by your steps, all nine can be edited directly — dashed boxes are gaps. Changes land as a note in the update prompt; clearing an overridden field (✎) restores the derived text.",
     bmcFrom: "from step ", bmcEmpty: "still open — comes from step ",
     bmcOverride: "overridden", bmcOverrideHint: "Clearing the field restores the text derived from the step.",
@@ -2047,7 +2144,7 @@ function renderMirror(md) {
   $("cover-extra").innerHTML = doc.coverExtra ? renderBody(doc.coverExtra) : "";
 
   $("sections").innerHTML = doc.sections.map((s, i) =>
-    `<div class="step ${s.status ? s.status.cls : ""}" data-group="${groupOf(s.n)}" id="step-${s.n ?? "x" + i}">
+    `<div class="step ${s.status ? s.status.cls : ""}" data-group="${groupOf(s.n, s.name)}" id="step-${s.n ?? "x" + i}">
        <h3>${s.status ? `<span class="chip">${s.status.emoji}</span>` : ""}
            ${s.n ? `<span class="stepnum">${s.n}</span>` : ""}<span>${esc(s.name)}</span></h3>
        <div class="stepbody">${renderBody(s.body)}</div>
@@ -2055,15 +2152,18 @@ function renderMirror(md) {
      </div>`).join("");
 
   currentDoc = doc;
-  group = "summary";
+  $("dash-top").innerHTML = renderDashboard(doc, md);
   renderGroupNav(doc);
   refreshUpdateTab();
   $("bmc").innerHTML = renderBmc(doc);
   mountBreakouts();
+  // applyGroup statt nur `group = …`: sonst markiert die Leiste beim Laden eines
+  // zweiten Dokuments „Zusammenfassung“, während die alte Ansicht stehen bleibt.
+  applyGroup("summary");
 
-  // Nur Dashboard-Zeilen und Canvas-Felder — die Menüeinträge der Navigation
-  // bringen ihren eigenen Handler mit und würden hier sonst überschrieben.
-  document.querySelectorAll("#dash-body [data-jump], #bmc [data-jump]").forEach(el =>
+  // Nur Dashboard-Zeilen, Statusstreifen und Canvas-Felder — die Menüeinträge der
+  // Navigation bringen ihren eigenen Handler mit und würden hier sonst überschrieben.
+  document.querySelectorAll("#dash-body [data-jump], #dash-top [data-jump], #bmc [data-jump]").forEach(el =>
     el.addEventListener("click", () => {
       applyGroup("alle");   // in die Schritte-Ansicht wechseln und Filter lösen,
                             // sonst springt es in eine ausgeblendete Sektion
@@ -2073,15 +2173,23 @@ function renderMirror(md) {
 
   $("loader").classList.add("hidden");
   $("mirror").classList.remove("hidden");
+  syncNavHeight();   // erst jetzt hat die Leiste eine messbare Höhe
 }
 
 let currentDoc = null;
 let lens = "steps";
 
 /* ============ Gruppen ============
-   20 Sektionen am Stück sind nicht lesbar. Die Schritte werden deshalb in
-   vier inhaltliche Bündel geteilt, alles Unnummerierte (Sprachraum, Fazit,
-   Spiegel-Lesart, Empfehlungen, Glossar, Verlauf) bildet ein fünftes. */
+   20 Sektionen am Stück sind nicht lesbar. Die 14 Schritte werden in vier
+   inhaltliche Bündel geteilt. Die unnummerierten Sektionen sind ausdrücklich
+   KEIN Rest-Eimer mehr: Fazit, Spiegel-Lesart und Empfehlungen sind das Urteil
+   und gehören zur Zusammenfassung — Sprachraum, Glossar und Verlauf sind
+   Material und bilden den Anhang. Erkannt an den Überschriften, die der
+   Audit-Prompt ohnehin vorschreibt (DE und EN). */
+const SECTION_KIND = [
+  { group: "summary", re: /^\s*(Fazit|Verdict|Spiegel-Lesart|Mirror\s+Reading|Pers(ö|oe)nliche\s+Empfehlungen|Personal\s+recommendations)\b/i },
+  { group: "anhang",  re: /^\s*(Sprachraum|Language\s+Space|Glossar|Glossary|Verlauf|History|Anhang|Appendix)\b/i }
+];
 const GROUPS = [
   { id: "summary",    from: -1, to: -1, label: "grpSummaryView", view: "summary" },
   { id: "konzept",    from: 1,  to: 6,  label: "grpConcept" },
@@ -2089,15 +2197,25 @@ const GROUPS = [
   { id: "markt",      from: 9,  to: 10, label: "grpMarket" },
   { id: "bmc",        from: -1, to: -1, label: "lensBmc", view: "bmc", sub: true },  // Unterpunkt von Markt & Geld
   { id: "messen",     from: 11, to: 14, label: "grpLearn" },
-  { id: "auswertung", from: -1, to: -1, label: "grpSummary" },
+  { id: "anhang",     from: -1, to: -1, label: "grpAppendix" },
   { id: "compare",    from: -1, to: -1, label: "grpCompare", view: "compare" },
   { id: "update",     from: -1, to: -1, label: "grpUpdate",  view: "update" },
   { id: "alle",       from: 0,  to: 99, label: "grpAll" }
 ];
-function groupOf(n) {
-  if (!n) return "auswertung";
+function groupOf(n, name) {
+  if (!n) {
+    const hit = SECTION_KIND.find(k => k.re.test(name || ""));
+    // Unbekanntes wandert ins Material, nie in die Zusammenfassung — dort soll
+    // nur stehen, was nachweislich Urteil ist.
+    return hit ? hit.group : "anhang";
+  }
   const g = GROUPS.find(g => !g.view && g.id !== "alle" && g.from > 0 && n >= g.from && n <= g.to);
-  return g ? g.id : "auswertung";
+  if (g) return g.id;
+  // Nummer außerhalb der bekannten Bereiche (ein künftiger Schritt 15): an die
+  // letzte Schrittgruppe hängen, damit sie sichtbar bleibt statt im Anhang zu
+  // verschwinden.
+  const numbered = GROUPS.filter(x => !x.view && x.id !== "alle" && x.from > 0);
+  return numbered[numbered.length - 1].id;
 }
 let group = "alle";
 // Fortschritt einer Gruppe: ✅ zählt voll, 🔍 zur Hälfte — implizit abgedeckt
@@ -2109,6 +2227,74 @@ function groupProgress(rows) {
   const def  = rows.filter(r => r.status.key === "deferred").length;
   return Math.round(((done + half * 0.5 + def) / rows.length) * 100);
 }
+/* ============ Übersichts-Dashboard ============
+   Vier Blöcke aus Zahlen, die im Dokument längst stehen, aber nirgends sichtbar
+   sind. Reine Funktion von (doc, md) — renderMirror() läuft bei jedem
+   Sprachwechsel komplett neu, eigener Zustand würde das nicht überleben.
+   ACHTUNG, Widerspruch im Bestand: STATUS_RANK stellt „vertagt“ zwischen
+   Spiegel und beantwortet, groupProgress zählt es voll wie beantwortet. Der
+   Streifen färbt nach Rang, die Meter rechnen mit groupProgress — nicht mischen. */
+const DIAMOND = [
+  { key: "dashDiscover", from: 1, to: 3  },
+  { key: "dashDefine",   from: 4, to: 6  },
+  { key: "dashDevelop",  from: 7, to: 7  },
+  { key: "dashDeliver",  from: 8, to: 14 }
+];
+const dnum = n => Math.round(n).toLocaleString(lang === "de" ? "de-DE" : "en-US");
+function meterHtml(label, pct) {
+  return `<div class="dmeter"><span class="dmeter-lbl">${esc(label)}</span>
+    <span class="dmeter-track"><i style="width:${pct}%"></i></span>
+    <span class="dmeter-val">${pct} %</span></div>`;
+}
+// Zwei Werte auf EINER Skala. Stückzahl und Euro stehen bewusst in getrennten
+// Bildern — zwei Achsen in einem Diagramm erfinden einen Zusammenhang.
+function pairHtml(aLbl, aVal, bLbl, bVal, unit) {
+  const max = Math.max(aVal, bVal) || 1;
+  const row = (lbl, val, strong) => `<div class="dpair-row">
+      <span class="dpair-lbl">${esc(lbl)}</span>
+      <span class="dpair-track"><i class="${strong ? "strong" : ""}" style="width:${Math.round(val / max * 100)}%"></i></span>
+      <span class="dpair-val">${esc(dnum(val))}${unit ? " " + esc(unit) : ""}</span></div>`;
+  return row(aLbl, aVal, true) + row(bLbl, bVal, false);
+}
+function renderDashboard(doc, md) {
+  if (!doc || !doc.rows.length) return `<p class="dash-empty">${esc(t("dashNoRows"))}</p>`;
+  // 1 · Leitzahl — die Gewichtung ist der Mehrwert gegenüber den Zählpillen.
+  const hero = `<div class="dhero">
+      <div class="dhero-num">${groupProgress(doc.rows)}<span>%</span></div>
+      <div class="dhero-lbl">${esc(t("dashCovered"))}</div>
+      <div class="dhero-sub">${esc(t("dashWeighted"))}</div>
+    </div>`;
+  // 2 · Statusstreifen: Emoji, Stufe und Nummer je Schritt. Farbe trägt nie
+  //     allein — das Emoji steht immer dabei und ist zugleich die Legende.
+  const strip = `<div class="dblock"><div class="dblock-h">${esc(t("dashStripTitle"))}</div>
+      <div class="dstrip">${doc.rows.map(r => `
+        <button class="dcell ${r.status.cls}" data-jump="step-${r.n}" title="${escAttr(r.n + " · " + r.name)}">
+          <span class="dcell-emoji">${r.status.emoji}</span>
+          <span class="dcell-bar"></span>
+          <span class="dcell-n">${r.n}</span>
+        </button>`).join("")}</div></div>`;
+  // 3 · Double Diamond — dieselbe Rechnung wie die Gruppenbalken, andere Bündel.
+  const dia = DIAMOND.map(d => {
+    const pct = groupProgress(doc.rows.filter(r => r.n >= d.from && r.n <= d.to));
+    return pct === null ? "" : meterHtml(t(d.key), pct);
+  }).join("");
+  const diamond = dia ? `<div class="dblock"><div class="dblock-h">${esc(t("dashDiamondTitle"))}</div>${dia}</div>` : "";
+  // 4 · Break-even — die Zahlen sind längst berechnet, neu ist nur der Abstand.
+  let econ = "";
+  const pm = (md || "").match(/```witty:pnl[^\n]*\n([\s\S]*?)\n```/i);
+  if (pm) {
+    const v = pnlRead(parseBlock(pm[1]));
+    const r = pnlCompute(v);
+    if (r.breakEven && v.target_units) econ = `<div class="dblock">
+        <div class="dblock-h">${esc(t("dashEconTitle"))}</div>
+        <div class="dpair">${pairHtml(t("dashTarget"), v.target_units, t("dashBreakeven"), r.breakEven, t("dashUnits"))}</div>
+        <div class="dpair">${pairHtml(t("dashRevenue"), r.targetRevenue, t("dashCost"), r.yearCost, v.currency)}</div>
+      </div>`;
+  }
+  return `<div class="dash-r1">${hero}${strip}</div>` +
+         (diamond || econ ? `<div class="dash-r2">${diamond}${econ}</div>` : "");
+}
+
 // Update-Reiter nur zeigen, wenn es etwas zum Einarbeiten gibt — separat von
 // renderGroupNav aufrufbar, damit pendingSave/pendingRemove nicht die ganze
 // Navigation neu aufbauen müssen, nur um diesen einen Reiter zu toggeln.
@@ -2137,7 +2323,7 @@ function renderGroupNav(doc) {
            ${items}
          </ul>` : "";
     return `<div class="grp">
-      <button class="lens${g.id === group ? " active" : ""}${g.sub ? " isview" : ""}" data-group="${g.id}">
+      <button class="lens${g.id === group ? " active" : ""}${g.view ? " isview" : ""}" data-group="${g.id}">
         ${arrow}${esc(t(g.label))} ${range}${bar}${caret}
       </button>${menu}</div>`;
   }).join("");
@@ -2165,7 +2351,18 @@ function renderGroupNav(doc) {
     const target = item.dataset.jump && $(item.dataset.jump);
     if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
   }));
+  syncNavHeight();
 }
+// Die klebende Leiste ist mal ein-, mal zwei-, mal dreizeilig. Ihre Höhe wandert
+// als CSS-Variable zum scroll-margin-top der Schritte, damit ein Sprung den Titel
+// nicht dahinter parkt.
+function syncNavHeight() {
+  const nav = $("groupnav");
+  if (!nav) return;
+  const h = Math.ceil(nav.getBoundingClientRect().height);
+  if (h) document.documentElement.style.setProperty("--navh", (h + 10) + "px");
+}
+addEventListener("resize", syncNavHeight);
 function closeMenus() {
   document.querySelectorAll(".grpmenu").forEach(m => m.classList.add("hidden"));
 }
@@ -2181,7 +2378,9 @@ function applyGroup(id) {
   // die Schritte — beides über dieselbe Leiste, damit es nur eine Navigation gibt.
   const view = (entry && entry.view) || "steps";
   switchLens(view);
-  if (view !== "steps") return;
+  // „Zusammenfassung“ ist die einzige Ansicht, die zusätzlich Schritte zeigt:
+  // das Urteil (Fazit, Spiegel-Lesart, Empfehlungen) steht unter den Zahlen.
+  if (view !== "steps" && view !== "summary") return;
   document.querySelectorAll("#sections .step").forEach(el =>
     el.classList.toggle("hidden", id !== "alle" && el.dataset.group !== id));
   // Die Trennlinie über einem Schritt ist ein „hier beginnt der nächste" — über dem
@@ -2196,7 +2395,7 @@ function switchLens(which) {
   lens = which;
   $("summary").classList.toggle("hidden", which !== "summary");
   $("compare").classList.toggle("hidden", which !== "compare");
-  $("sections").classList.toggle("hidden", which !== "steps");
+  $("sections").classList.toggle("hidden", which !== "steps" && which !== "summary");
   $("bmc").classList.toggle("hidden", which !== "bmc");
   $("update-view").classList.toggle("hidden", which !== "update");
   if (which === "update") renderUpdateView();
@@ -2931,7 +3130,6 @@ function resetProject() {
   $("paste-area").value = "";
   window.scrollTo({ top: 0 });
 }
-$("btn-reset").onclick = resetProject;
 $("btn-reset-top").onclick = resetProject;
 function promptFileName() { return "witty-audit-prompt-" + lang + ".md"; }
 function renderCli() {
